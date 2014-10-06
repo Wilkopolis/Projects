@@ -1,0 +1,17 @@
+'''
+	This account will be used as a control
+'''
+
+#properties
+
+-
+STRATEGY: flip,15;
+CAPITAL: 1000.75;
+TARGET: AMD;
+-
+
+#stocks
+
+-
+AMD: 0
+-
