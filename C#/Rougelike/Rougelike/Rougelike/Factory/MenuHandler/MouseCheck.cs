@@ -90,6 +90,7 @@ namespace Rougelike.Factory
                 if (thismouse.LeftButton == ButtonState.Released && lastmouse.LeftButton == ButtonState.Pressed)
                 {
                     // Inventory release
+                    #region
                     if (itemdragging)
                     {
                         itemdragging = false;
@@ -114,8 +115,9 @@ namespace Rougelike.Factory
                             tempinvbutton.Item = tempitem;
                         }
                     }
-
+                    #endregion
                     // Description release
+                    #region
                     foreach (Description D in DescriptionList)
                     {
                         if (D.Drag)
@@ -124,11 +126,14 @@ namespace Rougelike.Factory
                             return result;
                         }
                     }
+                    #endregion
                 }
 
                 //MOUSE CLICK
                 if (thismouse.LeftButton == ButtonState.Pressed && lastmouse.LeftButton == ButtonState.Released)
                 {
+                    // Inventory grab
+                    #region
                     foreach (InvButton b in game.Save.Kevin.Equipment.Items)
                     {
                         if (IsMouseOverB(mousepos, b))
@@ -150,8 +155,10 @@ namespace Rougelike.Factory
                             }
                         }
                     }
+                    #endregion
 
                     // Description Exit Button
+                    #region
                     Description remove = null;
                     // Mouse interactions with descriptions
                     foreach (Description D in DescriptionList)
@@ -176,6 +183,7 @@ namespace Rougelike.Factory
                         DescriptionList.Remove(remove);
                         return result;
                     }
+                    #endregion
 
                     Move(mousepos, game.Save.Kevin, game.Save.GetRoom());
                     Attack(mousepos, game.Save.Kevin, game.Save.GetRoom());
@@ -238,7 +246,7 @@ namespace Rougelike.Factory
         {
             foreach (Entity E in game.Save.GetRoom().EntityList)
             {
-                if (IsMouseOverT(mouse, (int)E.Position.X, (int)E.Position.Y))
+                if (IsMouseOverT(mouse, (int)E.Position.X, (int)E.Position.Y, E.Size))
                 {
                     Description result = new Description(E, false, E.Position);
 
@@ -304,9 +312,9 @@ namespace Rougelike.Factory
             return false;
         }
 
-        public bool IsMouseOverT(Vector2 mouse, int x, int y)
+        public bool IsMouseOverT(Vector2 mouse, int x, int y, Vector2 size)
         {
-            Vector2 tilepos = OffsetVector + new Vector2(x * 66, y * 66) + new Vector2(64, 64);
+            Vector2 tilepos = OffsetVector + new Vector2(x * 66, y * 66) + new Vector2(64, 64) * size;
             Vector2 Origin = new Vector2(34, 34);
             if (mouse.X >= tilepos.X - Origin.X && mouse.X <= tilepos.X + Origin.X)
             {

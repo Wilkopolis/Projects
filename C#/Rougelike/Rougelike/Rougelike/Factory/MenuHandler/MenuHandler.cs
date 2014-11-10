@@ -467,7 +467,7 @@ namespace Rougelike.Factory
         {
             foreach (Attack option in Kevin.Attacks)
             {
-                if (IsMouseOverT(mouse, (int)option.Target.Position.X, (int)option.Target.Position.Y))
+                if (IsMouseOverT(mouse, (int)option.Target.Position.X, (int)option.Target.Position.Y, option.Target.Size))
                 {
                     Creature.Attack(Kevin, option.Target, Room);
                     Creature.DoTurn(Kevin, Room, Kevin);
@@ -482,7 +482,7 @@ namespace Rougelike.Factory
             switch (b.Attribute)
             {
                 case "enter":
-                    if (game.Save.GetRoom().Tiles[(int)game.Save.Kevin.Position.X, (int)game.Save.Kevin.Position.Y].Door)
+                    if (game.Save.GetRoom().Tiles[(int)game.Save.Kevin.Position.X, (int)game.Save.Kevin.Position.Y].Door && game.Save.GetRoom().IsClear())
                     {
                         game.Save.GetRoom().Remove(game.Save.Kevin);
                         if (game.Save.Kevin.Position.X == 0)
@@ -544,7 +544,7 @@ namespace Rougelike.Factory
                         {
                             for (int j = 0; j < 10; j++)
                             {
-                                if (game.Save.GetRoom().Tiles[i, j].Steps != Tile.Stairs.NONE)
+                                if (game.Save.GetRoom().Tiles[i, j].Steps == Tile.Stairs.DOWN)
                                 {
                                     game.Save.Kevin.Position = new Vector2(i, j);
                                 }
@@ -561,7 +561,7 @@ namespace Rougelike.Factory
                         {
                             for (int j = 0; j < 10; j++)
                             {
-                                if (game.Save.GetRoom().Tiles[i, j].Steps != Tile.Stairs.NONE)
+                                if (game.Save.GetRoom().Tiles[i, j].Steps == Tile.Stairs.UP)
                                 {
                                     game.Save.Kevin.Position = new Vector2(i, j);
                                 }

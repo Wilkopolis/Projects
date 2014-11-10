@@ -114,15 +114,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Drawer.cs" />
-    <Compile Include="Factory\Generator\BuildTemplates.cs" />
     <Compile Include="Factory\Generator\Content.cs" />
-    <Compile Include="Types\MouseCheck.cs" />
+    <Compile Include="Factory\MenuHandler\MouseCheck.cs" />
     <Compile Include="Types\Generic\Creature\ApplyEffects.cs" />
     <Compile Include="Types\Generic\Creature\AStar.cs" />
     <Compile Include="Types\RoomTemplate.cs" />
-    <Compile Include="Types\Stencil.cs" />
     <Compile Include="Factory\Generator\Generator.cs" />
-    <Compile Include="Factory\MenuHandler.cs" />
+    <Compile Include="Factory\MenuHandler\MenuHandler.cs" />
     <Compile Include="Types\Generic\Equipment.cs" />
     <Compile Include="Types\Specific\InvButton.cs" />
     <Compile Include="Types\Specific\Armor.cs" />

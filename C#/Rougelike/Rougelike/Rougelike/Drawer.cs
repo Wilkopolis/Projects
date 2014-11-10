@@ -25,7 +25,7 @@ namespace Rougelike
                     {
                         SpriteBatch.Draw(Assets[14], MenuHandler.OffsetVector + new Vector2(34, 34) + new Vector2(i * 66, j * 66), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                     }
-                    if (MenuHandler.IsMouseOverT(ScaledMousePos, i, j))
+                    if (MenuHandler.IsMouseOverT(ScaledMousePos, i, j, new Vector2(1,1)))
                     {
                         if (Save.Kevin.Attacks != null)
                         {
@@ -169,7 +169,7 @@ namespace Rougelike
                             {
                                 SpriteBatch.Draw(Assets[24], MenuHandler.OffsetVector + diff + new Vector2((i - imin) * 23 + 2, (j - jmin) * 23 + 14), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                             }
-                            if (Save.GetFloor().Rooms[i, j].HasStairs())
+                            if (Save.GetFloor().Rooms[i, j].HasStairs)
                             {
                                 SpriteBatch.Draw(Assets[30], MenuHandler.OffsetVector + diff + new Vector2((i - imin) * 23 + 6, (j - jmin) * 23 + 6), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                             }

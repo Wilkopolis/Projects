@@ -10,14 +10,14 @@ namespace Rougelike.Types
     public class Room
     {
         public Tile[,] Tiles;
-        public LinkedList<Entity> EntityList;
+        public LinkedList<Entity> EntityList = new LinkedList<Entity>();
         public bool Visible;
         public bool Exists;
+        public bool HasStairs;
         public string Style;
 
         public Room()
         {
-            EntityList = new LinkedList<Entity>();
         }
 
         public Room(RoomTemplate T)
@@ -31,7 +31,6 @@ namespace Rougelike.Types
                 }
             }
             Exists = true;
-            EntityList = new LinkedList<Entity>();
         }
         
         public void AddToRoom(Entity entity)
@@ -161,20 +160,7 @@ namespace Rougelike.Types
             }
             return false;
         }
-
-        internal bool HasStairs()
-        {
-            for (int i = 0; i < 15; i++)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    if (Tiles[i, j].Steps == Tile.Stairs.DOWN || Tiles[i, j].Steps == Tile.Stairs.UP)
-                        return true; 
-                }
-            }
-            return false;
-        }
-
+        
         internal LinkedList<Creature> GetAdjacentCreatures(Creature victim)
         {
             LinkedList<Creature> result = new LinkedList<Creature>();
@@ -205,6 +191,17 @@ namespace Rougelike.Types
                 }
             }
             return result;
+        }
+
+        // Returns if all the enemies are dead
+        internal bool IsClear()
+        {
+            foreach (Entity E in EntityList)
+            {
+                if (E is Enemy)
+                    return false;
+            }
+            return true;
         }
     }
 }

@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace Rougelike.Types
 {
     public class RoomTemplate
     {
         public Tile[,] Tiles;
-        public LinkedList<Stencil> Stencils;
+        public int Difficulty;
+        public LinkedList<Entity> Entities = new LinkedList<Entity>();
 
         public RoomTemplate()
         {
-            Stencils = new LinkedList<Stencil>();
         }
     }
 }

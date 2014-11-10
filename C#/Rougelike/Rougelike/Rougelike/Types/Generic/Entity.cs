@@ -13,6 +13,7 @@ namespace Rougelike.Types
         public string Name;
         public Vector2 Position;
         public Vector2 Origin;
+        public Vector2 Size = new Vector2(1, 1);
 
         public abstract string[] GetModStrings();
         public abstract string GetClass();

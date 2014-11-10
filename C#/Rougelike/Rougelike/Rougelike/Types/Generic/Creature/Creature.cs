@@ -21,13 +21,14 @@ namespace Rougelike.Types
         public Faction Side;
         public int Texture;
         public string Nature;
+        public bool Mobile = true;
         public Equipment Equipment;
         public float Style;
         public bool Dead;
 
         // How much I want the tilemovement to cost in AP
         // This is here for ease of change
-        private static int mod = 20;
+        private static int mod = 1;
 
         public Creature Copy()
         {
@@ -43,6 +44,8 @@ namespace Rougelike.Types
             Result.Texture = Texture;
             Result.Side = Side;
             Result.Equipment = Equipment;
+            Result.Size = Size;
+            Result.Mobile = Mobile;
             return Result;
         }
 
@@ -180,7 +183,7 @@ namespace Rougelike.Types
             mover.Movements = new LinkedList<Movement>();
 
             // Calc Moves
-            if (room.HasEnemy())
+            if (mover is Enemy && mover.Mobile)
             {
                 if (mover.Nature == "dumb")
                 {

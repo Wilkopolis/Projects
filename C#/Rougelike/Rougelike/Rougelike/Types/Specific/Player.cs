@@ -20,11 +20,11 @@ namespace Rougelike.Types
             Name = "You";
             Texture = (int)TEXTURE.PLAYER;
             Origin = new Vector2(40, 40);
-            HP = 100;
-            MaxHP = 100;
+            HP = 4;
+            MaxHP = 6;
             Style = 1.0f;
-            AP = 100;
-            MaxAP = 100;
+            AP = 5;
+            MaxAP = 5;
             Side = Faction.COOLGUY;
             Nature = "dumb";
             Equipment = new Equipment();

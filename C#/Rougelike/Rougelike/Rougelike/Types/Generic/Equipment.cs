@@ -157,7 +157,7 @@ namespace Rougelike.Types
 
         public bool AddToInventory(Item Item)
         {
-            if (Item is Consumable)
+            if (Item.Type == Item.ItemType.CONSUMABLE)
             {
                 for (int i = 10; i < 26; i++)
                 {
@@ -165,7 +165,7 @@ namespace Rougelike.Types
                     {
                         if (Items[i].Item.Name == Item.Name)
                         {
-                            ((Potion)Items[i].Item).StackSize = ((Potion)Items[i].Item).StackSize + 1;
+                            ((Potion)Items[i].Item).StackSize++;
                             return true;
                         }
                     }

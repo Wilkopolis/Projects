@@ -12,13 +12,7 @@ using Rougelike.Factory;
 namespace Rougelike.Factory
 {
     partial class Generator
-    {
-        private Random Random;
-
-        private Item SackOfDosh;
-
-        private String[] NameBank = { "Mac", "KickstarterBacker", "Jebidiah", "Jules", "Fuji", "Llama", "DC", "Tazdingo", "Yuri", "Seany" };
-        
+    {        
         public Save GenerateGame()
         {
             Save Result = new Save();
@@ -50,8 +44,10 @@ namespace Rougelike.Factory
             HashSet<Vector2> openset = new HashSet<Vector2>();      
             for (int i = 1; i < amount; i++)
             {
+                // On this floor
                 Floor floor = result[i];
                 openset = new HashSet<Vector2>();
+                // Add all existing rooms
                 for (int x = 0; x < floor.Max.X; x++)
                 {
                     for (int y = 0; y < floor.Max.Y; y++)
@@ -60,48 +56,62 @@ namespace Rougelike.Factory
                             openset.Add(new Vector2(x,y));
                     }
                 }
+                // Pick a room
                 Vector2 choice = openset.ElementAt(Random.Next(0, openset.Count()));
+                // Pick a tile
                 LinkedList<Tile> stairlist = new LinkedList<Tile>();
                 for (int j = 1; j < 13; j++)
                 {
                     for (int k = 1; k < 8; k++)
                     {
+                        // Add all available tiles
                         if (stairFree(floor.Rooms[(int)choice.X, (int)choice.Y].Tiles[j, k]))
                         {
                             stairlist.AddLast(floor.Rooms[(int)choice.X, (int)choice.Y].Tiles[j, k]);
                         }
                     }
                 }
+                // Set the tile
                 stairlist.ElementAt(Random.Next(0, stairlist.Count)).Steps = Tile.Stairs.UP;
+                floor.Rooms[(int)choice.X, (int)choice.Y].HasStairs = true;
                 floor.Position = choice;
 
+                // If we arent on the last floor, add a stair down
                 if (i != amount - 1)
                 {
-                    Floor floor2 = result[i + 1];
+                    // USE SAME FLOOR
+                    // Add all existing rooms
                     HashSet<Vector2> openset2 = new HashSet<Vector2>();
-                    for (int x = 0; x < floor2.Max.X; x++)
+                    for (int x = 0; x < floor.Max.X; x++)
                     {
-                        for (int y = 0; y < floor2.Max.Y; y++)
+                        for (int y = 0; y < floor.Max.Y; y++)
                         {
-                            if (floor2.Rooms[x, y].Exists)
+                            if (floor.Rooms[x, y].Exists)
                                 openset2.Add(new Vector2(x, y));
                         }
                     }
+                    // Pick the room
                     Vector2 choice2 = openset2.ElementAt(Random.Next(0, openset2.Count()));
-                    stairlist = new LinkedList<Tile>();
+                    // Pick the tile
+                    LinkedList<Tile> stairlist2 = new LinkedList<Tile>();
                     for (int j = 1; j < 13; j++)
                     {
                         for (int k = 1; k < 8; k++)
                         {
-                            if (stairFree(floor2.Rooms[(int)choice2.X, (int)choice2.Y].Tiles[j, k]))
+                            // Add all available tiles
+                            if (stairFree(floor.Rooms[(int)choice2.X, (int)choice2.Y].Tiles[j, k]))
                             {
-                                stairlist.AddLast(floor2.Rooms[(int)choice2.X, (int)choice2.Y].Tiles[j, k]);
+                                stairlist2.AddLast(floor.Rooms[(int)choice2.X, (int)choice2.Y].Tiles[j, k]);
                             }
                         }
                     }
-                    stairlist.ElementAt(Random.Next(0, stairlist.Count)).Steps = Tile.Stairs.DOWN;
+                    // Set the tile
+                    stairlist2.ElementAt(Random.Next(0, stairlist2.Count)).Steps = Tile.Stairs.DOWN;
+                    floor.Rooms[(int)choice2.X, (int)choice2.Y].HasStairs = true;
                 }
             }
+            result[amount - 1] = GenerateFinish();
+            result[1] = GenerateFinish();
 
             return result;
         }
@@ -110,6 +120,14 @@ namespace Rougelike.Factory
         {
             Floor result = new Floor(new Vector2(1, 1));
             result.Rooms[0, 0] = new Room(Start);
+            return result;
+        }
+
+        private Floor GenerateFinish()
+        {
+            Floor result = new Floor(new Vector2(1, 1));
+            result.Rooms[0, 0] = new Room(Finish);
+            result.Rooms[0, 0].EntityList = Finish.Entities;
             return result;
         }
 
@@ -132,8 +150,6 @@ namespace Rougelike.Factory
             }                 
             Floor result = new Floor(max);
             BuildFloor(max, result.Rooms);
-            float temp = BadTemps.Count() * depth / totaldepth;
-            int difficulty = (int)Math.Round(temp + Random.Next(-depth / totaldepth, depth / totaldepth));
             for (int i = 0; i < max.X; i++)
             {
                 for (int j = 0; j < max.Y; j++)
@@ -152,74 +168,27 @@ namespace Rougelike.Factory
                     {
                         if (j + 1 < max.Y && result.Rooms[i, j + 1].Exists)
                         {
-                            // Generate a door below us
-                            // Make a list of possible door solutions
-                            LinkedList<Tile> tiles = new LinkedList<Tile>();
-                            for (int k = 1; k < 13; k++)
-                            {
-                                if (!result.Rooms[i, j].Tiles[k, 9].TrueSolid)
-                                {
-                                    tiles.AddLast(result.Rooms[i, j].Tiles[k, 9]);
-                                }
-                            }
-                            // pick a random option
-                            tiles.ElementAt(Random.Next(0, tiles.Count)).Door = true;
+                            // Place door below
+                            result.Rooms[i, j].Tiles[7, 9].Door = true;
+                            result.Rooms[i, j].Tiles[7, 9].Solid = true;
                         }
                         if (j - 1 >= 0 && result.Rooms[i, j - 1].Exists)
                         {
-                            // Generate a door above us
-                            LinkedList<Tile> tiles = new LinkedList<Tile>();
-                            for (int k = 1; k < 13; k++)
-                            {
-                                if (!result.Rooms[i, j].Tiles[k, 0].TrueSolid)
-                                {
-                                    tiles.AddLast(result.Rooms[i, j].Tiles[k, 0]);
-                                }
-                            }
-                            // pick a random option
-                            tiles.ElementAt(Random.Next(0, tiles.Count)).Door = true;
+                            // Place door above
+                            result.Rooms[i, j].Tiles[7, 0].Door = true;
+                            result.Rooms[i, j].Tiles[7, 0].Solid = true;
                         }
                         if (i + 1 < max.X && result.Rooms[i + 1, j].Exists)
                         {
-                            // Generate to the right of us
-                            LinkedList<Tile> tiles = new LinkedList<Tile>();
-                            for (int k = 1; k < 8; k++)
-                            {
-                                if (!result.Rooms[i, j].Tiles[14, k].TrueSolid)
-                                {
-                                    tiles.AddLast(result.Rooms[i, j].Tiles[14, k]);
-                                }
-                            }
-                            // pick a random option
-                            tiles.ElementAt(Random.Next(0, tiles.Count)).Door = true;
+                            // Place door to right
+                            result.Rooms[i, j].Tiles[14, 4].Door = true;
+                            result.Rooms[i, j].Tiles[14, 4].Solid = true;
                         }
                         if (i - 1 >= 0 && result.Rooms[i - 1, j].Exists)
                         {
-                            // Generate to the left of us
-                            LinkedList<Tile> tiles = new LinkedList<Tile>();
-                            for (int k = 1; k < 8; k++)
-                            {
-                                if (!result.Rooms[i, j].Tiles[0, k].TrueSolid)
-                                {
-                                    tiles.AddLast(result.Rooms[i, j].Tiles[0, k]);
-                                }
-                            }
-                            // pick a random option
-                            tiles.ElementAt(Random.Next(0, tiles.Count)).Door = true;
-                        }
-                    }
-                }
-            }
-
-            foreach (Room room in result.Rooms)
-            {
-                if (room.Exists)
-                {
-                    foreach (Tile tile in room.Tiles)
-                    {
-                        if (tile.Door)
-                        {
-                            tile.Solid = true;
+                            // Place door to left
+                            result.Rooms[i, j].Tiles[0, 5].Door = true;
+                            result.Rooms[i, j].Tiles[0, 5].Solid = true;
                         }
                     }
                 }
@@ -232,42 +201,29 @@ namespace Rougelike.Factory
         {
             // Pick a good room or bad room
             RoomTemplate template;
-            LinkedList<Stencil> choices;
-            if (Random.Next(0, 10) > 0)
+            if (Random.Next(0, 10) > 12)
             {
                 template = BadTemps.ElementAt(Random.Next(0, BadTemps.Count()));
                 //// Pick a stencil with difficulty
                 //choices = new LinkedList<Stencil>();
                 //foreach (Stencil s in template.Stencils)
                 //{
-                //    if (s.Difficulty > depth && s.Difficulty < depth + 4)
+                //    if (s.Difficulty >= depth && s.Difficulty < depth + 4)
                 //    {
                 //        choices.AddLast(s);
                 //    }
                 //}
                 // Pick ANY stencil
-                choices = new LinkedList<Stencil>();
-                foreach (Stencil s in template.Stencils)
-                {
-                    choices.AddLast(s);
-                }
             }
             else
             {
                 template = GoodTemps.ElementAt(Random.Next(0, GoodTemps.Count()));
-                // Pick ANY stencil
-                choices = new LinkedList<Stencil>();
-                foreach (Stencil s in template.Stencils)
-                {
-                    choices.AddLast(s);
-                }
             }
+
             Room result = new Room(template);
             
-            // Pick a choice and make a room out of it
-            Stencil choice = choices.ElementAt(Random.Next(0, choices.Count()));
             // Make a room from the stencil
-            foreach (Entity E in choice.Entities)
+            foreach (Entity E in template.Entities)
             {
                 if (E is Item)
                     result.EntityList.AddLast(GenerateItem(E.Position));
@@ -312,15 +268,23 @@ namespace Rougelike.Factory
         {
             // pick an item from commons rares or legendaries
             Item result;
+            Item prize;
 
             int rand = Random.Next(0, 100);
 
             if (rand < 70)
-                result = Commons.ElementAt(Random.Next(0, Commons.Count()));
+                prize = Commons.ElementAt(Random.Next(0, Commons.Count()));
             else if (rand < 95)
-                result = Rares.ElementAt(Random.Next(0, Rares.Count()));
+                prize = Rares.ElementAt(Random.Next(0, Rares.Count()));
             else
-                result = Legendarys.ElementAt(Random.Next(0, Legendarys.Count()));
+                prize = Legendarys.ElementAt(Random.Next(0, Legendarys.Count()));
+
+            if (prize is HealthPotion)
+                result = ((HealthPotion)prize).Copy(HashID++);
+            else if (prize is Weapon)
+                result = ((Weapon)prize).Copy(HashID++);
+            else
+                result = prize.Copy(HashID++);
 
             result.Position = position;
             return result;

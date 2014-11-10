@@ -70,15 +70,15 @@ namespace Rougelike.Types
         {
             if (Size == Strength.SMALL)
             {
-                return 20;
+                return 2;
             }
             else if (Size == Strength.MEDIUM)
             {
-                return 40;
+                return 4;
             }
             else
             {
-                return 100;
+                return 10;
             }
         }
 

@@ -82,7 +82,7 @@ namespace Rougelike
                     Content.Load<Texture2D>("textures/gamebuttons/items/coin")}
                 );
 
-            Assets = new Texture2D[31];
+            Assets = new Texture2D[33];
             Assets[0] = Content.Load<Texture2D>("textures/gamebuttons/empty");
             Assets[1] = Content.Load<Texture2D>("textures/gamebuttons/rock");
             Assets[2] = Content.Load<Texture2D>("textures/gamebuttons/enemy");
@@ -114,6 +114,8 @@ namespace Rougelike
             Assets[28] = Content.Load<Texture2D>("textures/gamebuttons/descriptor/exit");
             Assets[29] = Content.Load<Texture2D>("textures/gamebuttons/enemy3");
             Assets[30] = Content.Load<Texture2D>("textures/gamebuttons/minimap/stairs");
+            Assets[31] = Content.Load<Texture2D>("textures/gamebuttons/enemy4");
+            Assets[32] = Content.Load<Texture2D>("textures/gamebuttons/bigboss");
             #endregion
             SegeoUiMono = Content.Load<SpriteFont>("fonts/SegeoUiMono");
             Calibri = Content.Load<SpriteFont>("fonts/Calibri");
@@ -125,7 +127,6 @@ namespace Rougelike
 
             MenuHandler.ApplyChanges(this);
         }
-
 
         protected override void UnloadContent()
         {
