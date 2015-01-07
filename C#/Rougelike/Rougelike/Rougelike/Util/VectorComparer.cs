@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace Rougelike.Util
+namespace Rougelike
 {
     public class VectorComparer : IComparer<Vector2>
     {

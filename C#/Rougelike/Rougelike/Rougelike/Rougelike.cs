@@ -9,49 +9,28 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System.Threading;
-using Rougelike.Factory;
-using Rougelike.Util;
-using Rougelike.Types;
 
 namespace Rougelike
 {
     public partial class Rougelike : Microsoft.Xna.Framework.Game
     {
-        public GraphicsDeviceManager Graphics;
-        private SpriteBatch SpriteBatch;
+        GraphicsDeviceManager Graphics;
+        SpriteBatch SpriteBatch;        
+        Vector2 ScaledMousePosition;
+        MouseState CurrentMouseState;
+        MouseState LastMouseState;
+        KeyboardState CurrentKeyboard;
+        KeyboardState LastKeyboard;
+        
+        State GameState = State.LOADING;
 
-        public enum State { TITLE, OPTIONS, GAME };
-        private enum Settings { DISPLAYWIDTH = 1, DISPLAYHEIGHT = 3, ASPECTRATIO = 5, FULLSCREEN = 7, BORDERLESS = 9, LETTERBOX = 11 };
-        private enum STAIRS { NONE = 0, DOWN = 1, UP = 2 };
-
-        public State GameState;
-
-        private MenuHandler MenuHandler;
-
-        private Vector2 ScaledMousePos;
-        private MouseState LastMouseState;
-
-        private SpriteFont SegeoUiMono;
-        private SpriteFont Calibri;
-        private SpriteFont Cousine16;
-        private SpriteFont Cousine22;
-        private SpriteFont CenturyGothic;
-        private Color softgray = new Color(87, 77, 77);
-        private Color whiteorange = new Color(255, 245, 210);
-        private Color brightwhite = new Color(255, 249, 247);
-        private Color lightblue = new Color(52, 159, 216);
-        private Color orange = new Color(196, 102, 39);
-
-        // Engine Stuff
-        // ------------
-        // Game Stuff
-
-        private Generator Generator;
-        public Save Save;
+        Generator Generator;
+        Save Save;
 
         // Graphical stuff
 
-        private Texture2D[] Assets;
+        Texture2D[] Assets;
+        Texture2D dot;
 
         public Rougelike()
         {
@@ -61,86 +40,117 @@ namespace Rougelike
 
         protected override void Initialize()
         {
-            GameState = State.TITLE;
-            ScaledMousePos = Vector2.Zero;
-
+            ScaledMousePosition = Vector2.Zero;
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            #region
-            Generator = new Generator(
-                new Texture2D[]{
-                    Content.Load<Texture2D>("textures/gamebuttons/items/woodsword"),
-                    Content.Load<Texture2D>("textures/gamebuttons/items/dagger"),
-                    Content.Load<Texture2D>("textures/gamebuttons/items/dagger2"),
-                    Content.Load<Texture2D>("textures/gamebuttons/items/healthpotion"),
-                    Content.Load<Texture2D>("textures/gamebuttons/items/helmet"),
-                    Content.Load<Texture2D>("textures/gamebuttons/items/shield"),
-                    Content.Load<Texture2D>("textures/gamebuttons/items/coin")}
-                );
 
-            Assets = new Texture2D[33];
-            Assets[0] = Content.Load<Texture2D>("textures/gamebuttons/empty");
-            Assets[1] = Content.Load<Texture2D>("textures/gamebuttons/rock");
-            Assets[2] = Content.Load<Texture2D>("textures/gamebuttons/enemy");
-            Assets[3] = Content.Load<Texture2D>("textures/gamebuttons/player");
-            Assets[4] = Content.Load<Texture2D>("textures/gamebuttons/door");
-            Assets[5] = Content.Load<Texture2D>("textures/gamebuttons/movement");
-            Assets[6] = Content.Load<Texture2D>("textures/gamebuttons/attack");
-            Assets[7] = Content.Load<Texture2D>("textures/gamebuttons/blockcursor");
-            Assets[8] = Content.Load<Texture2D>("textures/gamebuttons/creaturehealthbar");
-            Assets[9] = Content.Load<Texture2D>("textures/gamebuttons/creaturehealthbaroutline");
-            Assets[10] = Content.Load<Texture2D>("textures/menubuttons/titlebackground");
-            Assets[11] = Content.Load<Texture2D>("textures/optionsbuttons/optionsbackground");
-            Assets[12] = Content.Load<Texture2D>("textures/gamebuttons/gamebackground");
-            Assets[13] = Content.Load<Texture2D>("textures/gamebuttons/grid");
-            Assets[14] = Content.Load<Texture2D>("textures/gamebuttons/stairs");
-            Assets[15] = Content.Load<Texture2D>("textures/gamebuttons/healthbar");
-            Assets[16] = Content.Load<Texture2D>("textures/gamebuttons/healthbaroutline");
-            Assets[17] = Content.Load<Texture2D>("textures/gamebuttons/apbar");
-            Assets[18] = Content.Load<Texture2D>("textures/gamebuttons/minimap/miniroom");
-            Assets[19] = Content.Load<Texture2D>("textures/gamebuttons/minimap/minidoor");
-            Assets[20] = Content.Load<Texture2D>("textures/gamebuttons/minimap/minidoorh");
-            Assets[21] = Content.Load<Texture2D>("textures/gamebuttons/minimap/currentminiroom");
-            Assets[22] = Content.Load<Texture2D>("textures/gamebuttons/minimap/clear");
-            Assets[23] = Content.Load<Texture2D>("textures/gamebuttons/minimap/health");
-            Assets[24] = Content.Load<Texture2D>("textures/gamebuttons/minimap/item");
-            Assets[25] = Content.Load<Texture2D>("textures/gamebuttons/descriptor/back");
-            Assets[26] = Content.Load<Texture2D>("textures/gamebuttons/enemy2");
-            Assets[27] = Content.Load<Texture2D>("textures/gamebuttons/descriptor/backdrop");
-            Assets[28] = Content.Load<Texture2D>("textures/gamebuttons/descriptor/exit");
-            Assets[29] = Content.Load<Texture2D>("textures/gamebuttons/enemy3");
-            Assets[30] = Content.Load<Texture2D>("textures/gamebuttons/minimap/stairs");
-            Assets[31] = Content.Load<Texture2D>("textures/gamebuttons/enemy4");
-            Assets[32] = Content.Load<Texture2D>("textures/gamebuttons/bigboss");
-            #endregion
+            InitializeTitleScreen();
+
+            // Put this in Gen New Game or w/e
+            Generator = new Generator(Content);
+
+            Assets = new Texture2D[44];
+            Assets[0] = Content.Load<Texture2D>("textures/game/empty");
+            Assets[1] = Content.Load<Texture2D>("textures/game/rock");
+            Assets[2] = Content.Load<Texture2D>("textures/game/enemy");
+            Assets[3] = Content.Load<Texture2D>("textures/game/player");
+            Assets[4] = Content.Load<Texture2D>("textures/game/door");
+            Assets[5] = Content.Load<Texture2D>("textures/game/movement");
+            Assets[6] = Content.Load<Texture2D>("textures/game/attack");
+            Assets[7] = Content.Load<Texture2D>("textures/game/blockcursor");
+            Assets[8] = Content.Load<Texture2D>("textures/game/creaturehealthbar");
+            Assets[9] = Content.Load<Texture2D>("textures/game/creaturehealthbaroutline");
+            Assets[10] = Content.Load<Texture2D>("textures/title/background");
+            Assets[11] = Content.Load<Texture2D>("textures/options/background");
+            Assets[12] = Content.Load<Texture2D>("textures/game/background");
+            Assets[13] = Content.Load<Texture2D>("textures/game/grid");
+            Assets[14] = Content.Load<Texture2D>("textures/game/stairs");
+            Assets[15] = Content.Load<Texture2D>("textures/game/healthbar");
+            Assets[16] = Content.Load<Texture2D>("textures/game/healthbaroutline");
+            Assets[17] = Content.Load<Texture2D>("textures/game/apbar");
+            Assets[18] = Content.Load<Texture2D>("textures/game/minimap/visited");
+            Assets[19] = Content.Load<Texture2D>("textures/game/minimap/minidoor");
+            Assets[20] = Content.Load<Texture2D>("textures/game/minimap/minidoorh");
+            Assets[21] = Content.Load<Texture2D>("textures/game/minimap/currentminiroom");
+            Assets[22] = Content.Load<Texture2D>("textures/game/minimap/clear");
+            Assets[23] = Content.Load<Texture2D>("textures/game/minimap/health");
+            Assets[24] = Content.Load<Texture2D>("textures/game/minimap/item");
+            Assets[25] = Content.Load<Texture2D>("textures/game/descriptor/back");
+            Assets[26] = Content.Load<Texture2D>("textures/game/enemy2");
+            Assets[27] = Content.Load<Texture2D>("textures/game/descriptor/backdrop");
+            Assets[28] = Content.Load<Texture2D>("textures/game/descriptor/exit");
+            Assets[29] = Content.Load<Texture2D>("textures/game/enemy3");
+            Assets[30] = Content.Load<Texture2D>("textures/game/minimap/stairs");
+            Assets[31] = Content.Load<Texture2D>("textures/game/enemy4");
+            Assets[32] = Content.Load<Texture2D>("textures/game/bigboss");
+            Assets[33] = Content.Load<Texture2D>("textures/editor/background");
+            Assets[34] = Content.Load<Texture2D>("textures/editor/enemybackdrop");
+            Assets[35] = Content.Load<Texture2D>("textures/game/4x/poweredroom");
+            Assets[36] = Content.Load<Texture2D>("textures/game/4x/megadoorh");
+            Assets[37] = Content.Load<Texture2D>("textures/game/4x/megadoor");
+            Assets[38] = Content.Load<Texture2D>("textures/game/4x/megaroom");
+            Assets[39] = Content.Load<Texture2D>("textures/classselection/background");
+            Assets[40] = Content.Load<Texture2D>("textures/game/4x/currentroom");
+            Assets[41] = Content.Load<Texture2D>("textures/game/minimap/unvisited");
+            Assets[42] = Content.Load<Texture2D>("textures/game/gempty");
+            Assets[43] = Content.Load<Texture2D>("textures/game/merchant");
+            
+            dot = Content.Load<Texture2D>("textures/dot");
+
             SegeoUiMono = Content.Load<SpriteFont>("fonts/SegeoUiMono");
             Calibri = Content.Load<SpriteFont>("fonts/Calibri");
+            Cousine12 = Content.Load<SpriteFont>("fonts/Cousine12");
             Cousine16 = Content.Load<SpriteFont>("fonts/Cousine16");
             Cousine22 = Content.Load<SpriteFont>("fonts/Cousine22");
+            Cousine72 = Content.Load<SpriteFont>("fonts/Cousine72");
             CenturyGothic = Content.Load<SpriteFont>("fonts/CenturyGothic");
 
-            MenuHandler = new MenuHandler(this);
-
-            MenuHandler.ApplyChanges(this);
+            InitializeTitleScreen();
         }
 
         protected override void UnloadContent()
         {
+
         }
 
         protected override void Update(GameTime gameTime)
         {
-            MouseState CurrentMouseState = Mouse.GetState();
-            ScaledMousePos.X = CurrentMouseState.X / MenuHandler.scale;
-            ScaledMousePos.Y = CurrentMouseState.Y / MenuHandler.scale;
+            CurrentMouseState = Mouse.GetState();
+            CurrentKeyboard = Keyboard.GetState();
+            ScaledMousePosition.X = CurrentMouseState.X / Scale;
+            ScaledMousePosition.Y = CurrentMouseState.Y / Scale;
 
-            Button hover = MenuHandler.CheckButtons(this, CurrentMouseState, LastMouseState, ScaledMousePos, (System.Windows.Forms.Form)System.Windows.Forms.Control.FromHandle(this.Window.Handle));
+            switch (GameState)
+            {
+                case State.TITLE:
+                    CheckTitleScreenInput();
+                    break;
+
+                case State.EDITOR:
+                    CheckEditorInput();
+                    break;
+
+                case State.GAME:
+                    CheckGameInput();
+                    break;
+
+                case State.OPTIONS:
+                    CheckOptionScreenInput();
+                    break;
+
+                case State.CLASSSELECTION:
+                    CheckClassSelectionScreenInput();
+                    break;
+            }
+
+            CheckWindowDragging();
 
             LastMouseState = CurrentMouseState;
+            LastKeyboard = CurrentKeyboard;
 
             base.Update(gameTime);
         }
@@ -148,56 +158,35 @@ namespace Rougelike
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, MenuHandler.scalematrix);
+            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, ScaleMatrix);
 
             switch (GameState)
             {
                 case State.TITLE:
-                    SpriteBatch.Draw(Assets[10], MenuHandler.OffsetVector, null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                    DrawTitleScreen();
                     break;
 
                 case State.GAME:
-                    SpriteBatch.Draw(Assets[12], MenuHandler.OffsetVector, null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-
-                    // TILES
-                    DrawTiles();
-
-                    // ENTITIES
-                    DrawEntities();
-
-                    // MOVEMENTS
-                    DrawMovements();
-
-                    // ATTACKS
-                    DrawAttacks();
-
-                    // INVENTORY
-                    DrawInventory();
-
-                    // UI
-                    DrawUI();
-
-                    // MINIMAP
-                    DrawMiniMap();
-
-                    // DECRIPTIONS
-                    DrawDescriptions();
+                    DrawGameScreen();
                     break;
 
                 case State.OPTIONS:
-                    SpriteBatch.Draw(Assets[11], MenuHandler.OffsetVector, null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                    DrawOptionScreen();
+                    break;
+
+                case State.EDITOR:
+                    DrawEditorScreen();
+                    break;
+
+                case State.CLASSSELECTION:
+                    DrawClassSelectionScreen();
                     break;
             }
 
-            foreach (Button b in MenuHandler.GetButtonList(GameState))
-            {
-                SpriteBatch.Draw(b.Sprite, b.Position + MenuHandler.OffsetVector, null, Color.White, 0, b.Origin, 1, SpriteEffects.None, 0);
-            }
-
-            MenuHandler.DrawLetterbox(SpriteBatch, MenuHandler.OffsetVector + new Vector2(0, 720));
+            DrawLetterbox();
 
             // Draw the cursor
-            SpriteBatch.Draw(MenuHandler.Cursor, ScaledMousePos, null, Color.White, 0, new Vector2(9, 9), 1, SpriteEffects.None, 0);
+            DrawCursor();
 
             //SpriteBatch.DrawString(SegeoUiMono, Status, new Vector2(700, 0), Color.White);
 
@@ -210,11 +199,10 @@ namespace Rougelike
             this.Exit();
         }
 
-        public void NewGame()
+        public void NewGame(Class Class)
         {
             Save = Generator.GenerateGame();
-            Creature.DoTurn(Save.Kevin, Save.GetRoom(), Save.Kevin);
-            
+            Save.Kevin.UpdateOptions(Save.GetRoom(), GameButtons);
         }
 
         public void GameOver()
