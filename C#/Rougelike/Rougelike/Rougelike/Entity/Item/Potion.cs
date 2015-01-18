@@ -10,7 +10,7 @@ namespace Rougelike
     {
         public int StackSize = 1;
 
-        new public Potion Copy(int NewHash)
+        public Potion Copy(int NewHash)
         {
             Potion Result = new Potion();
             Result.Name = Name;

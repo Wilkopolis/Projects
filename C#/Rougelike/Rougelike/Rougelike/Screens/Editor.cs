@@ -14,10 +14,11 @@ namespace Rougelike
     {
         RoomTemplate CurrentTemplate;
         Enemy CurrentEnemy;
-        Item GenericItem;
+        HealthPotion GenericItem;
         Tab CurrentTab;
         int CurrentTemplateIndex = 0;
         int CurrentEnemyIndex = 0;
+        int HashID = 0;
         Texture2D EditorBackground;
         Texture2D SelectedTab;
         Texture2D UnselectedTab;
@@ -28,10 +29,11 @@ namespace Rougelike
         Texture2D MiniEnemy;
         Texture2D MiniItem;
         Texture2D MiniDoor;
+        Texture2D MiniPrize;
         Texture2D SavedBackground;
         List<Button> EditorButtons;
-        List<EnemyButton> Enemies;
-        List<TemplateButton> Templates;
+        List<EnemyButton> EnemyButtons;
+        List<TemplateButton> TemplateButtons;
         string CurrentTemplateName;
         string CurrentCreatureName;
         bool Saved;
@@ -39,22 +41,23 @@ namespace Rougelike
         void InitializeEditor()
         {
             EditorButtons = new List<Button>();
-            Enemies = new List<EnemyButton>();
-            Templates = new List<TemplateButton>();
+            EnemyButtons = new List<EnemyButton>();
+            TemplateButtons = new List<TemplateButton>();
 
             CurrentTab = Tab.TEMPLATES;
             CurrentTemplate = new RoomTemplate();
 
             EditorBackground = Content.Load<Texture2D>("textures/editor/background");
-            SelectedTab = Content.Load<Texture2D>("textures/editor/selected");
-            UnselectedTab = Content.Load<Texture2D>("textures/editor/unselected");
-            UnselectedSummary = Content.Load<Texture2D>("textures/editor/summary");
-            SelectedSummary = Content.Load<Texture2D>("textures/editor/summaryselected");
+            SelectedTab = Content.Load<Texture2D>("textures/editor/buttons/selectedtab");
+            UnselectedTab = Content.Load<Texture2D>("textures/editor/buttons/unselectedtab");
+            UnselectedSummary = Content.Load<Texture2D>("textures/editor/buttons/unselectedsummary");
+            SelectedSummary = Content.Load<Texture2D>("textures/editor/buttons/selectedsummary");
             MiniSolid = Content.Load<Texture2D>("textures/editor/template/solid");
             MiniEmpty = Content.Load<Texture2D>("textures/editor/template/empty");
             MiniItem = Content.Load<Texture2D>("textures/editor/template/item");
             MiniDoor = Content.Load<Texture2D>("textures/editor/template/door");
             MiniEnemy = Content.Load<Texture2D>("textures/editor/template/enemy");
+            MiniPrize = Content.Load<Texture2D>("textures/editor/template/prize");
             SavedBackground = Content.Load<Texture2D>("textures/editor/saved");
 
             Button templatestabbutton = new Button(SelectedTab, new Vector2(1100, 40), "templatestab", Keys.A);
@@ -63,10 +66,10 @@ namespace Rougelike
             Button enemiestabbutton = new Button(UnselectedTab, new Vector2(1210, 40), "enemiestab", Keys.S);
             EditorButtons.Add(enemiestabbutton);
 
-            Button newbutton = new Button(Content.Load<Texture2D>("textures/editor/new"), new Vector2(1210, 80), "new", Keys.N);
+            Button newbutton = new Button(Content.Load<Texture2D>("textures/editor/buttons/new"), new Vector2(1210, 80), "new", Keys.N);
             EditorButtons.Add(newbutton);
 
-            Button savebutton = new Button(Content.Load<Texture2D>("textures/editor/save"), new Vector2(1099, 80), "save", Keys.D);
+            Button savebutton = new Button(Content.Load<Texture2D>("textures/editor/buttons/save"), new Vector2(1099, 80), "save", Keys.D);
             EditorButtons.Add(savebutton);
 
             Button doorbutton = new Button("door", Keys.W);
@@ -75,22 +78,25 @@ namespace Rougelike
             Button itembutton = new Button("item", Keys.Q);
             EditorButtons.Add(itembutton);
 
+            Button prizebutton = new Button("prize", Keys.E);
+            EditorButtons.Add(prizebutton);
+
             Button breaky = new Button("break", Keys.P);
             EditorButtons.Add(breaky);
 
-            Button hp = new Button(Content.Load<Texture2D>("textures/editor/hp"), new Vector2(1085, 640), "hp");
+            Button hp = new Button(Content.Load<Texture2D>("textures/editor/buttons/hp"), new Vector2(1085, 640), "hp");
             EditorButtons.Add(hp);
 
-            Button ap = new Button(Content.Load<Texture2D>("textures/editor/ap"), new Vector2(1155, 640), "ap");
+            Button ap = new Button(Content.Load<Texture2D>("textures/editor/buttons/ap"), new Vector2(1155, 640), "ap");
             EditorButtons.Add(ap);
-
-            Button sprite = new Button(Content.Load<Texture2D>("textures/editor/sprite"), new Vector2(1155, 680), "sprite");
-            EditorButtons.Add(sprite);
             
-            Button damage = new Button(Content.Load<Texture2D>("textures/editor/damage"), new Vector2(1085, 680), "damage");
+            Button sprite = new Button(Content.Load<Texture2D>("textures/editor/buttons/sprite"), new Vector2(1155, 680), "sprite");
+            EditorButtons.Add(sprite);
+
+            Button damage = new Button(Content.Load<Texture2D>("textures/editor/buttons/damage"), new Vector2(1085, 680), "damage");
             EditorButtons.Add(damage);
 
-            Button difficulty = new Button(Content.Load<Texture2D>("textures/editor/difficulty"), new Vector2(1130, 480), "difficulty");
+            Button difficulty = new Button(Content.Load<Texture2D>("textures/editor/buttons/difficulty"), new Vector2(1130, 480), "difficulty");
             EditorButtons.Add(difficulty);
 
             Button up = new Button("up", Keys.Up);
@@ -102,10 +108,10 @@ namespace Rougelike
             Button quit = new Button("quit", Keys.F10);
             EditorButtons.Add(quit);
 
-            GenericItem = new Item(Content.Load<Texture2D>("textures/editor/item"));
+            GenericItem = new HealthPotion(Content.Load<Texture2D>("textures/editor/item"));
 
-            LoadCreatures();
-            LoadTemplates();
+            LoadEditorCreatures();
+            LoadEditorTemplates();
 
             GameState = State.EDITOR;
         }
@@ -158,6 +164,11 @@ namespace Rougelike
                 }
             }
 
+            if (CurrentTab == Tab.TEMPLATES)
+                CheckTemplateButtons();
+            else
+                CheckEnemyButtons();
+
             if (Click())
             {
                 Saved = false;
@@ -167,6 +178,52 @@ namespace Rougelike
             {
                 Saved = false;
                 HandleEnemy();
+            }
+        }
+
+        void CheckTemplateButtons()
+        {
+            foreach (TemplateButton button in TemplateButtons)
+            {
+                // Mouse
+                if (MouseOver(button))
+                {
+                    if (Click())
+                    {
+                        button.WasClicked = true;
+                    }
+                    else if (Released())
+                    {
+                        if (button.WasClicked)
+                        {
+                            HandleEditorInput(button, true);
+                        }
+                        button.WasClicked = false;
+                    }
+                }
+            }
+        }
+
+        void CheckEnemyButtons()
+        {
+            foreach (EnemyButton button in EnemyButtons)
+            {
+                // Mouse
+                if (MouseOver(button))
+                {
+                    if (Click())
+                    {
+                        button.WasClicked = true;
+                    }
+                    else if (Released())
+                    {
+                        if (button.WasClicked)
+                        {
+                            HandleEditorInput(button, true);
+                        }
+                        button.WasClicked = false;
+                    }
+                }
             }
         }
 
@@ -220,7 +277,7 @@ namespace Rougelike
                             }
                             else
                             {
-                                foreach (TemplateButton B in Templates)
+                                foreach (TemplateButton B in TemplateButtons)
                                 {
                                     B.Position.Y += 51;
                                 }
@@ -236,7 +293,7 @@ namespace Rougelike
                             }
                             else
                             {
-                                foreach (EnemyButton E in Enemies)
+                                foreach (EnemyButton E in EditorButtons)
                                 {
                                     E.Position.Y += 51;
                                 }
@@ -249,13 +306,13 @@ namespace Rougelike
                         if (CurrentTab == Tab.TEMPLATES)
                         {
                             CurrentTemplateIndex++;
-                            if (CurrentTemplateIndex > Templates.Count() - 7)
+                            if (CurrentTemplateIndex > TemplateButtons.Count() - 7)
                             {
-                                CurrentTemplateIndex = Templates.Count() - 7;
+                                CurrentTemplateIndex = TemplateButtons.Count() - 7;
                             }
                             else
                             {
-                                foreach (TemplateButton B in Templates)
+                                foreach (TemplateButton B in TemplateButtons)
                                 {
                                     B.Position.Y -= 51;
                                 }
@@ -265,13 +322,13 @@ namespace Rougelike
                         else
                         {
                             CurrentEnemyIndex++;
-                            if (CurrentEnemyIndex > Enemies.Count() - 7)
+                            if (CurrentEnemyIndex > EnemyTemplates.Count() - 7)
                             {
-                                CurrentEnemyIndex = Enemies.Count() - 7;
+                                CurrentEnemyIndex = EnemyTemplates.Count() - 7;
                             }
                             else
                             {
-                                foreach (EnemyButton E in Enemies)
+                                foreach (EnemyButton E in EditorButtons)
                                 {
                                     E.Position.Y -= 51;
                                 }
@@ -308,7 +365,7 @@ namespace Rougelike
                         CurrentEnemy.AP++;
                         CurrentEnemy.MaxAP++;
                         break;
-
+                        
                     case "damage":
                         CurrentEnemy.Damage++;
                         break;
@@ -320,7 +377,7 @@ namespace Rougelike
                     case "room":
                         if (((TemplateButton)button).Visable && CurrentTab == Tab.TEMPLATES)
                         {
-                            foreach (TemplateButton c in Templates)
+                            foreach (TemplateButton c in TemplateButtons)
                             {
                                 c.Sprite = UnselectedSummary;
                             }
@@ -332,7 +389,7 @@ namespace Rougelike
                     case "enemy":
                         if (((EnemyButton)button).Visable && CurrentTab == Tab.ENEMIES)
                         {
-                            foreach (EnemyButton e in Enemies)
+                            foreach (EnemyButton e in EnemyButtons)
                             {
                                 e.Sprite = UnselectedSummary;
                             }
@@ -350,14 +407,14 @@ namespace Rougelike
                         {
                             CurrentTemplateName = Convert.ToString(Convert.ToInt32(CurrentTemplateName.Split('.')[0]) + 1);
                             TemplateButton result = new TemplateButton(UnselectedSummary, CurrentTemplateName + ".lvl", 0);
-                            EditorButtons.Add(result);
+                            TemplateButtons.Add(result);
                             ReallignTemplates();
                         }
                         else if (CurrentTab == Tab.ENEMIES)
                         {
                             CurrentCreatureName = Convert.ToString(Convert.ToInt32(CurrentCreatureName.Split('.')[0]) + 1);
                             EnemyButton result = new EnemyButton(UnselectedSummary, CurrentCreatureName);
-                            EditorButtons.Add(result);
+                            EnemyButtons.Add(result);
                             ReallignEnemies();
                         }
                         break;
@@ -383,11 +440,24 @@ namespace Rougelike
                             {
                                 if (MouseOver(i, j))
                                 {
-                                    Item newthing = GenericItem.Copy(new Vector2(i, j));
+                                    HealthPotion newthing = GenericItem.Copy(new Vector2(i, j), GenericItem.HashID);
                                     if (CurrentTemplate.Entities.Contains(newthing))
                                         CurrentTemplate.Entities.Remove(newthing);
                                     else
                                         CurrentTemplate.Entities.Add(newthing);
+                                }
+                            }
+                        }
+                        break;
+
+                    case "prize":
+                        for (int i = 0; i < 15; i++)
+                        {
+                            for (int j = 0; j < 10; j++)
+                            {
+                                if (MouseOver(i, j))
+                                {
+                                    CurrentTemplate.Payout = new Vector2(i, j);
                                 }
                             }
                         }
@@ -453,14 +523,14 @@ namespace Rougelike
             switch (CurrentTab)
             {
                 case Tab.TEMPLATES:
-                    foreach (TemplateButton button in Templates)
+                    foreach (TemplateButton button in TemplateButtons)
                     {
                         Draw(button);
                     }
                     break;
 
                 case Tab.ENEMIES:
-                    foreach (EnemyButton button in Enemies)
+                    foreach (EnemyButton button in EnemyButtons)
                     {
                         Draw(button);
                     }
@@ -479,7 +549,7 @@ namespace Rougelike
 
             SpriteBatch.DrawString(Calibri, "templates", OffsetVector + new Vector2(1072, 31), Color.White);
             SpriteBatch.DrawString(Calibri, "enemies", OffsetVector + new Vector2(1188, 31), Color.White);
-
+            
             if (Saved)
             {
                 DrawSaved();
@@ -513,7 +583,8 @@ namespace Rougelike
                     {
                         if (CurrentEnemy != null)
                         {
-                            Enemy enemy = CurrentEnemy.Copy(new Vector2(i, j));
+                            // In Editor keep same hash or we lose track of which it is
+                            Enemy enemy = CurrentEnemy.Copy(new Vector2(i, j), CurrentEnemy.HashID);
                             if (CurrentTemplate.Entities.Contains(enemy))
                             {
                                 CurrentTemplate.Entities.Remove(enemy);
@@ -526,7 +597,60 @@ namespace Rougelike
             }
         }
 
-        void LoadTemplates()
+        void LoadEditorCreatures()
+        {
+            Vector2 Origin = new Vector2(34, 34);
+
+            //Foreach .nme files add it to the list
+            string[] fileNames = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\enemytemplates\");
+            try
+            {
+                foreach (string file in fileNames)
+                {
+                    StreamReader streamreader = new StreamReader(file);
+                    string importedenemy = streamreader.ReadToEnd();
+                    streamreader.Close();
+
+                    string[] contents = importedenemy.Replace("\r\n", "").Replace("\n", "").Replace("\r", "").Split('-');
+
+                    string[] stats = contents[0].Split(':')[1].Split(',');
+
+                    CurrentCreatureName = Strip(file);
+                    EnemyButton result = new EnemyButton(UnselectedSummary, CurrentCreatureName);
+                    result.Enemy.HashID = Convert.ToInt32(CurrentCreatureName.Split('.')[0]);
+                    if (stats[0].Split('=')[1].Trim() == "Smart")
+                        result.Enemy.Brains = Nature.SMART;
+                    else
+                        result.Enemy.Brains = Nature.DUMB;
+                    result.Enemy.HP = Convert.ToInt32(stats[1].Split('=')[1]);
+                    result.Enemy.MaxHP = Convert.ToInt32(stats[1].Split('=')[1]);
+                    result.Enemy.AP = Convert.ToInt32(stats[2].Split('=')[1]);
+                    result.Enemy.MaxAP = Convert.ToInt32(stats[2].Split('=')[1]);
+                    result.Enemy.AssetIndex = Convert.ToInt32(stats[3].Split('=')[1]);
+                    result.Enemy.Damage = Convert.ToInt32(stats[4].Split('=')[1]);
+                    result.Enemy.Origin = Origin;
+                    result.Enemy.Side = Faction.NERD;
+                    string[] mods = contents[1].Split(':')[1].Split(',');
+                    if (mods[0] != "")
+                    {
+                        foreach (string m in mods)
+                            result.Enemy.Effects.Add((Effect)Convert.ToInt32(m));
+                    }
+                    result.Origin = new Vector2(UnselectedSummary.Width / 2, UnselectedSummary.Height / 2);
+                    result.Action = "enemy";
+                    EnemyButtons.Add(result);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("The file could not be read:");
+                Console.WriteLine(e.Message);
+            }
+
+            ReallignEnemies();
+        }
+
+        void LoadEditorTemplates()
         {
             //Foreach .lvl files add it to the list
             string[] fileNames = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\roomtemplates\");
@@ -563,30 +687,32 @@ namespace Rougelike
                         }
                     }
 
-                    string[] creatures = contents[2].Split(':')[1].Split(',');
+                    string[] payout = contents[2].Split(':')[1].Split('/');
+                    result.Template.Payout = new Vector2(Convert.ToInt32(payout[0]), Convert.ToInt32(payout[1]));
+
+                    string[] creatures = contents[3].Split(':')[1].Split(',');
                     foreach (string c in creatures)
                     {
                         if (c != "")
                         {
                             string[] pair = c.Split('=');
                             int enemy = Convert.ToInt32(pair[0]);
-                            Enemy guy = Enemies.ElementAt(enemy).Enemy.Copy(new Vector2(Convert.ToInt32(pair[1].Split('/')[0]), Convert.ToInt32(pair[1].Split('/')[1])));
+                            Enemy guy = EnemyButtons.ElementAt(enemy).Enemy.Copy(new Vector2(Convert.ToInt32(pair[1].Split('/')[0]), Convert.ToInt32(pair[1].Split('/')[1])), EnemyButtons.ElementAt(enemy).Enemy.HashID);
                             result.Template.Entities.Add(guy);
                         }
                     }
 
-                    string[] items = contents[3].Split(':')[1].Split(',');
+                    string[] items = contents[4].Split(':')[1].Split(',');
                     foreach (string i in items)
                     {
                         if (i != "")
                         {
                             string[] pair = i.Split('/');
-                            result.Template.Entities.Add(GenericItem.Copy(GenericItem.HashID, new Vector2(Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1]))));
+                            result.Template.Entities.Add(GenericItem.Copy(new Vector2(Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])), GenericItem.HashID));
                         }
                     }
-                    result.Template.Difficulty = Convert.ToInt32(contents[4].Split(':')[1]);
-                    Templates.Add(result);
-                    EditorButtons.Add(result);
+                    result.Template.Difficulty = Convert.ToInt32(contents[5].Split(':')[1]);
+                    TemplateButtons.Add(result);
                 }
             }
             catch (Exception e)
@@ -597,70 +723,16 @@ namespace Rougelike
             ReallignTemplates();
         }
 
-        void LoadCreatures()
-        {
-            Vector2 Origin = new Vector2(34, 34);
-
-            //Foreach .nme files add it to the list
-            string[] fileNames = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\enemytemplates\");
-            try
-            {
-                foreach (string file in fileNames)
-                {
-                    StreamReader streamreader = new StreamReader(file);
-                    string importedenemy = streamreader.ReadToEnd();
-                    streamreader.Close();
-
-                    string[] contents = importedenemy.Replace("\r\n", "").Replace("\n", "").Replace("\r", "").Split('-');
-
-                    string[] stats = contents[0].Split(':')[1].Split(',');
-
-                    CurrentCreatureName = Strip(file);
-                    EnemyButton result = new EnemyButton(UnselectedSummary, CurrentCreatureName);
-                    result.Enemy.HashID = Convert.ToInt32(CurrentCreatureName.Split('.')[0]);
-                    if (stats[0].Split('=')[1].Trim() == "Smart")
-                        result.Enemy.Brains = Creature.Nature.SMART;
-                    else
-                        result.Enemy.Brains = Creature.Nature.DUMB;
-                    result.Enemy.HP = Convert.ToInt32(stats[1].Split('=')[1]);
-                    result.Enemy.MaxHP = Convert.ToInt32(stats[1].Split('=')[1]);
-                    result.Enemy.AP = Convert.ToInt32(stats[2].Split('=')[1]);
-                    result.Enemy.MaxAP = Convert.ToInt32(stats[2].Split('=')[1]);
-                    result.Enemy.AssetIndex = Convert.ToInt32(stats[3].Split('=')[1]);
-                    result.Enemy.Damage = Convert.ToInt32(stats[4].Split('=')[1]);
-                    result.Enemy.Origin = Origin;
-                    result.Enemy.Side = Creature.Faction.NERD;
-                    string[] mods = contents[1].Split(':')[1].Split(',');
-                    if (mods[0] != "")
-                    {
-                        foreach (string m in mods)
-                            result.Enemy.Effects.AddLast((Effect)Convert.ToInt32(m));
-                    }
-                    result.Origin = new Vector2(UnselectedSummary.Width / 2, UnselectedSummary.Height / 2);
-                    result.Action = "enemy";
-                    Enemies.Add(result);
-                    EditorButtons.Add(result);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("The file could not be read:");
-                Console.WriteLine(e.Message);
-            }
-
-            ReallignEnemies();
-        }
-        
         void SaveContent()
         {
-            for (int i = 0; i < Enemies.Count(); i++)
+            for (int i = 0; i < EnemyButtons.Count(); i++)
             {
-                EnemyButton E = Enemies.ElementAt(i);
+                EnemyButton E = EnemyButtons.ElementAt(i);
                 string directory = Directory.GetCurrentDirectory() + @"\enemytemplates\" + i.ToString() + ".nme";
                 string content = "STATS:";
                 content += "\n";
                 content += "Brains = ";
-                if (E.Enemy.Brains == Creature.Nature.SMART)
+                if (E.Enemy.Brains == Nature.SMART)
                     content += "Smart";
                 else
                     content += "Dumb";
@@ -696,9 +768,9 @@ namespace Rougelike
                 content += "\n";
                 File.WriteAllText(@directory, content);
             }
-            for (int i = 0; i < Templates.Count(); i++)
+            for (int i = 0; i < TemplateButtons.Count(); i++)
             {
-                TemplateButton T = Templates.ElementAt(i);
+                TemplateButton T = TemplateButtons.ElementAt(i);
                 string directory = Directory.GetCurrentDirectory() + @"\roomtemplates\" + i.ToString() + ".lvl";
                 string content = "SOLIDS:";
                 content += "\n";
@@ -744,6 +816,14 @@ namespace Rougelike
                     content = content.Substring(0, content.Length - 2) + "\n";
                 content += "-";
                 content += "\n"; 
+                content += "PAYOUT:";
+                content += "\n"; 
+                content += T.Template.Payout.X.ToString();
+                content += "/";
+                content += T.Template.Payout.Y.ToString();
+                content += "\n"; 
+                content += "-";
+                content += "\n"; 
                 content += "ENEMIES:";
                 content += "\n";
                 for (int j = 0; j < T.Template.Entities.Count(); j++)
@@ -768,7 +848,7 @@ namespace Rougelike
                 for (int j = 0; j < T.Template.Entities.Count(); j++)
                 {
                     Entity E = T.Template.Entities.ElementAt(j);
-                    if (E.GetClass() == "Item")
+                    if (E is Item)
                     {
                         content += E.Position.X.ToString();
                         content += "/";
@@ -803,13 +883,13 @@ namespace Rougelike
 
         void ReallignTemplates()
         {
-            Templates.Sort(delegate(TemplateButton x, TemplateButton y)
+            TemplateButtons.Sort(delegate(TemplateButton x, TemplateButton y)
             {
                 if (x.Template.Difficulty > y.Template.Difficulty) return 1;
                 else return -1;
             });
             int pos = -CurrentTemplateIndex;
-            foreach (TemplateButton t in Templates)
+            foreach (TemplateButton t in TemplateButtons)
             {
                 t.Visable = false;
                 t.Position = new Vector2(1155, 125 + pos * 51);
@@ -817,23 +897,23 @@ namespace Rougelike
             }
             for (int i = CurrentTemplateIndex; i < CurrentTemplateIndex + 7; i++)
             {
-                if (i < Templates.Count() && CurrentTab == Tab.TEMPLATES)
+                if (i < TemplateButtons.Count() && CurrentTab == Tab.TEMPLATES)
                 {
-                    Templates.ElementAt(i).Visable = true;
+                    TemplateButtons.ElementAt(i).Visable = true;
                 }
             }
         }
 
         void ReallignEnemies()
         {
-            Enemies.Sort(delegate(EnemyButton x, EnemyButton y)
+            EnemyButtons.Sort(delegate(EnemyButton x, EnemyButton y)
             {
                 if (Convert.ToInt32(x.Enemy.Name.Split('.')[0]) > Convert.ToInt32(y.Enemy.Name.Split('.')[0])) return 1;
                 else return -1;
             });
 
             int pos = -CurrentEnemyIndex;
-            foreach (EnemyButton e in Enemies)
+            foreach (EnemyButton e in EnemyButtons)
             {
                 e.Visable = false;
                 e.Position = new Vector2(1155, 125 + pos * 51);
@@ -841,9 +921,9 @@ namespace Rougelike
             }
             for (int i = CurrentEnemyIndex; i < CurrentEnemyIndex + 7; i++)
             {
-                if (i < Enemies.Count() && CurrentTab == Tab.ENEMIES)
+                if (i < EnemyButtons.Count() && CurrentTab == Tab.ENEMIES)
                 {
-                    Enemies.ElementAt(i).Visable = true;
+                    EnemyButtons.ElementAt(i).Visable = true;
                 }
             }
         }

@@ -7,11 +7,6 @@ using Microsoft.Xna.Framework;
 
 namespace Rougelike
 {
-    public enum Texture
-    {
-        EMPTY = 0, ROCK = 1, ENEMY1 = 2, PLAYER = 3, DOOR = 4, MOVEMENT = 5, HEALTHVIAL = 6, HEALTHBARFILL = 8, HEALTHBAROUTLINE = 9, STAIRS = 14, ENEMY2 = 26,
-        ENEMY3 = 29, ENEMY4 = 31, ENEMYBACKDROP = 34, CURRENTROOM = 35, MEGADOOR = 36, MEGADOORH = 37, MEGAROOM = 38, GOLDENEMPTY = 42, MERCHANT = 43, ENCHANTER = 43, ALCHEMIST = 44
-    };
 
     public partial class Rougelike
     {
@@ -60,13 +55,33 @@ namespace Rougelike
             if (button.Item != null)
             {
                 Draw(button.Item.Sprite, button.Position, button.Origin);
-                if (button.Item is Potion)
+                if (button.Item is Potion && ((Potion)button.Item).StackSize > 1)
                 {
                     SpriteBatch.DrawString(SegeoUiMono, ((Potion)button.Item).StackSize.ToString(), OffsetVector + button.Position, Color.White);
                 }
             }
         }
 
+        void Draw(ShopButton button)
+        {
+            if (button.Item != null)
+            {
+                Draw(button.Item.Sprite, button.Position, button.Origin);
+                if (button.Item is Potion && ((Potion)button.Item).StackSize > 1)
+                {
+                    SpriteBatch.DrawString(SegeoUiMono, ((Potion)button.Item).StackSize.ToString(), OffsetVector + button.Position, Color.White);
+                }
+            }
+        }
+
+        void Draw(SkillButton button)
+        {
+            if (button.Visable)
+                SpriteBatch.Draw(button.Sprite, OffsetVector + button.Position, null, Color.White, 0, button.Origin, 1, SpriteEffects.None, 0);
+            else
+                SpriteBatch.Draw(button.Sprite, OffsetVector + button.Position, null, Color.White * .5f, 0, button.Origin, 1, SpriteEffects.None, 0);
+        }
+        
         void Draw(TemplateButton button)
         {
             if (button.Visable)
@@ -87,15 +102,17 @@ namespace Rougelike
                         }
                     }
                 }
-                foreach (Entity e in button.Template.Entities)
+                if (button.Template.Difficulty != 0)
+                    Draw(MiniPrize, button.Position + new Vector2(4 + MiniEmpty.Width * button.Template.Payout.X, 4 + MiniEmpty.Height * button.Template.Payout.Y), button.Origin);
+                foreach (Entity entity in button.Template.Entities)
                 {
-                    if (e.GetClass() == "Item")
+                    if (entity is Item)
                     {
-                        Draw(MiniItem, button.Position + new Vector2(4 + MiniItem.Width * e.Position.X, 4 + MiniItem.Height * e.Position.Y), button.Origin);
+                        Draw(MiniItem, button.Position + new Vector2(4 + MiniItem.Width * entity.Position.X, 4 + MiniItem.Height * entity.Position.Y), button.Origin);
                     }
-                    else if (e.GetClass() == "Enemy")
+                    else if (entity is Enemy)
                     {
-                        Draw(MiniEnemy, button.Position + new Vector2(4 + MiniEnemy.Width * e.Position.X, 4 + MiniEnemy.Height * e.Position.Y), button.Origin);
+                        Draw(MiniEnemy, button.Position + new Vector2(4 + MiniEnemy.Width * entity.Position.X, 4 + MiniEnemy.Height * entity.Position.Y), button.Origin);
                     }
                 }
                 SpriteBatch.DrawString(Calibri, "Difficulty: " + button.Template.Difficulty.ToString(), OffsetVector + button.Position + new Vector2(-35, -22), Color.White);
@@ -111,13 +128,13 @@ namespace Rougelike
 
         void Draw(Button button)
         {
-            if (button.Sprite != null)
+            if (button.Sprite != null && button.Visable)
                 SpriteBatch.Draw(button.Sprite, button.Position + OffsetVector, null, Color.White, 0, button.Origin, 1, SpriteEffects.None, 0);
         }
 
         void Draw(Movement button)
         {
-                SpriteBatch.Draw(Assets[button.AssetIndex], button.Position + OffsetVector, null, Color.White, 0, button.Origin, 1, SpriteEffects.None, 0);
+            SpriteBatch.Draw(Assets[button.AssetIndex], button.Position + OffsetVector, null, Color.White, 0, button.Origin, 1, SpriteEffects.None, 0);
         }
 
         void Draw(int assetindex, Vector2 position)
@@ -156,6 +173,8 @@ namespace Rougelike
                     }
                 }
             }
+            if (CurrentTemplate.Payout != Vector2.Zero && CurrentTemplate.Difficulty != 0)
+                SpriteBatch.Draw(Assets[(int)Texture.PAYOUT], OffsetVector + CurrentTemplate.Payout * 66 + new Vector2(34, 34), Color.White);
             foreach (Entity entity in CurrentTemplate.Entities)
             {
                 if (entity is Creature)
@@ -193,13 +212,16 @@ namespace Rougelike
             {
                 if (entity is Creature)
                 {
-                    Creature creature = (Creature)entity;
-                    Draw(creature.AssetIndex, new Vector2(34, 34) + entity.Position * 66);
-                    if (creature.HP != creature.MaxHP)
+                    Draw(entity.AssetIndex, new Vector2(34, 34) + entity.Position * 66);
+                    if (entity is Fighter)
                     {
-                        Draw(Texture.HEALTHBAROUTLINE, new Vector2(34, 34) + entity.Position * 66);
-                        SpriteBatch.Draw(Assets[(int)Texture.HEALTHBARFILL], OffsetVector + new Vector2(34, 34) + entity.Position * 66, new Rectangle(0, 0, (int)Math.Ceiling(Assets[8].Width * (creature.HP / (double)creature.MaxHP)),
-                        Assets[(int)Texture.HEALTHBARFILL].Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                        Fighter fighter = entity as Fighter;
+                        if (fighter.HP != fighter.MaxHP)
+                        {
+                            Draw(Texture.HEALTHBAROUTLINE, new Vector2(34, 34) + fighter.Position * 66);
+                            SpriteBatch.Draw(Assets[(int)Texture.HEALTHBARFILL], OffsetVector + new Vector2(34, 34) + fighter.Position * 66, new Rectangle(0, 0, (int)Math.Ceiling(Assets[8].Width * (fighter.HP / (double)fighter.MaxHP)),
+                            Assets[(int)Texture.HEALTHBARFILL].Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                        }
                     }
                 }
                 else
@@ -224,16 +246,16 @@ namespace Rougelike
 
         void DrawUI()
         {
-            SpriteBatch.DrawString(SegeoUiMono, "HP: ", OffsetVector + new Vector2(23, 1), Color.White);
-            SpriteBatch.DrawString(SegeoUiMono, Save.Kevin.HP.ToString() + "/" + Save.Kevin.MaxHP.ToString(), new Vector2(64, 1), Color.White);
-            SpriteBatch.Draw(Assets[15], OffsetVector + new Vector2(146, 7), new Rectangle(0, 0, (int)Math.Ceiling(Assets[15].Width * (Save.Kevin.HP / (double)Save.Kevin.MaxHP)),
+            SpriteBatch.DrawString(SegeoUiMono, "HP: ", OffsetVector + new Vector2(8, 1), Color.White);
+            SpriteBatch.DrawString(SegeoUiMono, Save.Kevin.HP.ToString() + "/" + Save.Kevin.MaxHP.ToString(), new Vector2(42, 1), brightwhite);
+            SpriteBatch.Draw(Assets[15], OffsetVector + new Vector2(82, 7), new Rectangle(0, 0, (int)Math.Ceiling(Assets[15].Width * (Save.Kevin.HP / (double)Save.Kevin.MaxHP)),
                         Assets[15].Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            SpriteBatch.Draw(Assets[16], OffsetVector + new Vector2(146, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            SpriteBatch.DrawString(SegeoUiMono, "AP: ", OffsetVector + new Vector2(300, 1), Color.White);
-            SpriteBatch.DrawString(SegeoUiMono, Save.Kevin.AP.ToString() + "/" + Save.Kevin.MaxAP.ToString(), new Vector2(334, 1), Color.White);
-            SpriteBatch.Draw(Assets[17], OffsetVector + new Vector2(417, 7), new Rectangle(0, 0, (int)Math.Ceiling(Assets[17].Width * (Save.Kevin.AP / (double)Save.Kevin.MaxAP)),
+            SpriteBatch.Draw(Assets[16], OffsetVector + new Vector2(82, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            SpriteBatch.DrawString(SegeoUiMono, "AP: ", OffsetVector + new Vector2(230, 1), Color.White);
+            SpriteBatch.DrawString(SegeoUiMono, Save.Kevin.AP.ToString() + "/" + Save.Kevin.MaxAP.ToString(), new Vector2(264, 1), brightwhite);
+            SpriteBatch.Draw(Assets[17], OffsetVector + new Vector2(306, 7), new Rectangle(0, 0, (int)Math.Ceiling(Assets[17].Width * (Save.Kevin.AP / (double)Save.Kevin.MaxAP)),
                         Assets[17].Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            SpriteBatch.Draw(Assets[16], OffsetVector + new Vector2(417, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            SpriteBatch.Draw(Assets[16], OffsetVector + new Vector2(306, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
             int wpt = Save.Kevin.MyWealthPerTurn();
             int ppt = Save.Kevin.MyPowerPerTurn();
             for (int i = 0; i < Save.GetFloor().Max.X; i++)
@@ -247,8 +269,9 @@ namespace Rougelike
                     }
                 }
             }
-            SpriteBatch.DrawString(SegeoUiMono, "Wealth: " + Save.Kevin.Wealth.ToString() + "(+" + wpt.ToString() + ")", OffsetVector + new Vector2(600, 1), Color.White);
-            SpriteBatch.DrawString(SegeoUiMono, "Power: " + Save.Kevin.Power.ToString() + "(+" + ppt.ToString() + ")", OffsetVector + new Vector2(770, 1), Color.White);
+            SpriteBatch.DrawString(SegeoUiMono, "Wealth:" + Save.Kevin.Wealth.ToString() + "(+" + wpt.ToString() + ")", OffsetVector + new Vector2(455, 1), brightwhite);
+            SpriteBatch.DrawString(SegeoUiMono, "Power:" + Save.Kevin.Power.ToString() + "(+" + ppt.ToString() + ")", OffsetVector + new Vector2(600, 1), brightwhite);
+            SpriteBatch.DrawString(SegeoUiMono, "XP:" + Save.Kevin.Experience.ToString(), OffsetVector + new Vector2(730, 1), whiteorange);
         }
 
         void DrawMiniMap()
@@ -279,7 +302,7 @@ namespace Rougelike
             Vector2 offset = new Vector2((imax - imin) * 23, (jmax - jmin) * 23);
             Vector2 diff = new Vector2(1150, 588) - offset / 2;
 
-            SpriteBatch.DrawString(SegeoUiMono, "Depth: " + Save.Depth.ToString(), OffsetVector + new Vector2(1056, 470), Color.White);
+            SpriteBatch.DrawString(SegeoUiMono, "Depth: " + Save.Depth.ToString(), OffsetVector + new Vector2(1056, 470), brightwhite);
             for (int i = imin; i < Save.GetFloor().Max.X; i++)
             {
                 for (int j = jmin; j < Save.GetFloor().Max.Y; j++)
@@ -406,80 +429,6 @@ namespace Rougelike
         {
             Draw(SavedBackground, new Vector2(372, 185));
             SpriteBatch.DrawString(Cousine72, "Saved", OffsetVector + new Vector2(400, 200), Color.White);
-        }
-
-        void Draw4X()
-        {
-            Draw(MegaMapBackground, new Vector2(41, 41));
-
-            DrawMegaMap();
-
-            foreach (Button button in MegaMapButtons)
-            {
-                Draw(button);
-                SpriteBatch.DrawString(Cousine12, button.Action, button.Position + OffsetVector - new Vector2(43, 8), Color.White);
-            }
-            SpriteBatch.DrawString(Cousine16, Save.Kevin.Name, OffsetVector + new Vector2(50, 45), Color.White);
-            SpriteBatch.DrawString(Cousine16, "The " + Save.Kevin.Class.ToString(), OffsetVector + new Vector2(50, 70), Color.White);
-        }
-
-        void DrawMegaMap()
-        {
-            // Get center offset Vector
-            int imin = (int)Save.GetFloor().Position.X;
-            int imax = (int)Save.GetFloor().Position.X;
-            int jmin = (int)Save.GetFloor().Position.Y;
-            int jmax = (int)Save.GetFloor().Position.Y;
-            for (int i = 0; i < Save.GetFloor().Max.X; i++)
-            {
-                for (int j = 0; j < Save.GetFloor().Max.Y; j++)
-                {
-                    if (Save.GetFloor().Rooms[i, j].Exists)
-                    {
-                        if (i < imin)
-                            imin = i;
-                        if (i > imax)
-                            imax = i;
-                        if (j < jmin)
-                            jmin = j;
-                        if (j > jmax)
-                            jmax = j;
-                    }
-                }
-            }
-
-            Vector2 offset = new Vector2((imax - imin) * 58, (jmax - jmin) * 58);
-            Vector2 diff = new Vector2(524, 364) - offset / 2;
-
-            for (int i = 0; i < Save.GetFloor().Max.X; i++)
-            {
-                for (int j = 0; j < Save.GetFloor().Max.Y; j++)
-                {
-                    if (Save.GetFloor().Rooms[i, j].Exists)
-                    {
-                        if (Save.GetFloor().Rooms[i, j].Worked || Save.GetFloor().Rooms[i, j].PermaWorked)
-                            SpriteBatch.Draw(Assets[(int)Texture.CURRENTROOM], OffsetVector + diff + new Vector2((i - imin) * 58, (j - jmin) * 58), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                        else
-                        {
-                            SpriteBatch.Draw(Assets[(int)Texture.MEGAROOM], OffsetVector + diff + new Vector2((i - imin) * 58, (j - jmin) * 58), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                        }
-                        if (Save.GetFloor().Rooms[i, j].HasSouthDoor())
-                        {
-                            SpriteBatch.Draw(Assets[(int)Texture.MEGADOOR], OffsetVector + diff + new Vector2((i - imin) * 58 + 13, (j - jmin) * 58 + 50), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                        }
-                        if (Save.GetFloor().Rooms[i, j].HasWestDoor())
-                        {
-                            SpriteBatch.Draw(Assets[(int)Texture.MEGADOORH], OffsetVector + diff + new Vector2((i - imin) * 58 - 8, (j - jmin) * 58 + 13), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                        }
-                        if (Save.GetFloor().Rooms[i, j].Visible)
-                        {
-                            SpriteBatch.DrawString(Cousine12, "P:" + Save.GetFloor().Rooms[i, j].Power.ToString(), OffsetVector + diff + new Vector2((i - imin) * 58 + 11, (j - jmin) * 58 + 8), Color.Black);
-                            SpriteBatch.DrawString(Cousine12, "W:" + Save.GetFloor().Rooms[i, j].Wealth.ToString(), OffsetVector + diff + new Vector2((i - imin) * 58 + 11, (j - jmin) * 58 + 26), Color.Black);
-                        }
-                    }
-                }
-                SpriteBatch.Draw(Assets[40], OffsetVector + diff + new Vector2((Save.GetFloor().Position.X - imin) * 58 - 2, (Save.GetFloor().Position.Y - jmin) * 58 - 2), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            }
         }
     }
 }

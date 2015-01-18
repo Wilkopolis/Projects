@@ -11,10 +11,10 @@ namespace Rougelike
         public string Name;
         public int HashID;
         public Tile[,] Tiles;
-        public int W = 14;
-        public int H = 9;
         public int Difficulty = 0;
         public List<Entity> Entities = new List<Entity>();
+        public Vector2 Payout;
+        public bool Golden;
 
         public RoomTemplate()
         {

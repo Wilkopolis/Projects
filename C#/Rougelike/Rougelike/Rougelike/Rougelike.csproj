@@ -113,29 +113,34 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Buttons\ShopButton.cs" />
+    <Compile Include="Buttons\MegaMapButton.cs" />
+    <Compile Include="Entity\Creature\Simulate.cs" />
+    <Compile Include="Entity\Item\Coin.cs" />
     <Compile Include="Graphics\Drawer.cs" />
     <Compile Include="Screens\4x.cs" />
     <Compile Include="Screens\ClassSelectionScreen.cs" />
+    <Compile Include="Screens\Skills.cs" />
     <Compile Include="Screens\Editor.cs" />
     <Compile Include="Screens\GameScreen.cs" />
     <Compile Include="Generator\Content.cs" />
     <Compile Include="Graphics\Graphics.cs" />
+    <Compile Include="Screens\Merchant.cs" />
     <Compile Include="Screens\TitleScreen.cs" />
     <Compile Include="Generator\Shared.cs" />
     <Compile Include="Entity\Creature\ApplyEffects.cs" />
     <Compile Include="Buttons\EnemyButton.cs" />
-    <Compile Include="Entity\Creature\Enemy\AStar.cs" />
     <Compile Include="Generator\RoomTemplate.cs" />
     <Compile Include="Generator\Generator.cs" />
     <Compile Include="Screens\OptionScreen.cs" />
-    <Compile Include="Entity\Item\Equipment.cs" />
+    <Compile Include="Entity\Creature\Equipment.cs" />
     <Compile Include="Buttons\InventoryButton.cs" />
     <Compile Include="Entity\Item\Armor.cs" />
     <Compile Include="Buttons\Attack.cs" />
     <Compile Include="Entity\Item\Consumable.cs" />
     <Compile Include="Entity\Creature\Creature.cs" />
-    <Compile Include="Graphics\Description.cs" />
-    <Compile Include="Entity\Creature\Enemy\Enemy.cs" />
+    <Compile Include="Buttons\Description.cs" />
+    <Compile Include="Entity\Creature\Enemy.cs" />
     <Compile Include="Entity\Entity.cs" />
     <Compile Include="Generator\Floor.cs" />
     <Compile Include="Entity\Item\HealthPotion.cs" />
@@ -145,19 +150,14 @@
     <Compile Include="Entity\Creature\Player.cs" />
     <Compile Include="Entity\Item\Potion.cs" />
     <Compile Include="Generator\Room.cs" />
-    <Compile Include="Buttons\RoomButton.cs" />
     <Compile Include="Buttons\TemplateButton.cs" />
     <Compile Include="Generator\Tile.cs" />
     <Compile Include="Entity\Item\Weapon.cs" />
     <Compile Include="Util\Animated.cs" />
-    <Compile Include="Entity\Creature\Enemy\AStarNode.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Buttons\Button.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Rougelike.cs" />
-    <Compile Include="Buttons\Clickable.cs" />
     <Compile Include="Save.cs" />
     <Compile Include="Util\VectorComparer.cs" />
   </ItemGroup>

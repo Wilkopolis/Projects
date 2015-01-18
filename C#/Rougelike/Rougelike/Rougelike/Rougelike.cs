@@ -15,8 +15,8 @@ namespace Rougelike
     public partial class Rougelike : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager Graphics;
-        SpriteBatch SpriteBatch;        
-        Vector2 ScaledMousePosition;
+        SpriteBatch SpriteBatch;
+        Vector2 ScaledMousePosition = Vector2.Zero;
         MouseState CurrentMouseState;
         MouseState LastMouseState;
         KeyboardState CurrentKeyboard;
@@ -24,14 +24,8 @@ namespace Rougelike
         
         State GameState = State.LOADING;
 
-        Generator Generator;
         Save Save;
-
-        // Graphical stuff
-
-        Texture2D[] Assets;
-        Texture2D dot;
-
+        
         public Rougelike()
         {
             Content.RootDirectory = "Content";
@@ -40,20 +34,14 @@ namespace Rougelike
 
         protected override void Initialize()
         {
-            ScaledMousePosition = Vector2.Zero;
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-
-            InitializeTitleScreen();
-
-            // Put this in Gen New Game or w/e
-            Generator = new Generator(Content);
-
-            Assets = new Texture2D[44];
+            
+            Assets = new Texture2D[45];
             Assets[0] = Content.Load<Texture2D>("textures/game/empty");
             Assets[1] = Content.Load<Texture2D>("textures/game/rock");
             Assets[2] = Content.Load<Texture2D>("textures/game/enemy");
@@ -98,6 +86,7 @@ namespace Rougelike
             Assets[41] = Content.Load<Texture2D>("textures/game/minimap/unvisited");
             Assets[42] = Content.Load<Texture2D>("textures/game/gempty");
             Assets[43] = Content.Load<Texture2D>("textures/game/merchant");
+            Assets[44] = Content.Load<Texture2D>("textures/editor/payout");
             
             dot = Content.Load<Texture2D>("textures/dot");
 
@@ -201,8 +190,8 @@ namespace Rougelike
 
         public void NewGame(Class Class)
         {
-            Save = Generator.GenerateGame();
-            Save.Kevin.UpdateOptions(Save.GetRoom(), GameButtons);
+            Save = GenerateGame();
+            UpdatePlayerOptions();
         }
 
         public void GameOver()

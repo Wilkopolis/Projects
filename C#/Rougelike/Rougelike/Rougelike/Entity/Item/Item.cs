@@ -8,14 +8,16 @@ using Microsoft.Xna.Framework;
 namespace Rougelike
 {
     public enum Effect {THORNS = -1, STYLISH = 1, SHARP = 2, LIGHT = 3, LONG = 4, SPLINTER = 5, DOUBLING = 6, ONEHANDED = 101, SWORD = 102};
-    public enum ItemType { HEAD, CHEST, LEGS, BOOTS, BELT, WEILD, NECK, RINGL, RINGR, CONSUMABLE, INVENTORY };
+    public enum ItemType { HEAD, CHEST, LEGS, BOOTS, BELT, WEILD, NECK, RINGL, RINGR, CONSUMABLE, INVENTORY, SHOP };
 
-    public class Item : Entity, IEquatable<Item>
+    public abstract class Item : Entity, IEquatable<Item>
     {
         public Texture2D Sprite;
 
         public Dictionary<Effect, int> Mods = new Dictionary<Effect, int>();
         public ItemType Type;
+
+        public int Value;
 
         public Item(Vector2 position)
         {
@@ -30,42 +32,6 @@ namespace Rougelike
         public Item()
         {
             Name = "default";
-        }
-
-        public Item Copy(int NewHash)
-        {
-            Item Result = new Item();
-            Result.Name = Name;
-            Result.Sprite = Sprite;
-            Result.Position = Position;
-            Result.Origin = Origin;
-            Result.Type = Type;
-            Result.HashID = NewHash;
-            return Result;
-        }
-
-        public Item Copy(int NewHash, Vector2 position)
-        {
-            Item Result = new Item();
-            Result.Name = Name;
-            Result.Sprite = Sprite;
-            Result.Position = position;
-            Result.Origin = Origin;
-            Result.Type = Type;
-            Result.HashID = NewHash;
-            return Result;
-        }
-
-        public Item Copy(Vector2 position)
-        {
-            Item Result = new Item();
-            Result.Name = Name;
-            Result.Sprite = Sprite;
-            Result.Position = position;
-            Result.Origin = Origin;
-            Result.Type = Type;
-            Result.HashID = HashID;
-            return Result;
         }
 
         public bool Equals(Item other)
@@ -94,6 +60,18 @@ namespace Rougelike
                 result[i] = result[i].Substring(0,result[i].Length-2);
 
             return result;
+        }
+
+        public void EnterMod(Effect E)
+        {
+            if (Mods.ContainsKey(E))
+            {
+                Mods[E]++;
+            }
+            else
+            {
+                Mods.Add(E, 1); 
+            }
         }
         
         public static string ModToString(Effect E)
@@ -174,6 +152,11 @@ namespace Rougelike
                 default:
                     return "";
             }
+        }
+
+        public bool Is(ItemType type)
+        {
+            return type == Type || type == ItemType.INVENTORY;
         }
     }
 }

@@ -11,7 +11,26 @@ namespace Rougelike
         public int Damage;
         public int Cost;
 
-        new public Weapon Copy(int NewHash)
+        public Weapon()
+        {
+        }
+
+        public Weapon(Texture2D sprite, int damage, int cost, int worth, ItemType type, string name, int hashid, Effect[] effects)
+        {
+            Sprite = sprite;
+            Damage = damage;
+            Cost = cost;
+            Value = worth;
+            Type = type;
+            Name = name;
+            HashID = hashid;
+            foreach (Effect effect in effects)
+            {
+                EnterMod(effect);
+            }
+        }
+
+        public Weapon Copy(int NewHash)
         {
             Weapon Result = new Weapon();
             Result.Name = Name;
@@ -22,6 +41,7 @@ namespace Rougelike
             Result.Damage = Damage;
             Result.Cost = Cost;
             Result.HashID = NewHash;
+            Result.Value = Value;
             Result.Mods = Mods;
             return Result;
         }

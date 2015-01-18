@@ -13,7 +13,7 @@ namespace Rougelike
         public int Cost;
         public int AssetIndex = (int)Texture.MOVEMENT;
 
-        public Movement(int y, int x)
+        public Movement(int x, int y)
         {
             X = x;
             Y = y;
@@ -23,12 +23,12 @@ namespace Rougelike
             Description = " ";
         }
 
-        public Movement(int y, int x, int cost)
+        public Movement(int x, int y, int cost)
         {
             X = x;
             Y = y;
             Cost = cost;
-            Position = new Vector2(x * 66, y * 66) + new Vector2(64, 64);
+            Position = new Vector2(x * 66, y * 66) + new Vector2(66, 66);
             Origin = new Vector2(32, 32);
             Description = " ";
         }

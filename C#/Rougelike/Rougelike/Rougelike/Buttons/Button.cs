@@ -8,11 +8,25 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Rougelike
 {
-    public class Button : Clickable
+    public class ItemButton : Button
     {
+        public Item Item;
+        public ItemType Type;
+    }
+
+    public class Button
+    {
+        public bool Visable = true;
+        public bool WasPressed;
+        public bool WasClicked;
+        public bool WasRightClicked;
+        public bool Selected;
+        public Keys Hotkey;
+        public Vector2 Position;
+        public Vector2 Origin;
         public Texture2D Sprite;
         public string Action;
-        public Keys Hotkey;
+        public string Description;
 
         public Button()
         {
@@ -38,6 +52,7 @@ namespace Rougelike
             Position = Vector2.Zero;
             Origin = Vector2.Zero;
             Action = action;
+            Visable = false;
             Hotkey = hotkey;
         }
 
@@ -48,6 +63,15 @@ namespace Rougelike
             Origin = new Vector2(Sprite.Width / 2, Sprite.Height / 2);
             Action = action;
             Hotkey = hotkey;
+        }
+
+        public Button(Texture2D sprite, Vector2 position, String action, bool visable)
+        {
+            Sprite = sprite;
+            Position = position;
+            Origin = new Vector2(Sprite.Width / 2, Sprite.Height / 2);
+            Action = action;
+            Visable = visable;
         }
 
         public Button(Vector2 position, String action, Keys hotkey)

@@ -8,15 +8,15 @@ using Microsoft.Xna.Framework;
 
 namespace Rougelike
 {
-    partial class Generator
+    partial class Rougelike
     {
-        public Save GenerateGame()
+        Save GenerateGame()
         {
             Save Result = new Save();
 
             Result.Floors = GenerateFloors(5);
 
-            Player Kevin = new Player();
+            Player Kevin = new Player(HashID++);
 
             Kevin.Position = new Vector2(5, 7);
 
@@ -27,7 +27,7 @@ namespace Rougelike
             return Result;
         }
 
-        public Floor[] GenerateFloors(int amount)
+        Floor[] GenerateFloors(int amount)
         {
             Floor[] result = new Floor[amount];
 
@@ -112,14 +112,14 @@ namespace Rougelike
             return result;
         }
 
-        private Floor GenerateStart()
+        Floor GenerateStart()
         {
             Floor result = new Floor(new Vector2(1, 1));
             result.Rooms[0, 0] = new Room(Start);
             return result;
         }
 
-        private Floor GenerateFinish()
+        Floor GenerateFinish()
         {
             Floor result = new Floor(new Vector2(1, 1));
             //result.Rooms[0, 0] = new Room(Finish);
@@ -127,10 +127,10 @@ namespace Rougelike
             return result;
         }
 
-        private Floor GenerateFloor(int depth)
+        Floor GenerateFloor(int depth)
         {
             Vector2 max = Vector2.Zero;
-            switch (Random.Next(0, 3))
+            switch (Random.Next(0, 1))
             {
                 case 0:
                     max = new Vector2(5, 5);
@@ -153,21 +153,21 @@ namespace Rougelike
                     if (result.Rooms[i, j].Exists)
                         result.Rooms[i, j] = GenerateRoom(depth);
                 }
-            }           
- 
-            TrimDoors(result.Rooms, result.Max);
+            }
 
             PickGoldRoom(result.Rooms, result.Max);
+
+            TrimDoors(result.Rooms, result.Max);
 
             return result;
         }
 
-        private Room GenerateRoom(int depth)
+        Room GenerateRoom(int depth)
         {
             // Pick a good room or bad room
             RoomTemplate template;
 
-            if (GenGoodRoom())
+            if (GeerateGoodRoom())
             {
                 template = PickGoodTemplate(depth);
             }
@@ -179,7 +179,7 @@ namespace Rougelike
             return BuildRoom(template);
         }
 
-        private int BuildFloor(Vector2 max, Room[,] rooms)
+        int BuildFloor(Vector2 max, Room[,] rooms)
         {
             int RoomAmount = (int)Math.Round(max.X * max.Y / 2);
             HashSet<Vector2> openset = new HashSet<Vector2>();
@@ -207,7 +207,7 @@ namespace Rougelike
             return result;
         }
 
-        private Room BuildRoom(RoomTemplate template)
+        Room BuildRoom(RoomTemplate template)
         {
             Room result = new Room(template);
 
@@ -217,13 +217,17 @@ namespace Rougelike
                 if (E is Item)
                     result.Entities.Add(GenerateItem(E.Position));
                 else if (E is Enemy)
-                    result.Entities.Add(((Enemy)E).Copy());
+                    result.Entities.Add(((Enemy)E).Copy(HashID++));
                 //else if (E is NPC)
             }
+            result.Payout = template.Payout;
+            
+            result.UpdateTiles();
+
             return result;
         }
 
-        private Item GenerateItem(Vector2 position)
+        Item GenerateItem(Vector2 position)
         {
             // pick an item from commons rares or legendaries
             Item result;
@@ -232,40 +236,61 @@ namespace Rougelike
             int rand = Random.Next(0, 100);
 
             if (rand < 70)
-                prize = Commons.ElementAt(Random.Next(0, Commons.Count()));
-            else if (rand < 95)
                 prize = Rares.ElementAt(Random.Next(0, Rares.Count()));
             else
                 prize = Legendarys.ElementAt(Random.Next(0, Legendarys.Count()));
 
-            if (prize is HealthPotion)
-                result = ((HealthPotion)prize).Copy(HashID++);
-            else if (prize is Weapon)
-                result = ((Weapon)prize).Copy(HashID++);
-            else
-                result = prize.Copy(HashID++);
+            result = Dupe(prize);
 
             result.Position = position;
             return result;
         }
 
-        private bool StairFree(Tile tile)
+        Item GenerateItem()
+        {
+            Item result;
+
+            int rand = Random.Next(0, 100);
+
+            if (rand < 95)
+                result = Rares.ElementAt(Random.Next(0, Rares.Count()));
+            else
+                result = Legendarys.ElementAt(Random.Next(0, Legendarys.Count()));
+
+            return Dupe(result);
+        }
+
+        Item GenerateRoomPrize()
+        {
+            Item result = Commons.ElementAt(Random.Next(0, Commons.Count()));
+            if (result is HealthPotion)
+            {
+                return ((HealthPotion)result).Copy(Save.GetRoom().Payout, HashID++);
+            }
+            else if (result is Coin)
+            {
+                return ((Coin)result).Copy(Save.GetRoom().Payout, HashID++, Random.Next(0, 10));
+            }
+            return null;
+        }
+
+        bool StairFree(Tile tile)
         {
             return (!tile.Solid && tile.Steps == Stairs.NONE);
         }
 
-        private bool GenGoodRoom()
+        bool GeerateGoodRoom()
         {
             return Random.Next(0, 100) < 10;
         }
 
-        private RoomTemplate PickGoodTemplate(int depth)
+        RoomTemplate PickGoodTemplate(int depth)
         {
             RoomTemplate result = GoodTemps.ElementAt(Random.Next(0, GoodTemps.Count));
             return result;
         }
 
-        private RoomTemplate PickBadTemplate(int depth)
+        RoomTemplate PickBadTemplate(int depth)
         {
             int MinDiff = (depth - 1) * Difficulty;
             int MaxDiff = (depth + 1) * Difficulty;
@@ -282,7 +307,7 @@ namespace Rougelike
             return results.ElementAt(Random.Next(0, results.Count));
         }
 
-        private void TrimDoors(Room[,] rooms, Vector2 max)
+        void TrimDoors(Room[,] rooms, Vector2 max)
         {
             for (int i = 0; i < max.X; i++)
             {
@@ -388,28 +413,34 @@ namespace Rougelike
             }
         }
 
-        private void PickGoldRoom(Room[,] rooms, Vector2 max)
+        void PickGoldRoom(Room[,] rooms, Vector2 max)
         {
-            List<Room> candidates = new List<Room>();
+            List<Vector2> candidates = new List<Vector2>();
             for (int i = 0; i < max.X; i++)
             {
                 for (int j = 0; j < max.Y; j++)
                 {
                     if (rooms[i, j].Exists)
-                        candidates.Add(rooms[i, j]);
+                        candidates.Add(new Vector2(i,j));
                 }
             }
-            Room result = candidates.ElementAt(Random.Next(0, candidates.Count));
-            result.Golden = true;
-            for (int i = 0; i < 15; i++)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    result.Tiles[i, j].TrueSolid = false;
-                    result.Tiles[i, j].AssetIndex = (int)Texture.GOLDENEMPTY;
-                }
-            }
-            result.Entities = new List<Entity>();
+            Vector2 result = candidates.ElementAt(Random.Next(0, candidates.Count));
+            rooms[(int)result.X, (int)result.Y] = new Room(Golden);
+        }
+
+        List<ShopButton> GenerateShopInventory()
+        {
+            List<ShopButton> result = new List<ShopButton>();
+            ShopButton uno = new ShopButton(SmallHealthPotion, Random.Next(3, 5));
+            uno.Position = new Vector2(300, 300);
+            result.Add(uno);
+            ShopButton dos = new ShopButton(GenerateItem(), Random.Next(1, 4));
+            dos.Position = new Vector2(420, 300);
+            result.Add(dos);
+            ShopButton tre = new ShopButton(GenerateItem(), Random.Next(1, 4));
+            tre.Position = new Vector2(540, 300);
+            result.Add(tre);
+            return result;
         }
     }
 }

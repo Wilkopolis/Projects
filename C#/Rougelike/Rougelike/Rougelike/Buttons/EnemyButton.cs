@@ -10,7 +10,6 @@ namespace Rougelike
     public class EnemyButton : Button
     {
         public Enemy Enemy;
-        public bool Visable;
 
         public EnemyButton(Texture2D sprite, String name)
         {

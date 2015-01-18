@@ -5,28 +5,12 @@ using System.Text;
 
 namespace Rougelike
 {
-    public partial class Creature
+    partial class Rougelike
     {
-        private static bool Deal(Creature attacker, Creature victim, Room room, float damage)
-        {
-            victim.HP -= (int)Math.Round(damage);
-
-            if (victim.HP <= 0)
-            {
-                if (victim is Enemy)
-                {
-                    room.Remove(victim);
-                    room.UpdateTiles();
-                    return true;
-                }
-            }
-            return false;
-        }
-
         /*
          *  Applies offensive and defensive effects
-         */ 
-        private static void ApplyEffects(Creature attacker, Creature victim, Room room, Effect effect, int strength, float damage)
+         */
+        void ApplyEffects(Fighter attacker, Fighter victim, Effect effect, int strength, float damage)
         {
             if (effect == Effect.SPLINTER)
             {
@@ -36,10 +20,10 @@ namespace Rougelike
                      * Splinter should do a piercing attack with 1/4 of your damage to adjacent enemies
                      */
                     case 1:
-                        SplinterI(attacker, victim, room, damage);
+                        SplinterI(attacker, victim, damage);
                         break;
                     case 2:
-                        SplinterII(attacker, victim, room, damage);
+                        SplinterII(attacker, victim, damage);
                         break;
                     case 3:
                         break;
@@ -57,7 +41,7 @@ namespace Rougelike
                      * Splinter should do a piercing attack with 1/4 of your damage to adjacent enemies
                      */
                     case 1:
-                        ThornsI(attacker, victim, room, damage);
+                        ThornsI(attacker, victim, damage);
                         break;
                     case 2:
                         break;
@@ -77,7 +61,7 @@ namespace Rougelike
                      * Splinter should do a piercing attack with 1/4 of your damage to adjacent enemies
                      */
                     case 1:
-                        DoublingI(attacker, victim, room, damage);
+                        DoublingI(attacker, victim, damage);
                         break;
                     case 2:
                         break;
@@ -91,38 +75,39 @@ namespace Rougelike
             }
         }
 
-        private static void SplinterI(Creature attacker, Creature victim, Room room, float damage)
+        void SplinterI(Fighter attacker, Fighter victim, float damage)
         {
-            LinkedList<Creature> adjacent = room.GetAdjacentCreatures(victim);
-            foreach (Creature C in adjacent)
+            List<Fighter> adjacent = Save.GetRoom().GetAdjacentCreatures(victim);
+            foreach (Fighter C in adjacent)
             {
                 if (C != attacker)
                 {
-                    Deal(attacker, C, room, (float)damage / 4);
+                    Deal(C, (float)damage / 2);
                 }
             }
         }
 
-        private static void SplinterII(Creature attacker, Creature victim, Room room, float damage)
+        void SplinterII(Fighter attacker, Fighter victim, float damage)
         {
-            LinkedList<Creature> adjacent = room.GetAdjacentCreatures(victim);
-            foreach (Creature C in adjacent)
+            List<Fighter> adjacent = Save.GetRoom().GetAdjacentCreatures(victim);
+            foreach (Fighter C in adjacent)
             {
                 if (C != attacker)
                 {
-                    Deal(attacker, C, room, (float)damage);
+                    Deal(C, (float)damage);
                 }
             }
         }
 
-        private static void ThornsI(Creature attacker, Creature victim, Room room, float damage)
+        void ThornsI(Fighter attacker, Fighter victim, float damage)
         {
-            Deal(victim, attacker, room, damage);
+            Deal(victim, damage);
         }
 
-        private static void DoublingI(Creature attacker, Creature victim, Room room, float damage)
+        void DoublingI(Fighter attacker, Fighter victim, float damage)
         {
-            Deal(attacker, victim, room, damage * 2);
+            Deal(victim, damage * 2);
         }
+
     }
 }

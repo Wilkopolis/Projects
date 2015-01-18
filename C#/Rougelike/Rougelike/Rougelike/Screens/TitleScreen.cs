@@ -27,6 +27,9 @@ namespace Rougelike
             Button editor = new Button(Content.Load<Texture2D>("textures/title/editor"), new Vector2(840, 550), "editor");
             TitleScreenButtons.Add(editor);
 
+            Button breaky = new Button("break", Keys.P);
+            TitleScreenButtons.Add(breaky);
+
             Button quit = new Button(Content.Load<Texture2D>("textures/title/exit"), new Vector2(640, 650), "exit", Keys.F10);
             TitleScreenButtons.Add(quit);
 

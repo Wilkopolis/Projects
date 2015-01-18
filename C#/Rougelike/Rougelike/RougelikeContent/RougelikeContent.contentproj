@@ -404,13 +404,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\editor\selected.png">
-      <Name>selected</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="textures\editor\unselected.png">
-      <Name>unselected</Name>
+    <Compile Include="textures\editor\buttons\unselectedtab.png">
+      <Name>unselectedtab</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -423,8 +418,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\editor\summary.png">
-      <Name>summary</Name>
+    <Compile Include="textures\editor\buttons\unselectedsummary.png">
+      <Name>unselectedsummary</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -442,43 +437,43 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\editor\summaryselected.png">
-      <Name>summaryselected</Name>
+    <Compile Include="textures\editor\buttons\selectedsummary.png">
+      <Name>selectedsummary</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\editor\new.png">
+    <Compile Include="textures\editor\buttons\new.png">
       <Name>new</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\editor\save.png">
+    <Compile Include="textures\editor\buttons\save.png">
       <Name>save</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\editor\ap.png">
+    <Compile Include="textures\editor\buttons\ap.png">
       <Name>ap</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\editor\hp.png">
+    <Compile Include="textures\editor\buttons\hp.png">
       <Name>hp</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\editor\sprite.png">
+    <Compile Include="textures\editor\buttons\sprite.png">
       <Name>sprite</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\editor\damage.png">
+    <Compile Include="textures\editor\buttons\damage.png">
       <Name>damage</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -530,7 +525,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\editor\difficulty.png">
+    <Compile Include="textures\editor\buttons\difficulty.png">
       <Name>difficulty</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -808,6 +803,75 @@
   <ItemGroup>
     <Compile Include="textures\game\4x\selected.png">
       <Name>selected</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\npc\scrapper.png">
+      <Name>scrapper</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\npc\itemback.png">
+      <Name>itemback</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\editor\payout.png">
+      <Name>payout</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\editor\template\prize.png">
+      <Name>prize</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\skills\cheaper.png">
+      <Name>cheaper</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\skills\inspect.png">
+      <Name>inspect</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\skills\safe.png">
+      <Name>safe</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\skills\stronger.png">
+      <Name>stronger</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\skills\zap.png">
+      <Name>zap</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\skills\zaproom.png">
+      <Name>zaproom</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\editor\buttons\selectedtab.png">
+      <Name>selectedtab</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

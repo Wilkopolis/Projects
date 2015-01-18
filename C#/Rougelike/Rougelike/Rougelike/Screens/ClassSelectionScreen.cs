@@ -28,6 +28,9 @@ namespace Rougelike
             Button mastermind = new Button(ClassUnselected, new Vector2(200, 300), "mastermind");
             ClassSelectionButtons.Add(mastermind);
 
+            Button breaky = new Button("break", Keys.P);
+            ClassSelectionButtons.Add(breaky);
+
             Button Quit = new Button("quit", Keys.F10);
             ClassSelectionButtons.Add(Quit);
 
@@ -77,6 +80,7 @@ namespace Rougelike
             switch (b.Action)
             {
                 case "mastermind":
+                    InitializeGenerator();
                     InitializeGame();
                     break;
 
@@ -94,10 +98,11 @@ namespace Rougelike
         {
             Draw(ClassSelectionBackground);
 
-            foreach(Button button in ClassSelectionButtons)
+            foreach (Button button in ClassSelectionButtons)
             {
                 Draw(button);
-                SpriteBatch.DrawString(Cousine22, button.Action, OffsetVector + button.Position - new Vector2(82, 15), Color.White);
+                if (button.Visable)
+                    SpriteBatch.DrawString(Cousine22, button.Action, OffsetVector + button.Position - new Vector2(82, 15), Color.White);
             }
         }
     }

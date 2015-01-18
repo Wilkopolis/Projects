@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MacAttack")]
-[assembly: AssemblyProduct("MacAttack")]
+[assembly: AssemblyTitle("Rougelike")]
+[assembly: AssemblyProduct("Rougelike")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2013")]

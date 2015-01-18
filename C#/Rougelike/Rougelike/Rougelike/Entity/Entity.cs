@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Rougelike
 {
-    public abstract class Entity :  IEquatable<Entity>
+    public abstract class Entity : IEquatable<Entity>
     {
         public string Name;
         public int HashID;
@@ -35,7 +35,7 @@ namespace Rougelike
         
         public bool Equals(Entity other)
         {
-            return Position.X == other.Position.X && Position.Y == other.Position.Y;
+            return HashID == other.HashID;
         }
     }
 }

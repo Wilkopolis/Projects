@@ -8,31 +8,32 @@ using System.IO;
 
 namespace Rougelike
 {
-    partial class Generator
+    partial class Rougelike
     {
-        private Tile Empty = new Tile(false);
-        private Tile Solid = new Tile(true);
-        private Random Random = new Random();
-        private Vector2 Origin = new Vector2(34, 34);
-        private int HashID = -1;
+        Tile Empty = new Tile(false);
+        Tile Solid = new Tile(true);
+        Random Random = new Random();
+        Vector2 Origin = new Vector2(34, 34);
 
-        private List<Item> Commons;
-        private List<Item> Rares;
-        private List<Item> Legendarys;
+        List<Item> Commons;
+        List<Item> Rares;
+        List<Item> Legendarys;
 
-        private List<RoomTemplate> BadTemps;
-        private List<RoomTemplate> GoodTemps;
+        List<RoomTemplate> BadTemps;
+        List<RoomTemplate> GoodTemps;
 
-        private List<Enemy> Enemies;
+        List<Enemy> EnemyTemplates;
 
-        private RoomTemplate Start;
-        private Weapon StarterSword;
+        RoomTemplate Start;
+        RoomTemplate Golden;
+        Weapon StarterSword;
+        HealthPotion SmallHealthPotion;
 
-        private String[] NameBank = { "Mac", "KickstarterBacker", "Jebidiah", "Jules", "Fuji", "Llama", "DC", "Tazdingo", "Yuri", "Seany" };
+        String[] NameBank = { "Mac", "KickstarterBacker", "Jebidiah", "Jules", "Fuji", "Llama", "DC", "Tazdingo", "Yuri", "Seany" };
 
-        private int Difficulty = 5;
+        int Difficulty = 5;
 
-        public Generator(Microsoft.Xna.Framework.Content.ContentManager Content)
+        void InitializeGenerator()
         {
             Commons = new List<Item>();
             Rares = new List<Item>();
@@ -41,22 +42,30 @@ namespace Rougelike
             BadTemps = new List<RoomTemplate>();
             GoodTemps = new List<RoomTemplate>();
 
-            Enemies = new List<Enemy>();
+            EnemyTemplates = new List<Enemy>();
 
             //Starting Room
             Start = new RoomTemplate();
             Start.Tiles[7, 1].Steps = Stairs.DOWN;
 
+            Golden = new RoomTemplate();
+            Golden.Golden = true;
+            for (int i = 0; i < 15; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    Golden.Tiles[i, j].AssetIndex = (int)Texture.GOLDENEMPTY;
+                }
+            }
+            Golden.Tiles[0, 4].Door = true;
+            Golden.Tiles[0, 5].Door = true;
+            Golden.Tiles[7, 0].Door = true;
+            Golden.Tiles[7, 9].Door = true;
+            Golden.Tiles[14, 4].Door = true;
+            Golden.Tiles[14, 5].Door = true;
+
             //Starter Weapon
-            StarterSword = new Weapon();
-            StarterSword.Sprite = Content.Load<Texture2D>("textures/game/items/woodsword");
-            StarterSword.Cost = 1;
-            StarterSword.Damage = 1;
-            StarterSword.Type = ItemType.WEILD;
-            StarterSword.Mods.Add(Effect.ONEHANDED, 1);
-            StarterSword.Mods.Add(Effect.SWORD, 1);
-            StarterSword.Name = "Starter Sword";
-            StarterSword.HashID = HashID++;
+            StarterSword = new Weapon(Content.Load<Texture2D>("textures/game/items/woodsword"), 1, 1, 5, ItemType.WEILD, "Starter Sword", HashID++, new Effect[] {Effect.ONEHANDED, Effect.SWORD});
             
             ////////////////////////////////
             //          ENTITIES          //
@@ -72,61 +81,41 @@ namespace Rougelike
             */
 
             // Small HP
-            HealthPotion SmallHealthPotion = new HealthPotion(HealthPotion.Strength.SMALL);
-            SmallHealthPotion.Sprite = Content.Load<Texture2D>("textures/game/items/healthpotion");
-            SmallHealthPotion.Type = ItemType.CONSUMABLE;
-            SmallHealthPotion.HashID = HashID++;
+            SmallHealthPotion = new HealthPotion(Content.Load<Texture2D>("textures/game/items/healthpotion"), Strength.SMALL, 5, HashID++);
             Commons.Add(SmallHealthPotion);
+
+            Item coin = new Coin(Content.Load<Texture2D>("textures/game/items/coin"), 5);
+            Commons.Add(coin);
 
             /*
              *      RARES   
              */
 
             // Splinter Wooden Sword
-            Weapon WoodenSword = new Weapon();
-            WoodenSword.Sprite = Content.Load<Texture2D>("textures/game/items/woodsword");
-            WoodenSword.Cost = 1;
-            WoodenSword.Damage = 2;
-            WoodenSword.Type = ItemType.WEILD;
-            WoodenSword.Mods.Add(Effect.ONEHANDED, 1);
-            WoodenSword.Mods.Add(Effect.SWORD, 1);
-            WoodenSword.Mods.Add(Effect.SPLINTER, 1);
-            WoodenSword.Name = "Wooden Sword";
-            WoodenSword.HashID = HashID++;
-            Rares.Add(WoodenSword);
+            Weapon woodensword = new Weapon(Content.Load<Texture2D>("textures/game/items/woodsword"), 1, 1, 20, ItemType.WEILD, "Wooden Sword", HashID++, new Effect[] {Effect.ONEHANDED, Effect.SWORD, Effect.SPLINTER});
+            Rares.Add(woodensword);
 
             // Thorny Helmet
-            Armor Helmet = new Armor();
-            Helmet.Sprite = Content.Load<Texture2D>("textures/game/items/helmet");
-            Helmet.Name = "Noodle Knocker";
-            Helmet.Type = ItemType.HEAD;
-            Helmet.Mods.Add(Effect.THORNS, 1);
-            Helmet.HashID = HashID++;
-            Rares.Add(Helmet);
+            Armor spikyhelmet = new Armor(Content.Load<Texture2D>("textures/game/items/helmet"), 20, ItemType.HEAD, "Noodle Knocker", HashID++, new Effect[] {Effect.THORNS});
+            Rares.Add(spikyhelmet);
+
+            //Armor 
+            //Rares.Add(spikyhelmet);
 
             /*
              *      LEGENDARIES   
              */
 
             // Dagger of Doubling
-            Weapon Dagger = new Weapon();
-            Dagger.Sprite = Content.Load<Texture2D>("textures/game/items/dagger");
-            Dagger.Damage = 1;
-            Dagger.Cost = 1;
-            Dagger.Type = ItemType.WEILD;
-            Dagger.Mods.Add(Effect.ONEHANDED, 1);
-            Dagger.Mods.Add(Effect.SWORD, 1);
-            Dagger.Mods.Add(Effect.DOUBLING, 1);
-            Dagger.Name = "Dagger of Doubling";
-            Dagger.HashID = HashID++;
-            Legendarys.Add(Dagger);
+            Weapon doubledagger = new Weapon(Content.Load<Texture2D>("textures/game/items/dagger"), 2, 2, 30, ItemType.WEILD, "Dagger", HashID++, new Effect[] {Effect.ONEHANDED, Effect.SWORD, Effect.DOUBLING});
+            Legendarys.Add(doubledagger);
             #endregion
 
-            LoadCreatures();
-            LoadTemplates();
+            LoadGameCreatures();
+            LoadGameTemplates();
         }
 
-        private void LoadTemplates()
+        void LoadGameTemplates()
         {
             //Foreach .lvl files add it to the list
             string[] fileNames = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\roomtemplates\");
@@ -162,28 +151,32 @@ namespace Rougelike
                         }
                     }
 
-                    string[] creatures = contents[2].Split(':')[1].Split(',');
+                    string[] payout = contents[2].Split(':')[1].Split('/');
+                    result.Payout = new Vector2(Convert.ToInt32(payout[0]), Convert.ToInt32(payout[1]));
+
+                    string[] creatures = contents[3].Split(':')[1].Split(',');
                     foreach (string c in creatures)
                     {
                         if (c != "")
                         {
                             string[] pair = c.Split('=');
                             int enemy = Convert.ToInt32(pair[0]);
-                            Enemy guy = Enemies.ElementAt(enemy).Copy(new Vector2(Convert.ToInt32(pair[1].Split('/')[0]), Convert.ToInt32(pair[1].Split('/')[1])));
+                            Enemy guy = EnemyTemplates.ElementAt(enemy).Copy(new Vector2(Convert.ToInt32(pair[1].Split('/')[0]), Convert.ToInt32(pair[1].Split('/')[1])), HashID++);
                             result.Entities.Add(guy);
                         }
                     }
 
-                    string[] items = contents[3].Split(':')[1].Split(',');
+                    string[] items = contents[4].Split(':')[1].Split(',');
                     foreach (string i in items)
                     {
                         if (i != "")
                         {
                             string[] pair = i.Split('/');
-                            result.Entities.Add(new Item(new Vector2(Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1]))));
+                            result.Entities.Add(new HealthPotion(new Vector2(Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1]))));
                         }
                     }
-                    result.Difficulty = Convert.ToInt32(contents[4].Split(':')[1]);
+                    result.Difficulty = Convert.ToInt32(contents[5].Split(':')[1]);
+
                     if (result.Difficulty != 0)
                         BadTemps.Add(result);
                     else
@@ -197,7 +190,7 @@ namespace Rougelike
             }
         }
 
-        private void LoadCreatures()
+        void LoadGameCreatures()
         {
             //Foreach .nme files add it to the list
             string[] fileNames = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\enemytemplates\");
@@ -215,9 +208,9 @@ namespace Rougelike
                     string[] stats = contents[0].Split(':')[1].Split(',');
                     //result.Enemy.Name = currentcname;
                     if (stats[0].Split('=')[1].Trim() == "Smart")
-                        result.Brains = Creature.Nature.SMART;
+                        result.Brains = Nature.SMART;
                     else
-                        result.Brains = Creature.Nature.DUMB;
+                        result.Brains = Nature.DUMB;
                     result.HP = Convert.ToInt32(stats[1].Split('=')[1]);
                     result.MaxHP = Convert.ToInt32(stats[1].Split('=')[1]);
                     result.AP = Convert.ToInt32(stats[2].Split('=')[1]);
@@ -225,15 +218,15 @@ namespace Rougelike
                     result.AssetIndex = Convert.ToInt32(stats[3].Split('=')[1]);
                     result.Damage = Convert.ToInt32(stats[4].Split('=')[1]);
                     result.Origin = Origin;
-                    result.Side = Creature.Faction.NERD;
+                    result.Side = Faction.NERD;
                     string[] mods = contents[1].Split(':')[1].Split(',');
                     if (mods[0] != "")
                     {
                         foreach (string m in mods)
-                            result.Effects.AddLast((Effect)Convert.ToInt32(m));
+                            result.Effects.Add((Effect)Convert.ToInt32(m));
                     }
                     result.Name = "Steve";
-                    Enemies.Add(result);
+                    EnemyTemplates.Add(result);
                 }
             }
             catch (Exception e)

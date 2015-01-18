@@ -5,8 +5,4 @@ using System.Text;
 
 namespace Rougelike
 {
-    interface Consumable
-    {
-        void Use(Creature c);
-    }
 }

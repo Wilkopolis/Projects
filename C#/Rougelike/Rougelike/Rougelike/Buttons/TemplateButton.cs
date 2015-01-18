@@ -10,7 +10,6 @@ namespace Rougelike
     public class TemplateButton : Button
     {
         public RoomTemplate Template;
-        public bool Visable;
 
         public TemplateButton(Texture2D sprite, String name, int difficulty)
         {

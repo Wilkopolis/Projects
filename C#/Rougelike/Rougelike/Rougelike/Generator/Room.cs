@@ -11,6 +11,7 @@ namespace Rougelike
     {
         public Tile[,] Tiles;
         public List<Entity> Entities = new List<Entity>();
+        public Vector2 Payout;
         public bool Visible;
         public bool Exists;
         public bool HasStairs;
@@ -19,22 +20,24 @@ namespace Rougelike
         public bool Golden;
         public int Power = 1;
         public int Wealth = 1;
+        public int Cost = 5;
 
         public Room()
         {
         }
 
-        public Room(RoomTemplate T)
+        public Room(RoomTemplate template)
         {
             this.Tiles = new Tile[15,10];
             for (int i = 0; i < 15; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    this.Tiles[i, j] = T.Tiles[i, j].Copy();
+                    this.Tiles[i, j] = template.Tiles[i, j].Copy();
                 }
             }
             Exists = true;
+            Golden = template.Golden;
         }
         
         public void AddToRoom(Entity entity)
@@ -57,7 +60,16 @@ namespace Rougelike
             }
             foreach (Entity entity in Entities)
             {
-                Tiles[(int)entity.Position.X, (int)entity.Position.Y].Solid = true;
+                if (entity is Enemy)
+                {
+                    Enemy enemy = entity as Enemy;
+                    if (enemy.HP <= 0)
+                        Tiles[(int)enemy.Position.X, (int)enemy.Position.Y].Solid = false;
+                    else
+                        Tiles[(int)entity.Position.X, (int)entity.Position.Y].Solid = true;
+                }
+                else
+                    Tiles[(int)entity.Position.X, (int)entity.Position.Y].Solid = true;
             }
         }
 
@@ -164,33 +176,33 @@ namespace Rougelike
             }
             return false;
         }
-        
-        internal LinkedList<Creature> GetAdjacentCreatures(Creature victim)
+
+        internal List<Fighter> GetAdjacentCreatures(Fighter victim)
         {
-            LinkedList<Creature> result = new LinkedList<Creature>();
+            List<Fighter> result = new List<Fighter>();
             foreach (Entity E in Entities)
             {
-                if (E is Creature)
+                if (E is Fighter)
                 {
                     if (victim.Position.X + 1 < 14)
                     {
                         if (E.Position == victim.Position + new Vector2(1, 0))
-                            result.AddLast((Creature)E);
+                            result.Add((Fighter)E);
                     }
                     if (victim.Position.X - 1 >= 0)
                     {
                         if (E.Position == victim.Position + new Vector2(-1, 0))
-                            result.AddLast((Creature)E);
+                            result.Add((Fighter)E);
                     }
                     if (victim.Position.Y + 1 < 9)
                     {
                         if (E.Position == victim.Position + new Vector2(0, 1))
-                            result.AddLast((Creature)E);
+                            result.Add((Fighter)E);
                     }
                     if (victim.Position.Y - 1 >= 0)
                     {
                         if (E.Position == victim.Position + new Vector2(0, -1))
-                            result.AddLast((Creature)E);
+                            result.Add((Fighter)E);
                     }
                 }
             }

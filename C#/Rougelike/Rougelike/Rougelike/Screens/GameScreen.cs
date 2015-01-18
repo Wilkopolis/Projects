@@ -10,18 +10,20 @@ namespace Rougelike
 {
     public partial class Rougelike
     {
-        InventoryButton TemporaryInventoryButton;
-        Texture2D GameBackground;
         Item TemporaryItem;
-        bool ItemDragging;
+        ItemButton TemporaryItemButton;
+        Texture2D GameBackground;
         bool MegaMapMode;
         bool UpdateOptions;
-        bool ChangedFloor;
-        List<Description> DescriptionList = new List<Description>();
-        List<Button> GameButtons = new List<Button>();
+        bool ChangedFloors = true;
+        List<Description> DescriptionList;
+        List<Button> GameButtons;
 
         void InitializeGame()
         {
+            DescriptionList = new List<Description>();
+            GameButtons = new List<Button>();
+
             GameBackground = Content.Load<Texture2D>("textures/game/background");
 
             Button endturn = new Button("endturn", Keys.Space);
@@ -38,11 +40,10 @@ namespace Rougelike
 
             Button quit = new Button("quit", Keys.F10);
             GameButtons.Add(quit);
-
-            Button megamap = new Button("4x", Keys.Tab);
-            GameButtons.Add(megamap);
-
+            
             Initialize4XButtons();
+            InitializeShopButtons();
+            InitializeSkillButtons();
 
             NewGame(Class.MASTERMIND);
 
@@ -51,10 +52,10 @@ namespace Rougelike
 
         void CheckGameInput()
         {
-            foreach(Button button in GameButtons)
+            foreach (Button button in GameButtons)
             {
                 // Keyboard
-                if (Pressed(button.Hotkey))
+                if (Pressed(button.Hotkey) && DescriptionList.Count == 0)
                 {
                     button.WasPressed = true;
                 }
@@ -63,6 +64,7 @@ namespace Rougelike
                     if (button.WasPressed)
                     {
                         HandleGameInput(button);
+                        break;
                     }
                     button.WasPressed = false;
                 }
@@ -70,7 +72,7 @@ namespace Rougelike
                 // Mouse
                 if (MouseOver(button))
                 {
-                    if (Click())
+                    if (Click() && DescriptionList.Count == 0)
                     {
                         button.WasClicked = true;
                     }
@@ -79,37 +81,257 @@ namespace Rougelike
                         if (button.WasClicked)
                         {
                             HandleGameInput(button);
+                            break;
                         }
                         button.WasClicked = false;
-                    }
-
-                    if (RightReleased())
-                    {
-                        Examine();
                     }
                 }
             }
 
+            if (RightReleased())
+                HandleRightClick();
+
+            if (MegaMapMode)
+            {
+                CheckMegaMapButtons();
+                CheckSkillButtons();
+            }
+
+            if (Trading)
+                CheckTraderButtons();
+            else
+                CheckActiveSkills();
+
+            CheckItemDragging();
+
+            CheckDescriptions();
+
             if (UpdateOptions)
             {
-                Save.Kevin.UpdateOptions(Save.GetRoom(), GameButtons);
+                UpdatePlayerOptions();
                 UpdateOptions = false;
             }
 
-            if (ChangedFloor)
+            if (ChangedFloors)
             {
+                if (Save.Depth == 1)
+                {
+                    Button megamap = new Button("4x", Keys.Tab);
+                    GameButtons.Add(megamap);
+                }
                 BuildMegaMap();
-                ChangedFloor = false;
+                ChangedFloors = false;
             }
+        }
+
+        void CheckDescriptions()
+        {
+            foreach (Description description in DescriptionList)
+            {
+                Vector2 offset = MouseOver(description);
+                if (offset != Vector2.Zero && Click())
+                {
+                    description.Drag = true;
+                    description.Offset = ScaledMousePosition - description.Position;
+                }
+                if (Hold() && description.Drag)
+                {
+                    description.Position = ScaledMousePosition - description.Offset;
+                }
+                if (Released())
+                {
+                    description.Drag = false;
+                    if (MouseOverExitButton(description))
+                    {
+                        description.Delete = true;
+                    }
+                }
+            }
+            DescriptionList.RemoveAll(item => item.Delete);
+        }
+
+        bool CheckItemDragging()
+        {
+            foreach (InventoryButton button in Save.Kevin.Equipment.Items)
+            {
+                if (button.Item != null)
+                {
+                    Vector2 offset = MouseOver(button);
+                    if (offset != Vector2.Zero)
+                    {
+                        if (Click())
+                            button.WasClicked = true;
+                        if (Hold() && button.WasClicked)
+                        {
+                            if (TemporaryItem == null)
+                            {
+                                ItemDraggingOffsetVector = offset;
+                                TemporaryItem = button.Item;
+                                TemporaryItemButton = button;
+                                button.Item = null;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            if (Trader != null)
+            {
+                foreach (ShopButton button in Trader.Inventory)
+                {
+                    if (button.Item != null)
+                    {
+                        Vector2 offset = MouseOver(button);
+                        if (offset != Vector2.Zero)
+                        {
+                            if (Click())
+                                button.WasClicked = true;
+                            if (Hold() && button.WasClicked)
+                            {
+                                if (TemporaryItem == null)
+                                {
+                                    if (Save.Kevin.Wealth >= button.Cost)
+                                    {
+                                        ItemDraggingOffsetVector = offset;
+                                        if (button.Item is Armor)
+                                            TemporaryItem = ((Armor)button.Item).Copy(HashID++);
+                                        else if (button.Item is Weapon)
+                                            TemporaryItem = ((Weapon)button.Item).Copy(HashID++);
+                                        else if (button.Item is HealthPotion)
+                                            TemporaryItem = ((HealthPotion)button.Item).Copy(HashID++);
+                                        TemporaryItemButton = button;
+
+                                        Save.Kevin.Wealth -= button.Cost;
+                                        button.Stock--;
+                                        if (button.Stock <= 0)
+                                            button.Item = null;
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (Released())
+            {
+                if (TemporaryItem != null)
+                {
+                    foreach (InventoryButton button in Save.Kevin.Equipment.Items)
+                    {
+                        button.WasClicked = false;
+                        if (MouseOver(button) != Vector2.Zero)
+                        {
+                            if (button.Type == ItemType.INVENTORY)
+                            {
+                                if (button.Item == null)
+                                {
+                                    if (TemporaryItemButton is ShopButton)
+                                    {
+                                        button.Item = Dupe(TemporaryItem);
+                                        TemporaryItem = null;
+                                        TemporaryItemButton = null;
+                                    }
+                                    else
+                                    {
+                                        button.Item = TemporaryItem;
+                                        TemporaryItem = null;
+                                        TemporaryItemButton = null;
+                                    }
+                                    return true;
+                                }
+                                else if (button.Item.Type == TemporaryItem.Type)
+                                {
+                                    if (button.Item is HealthPotion && TemporaryItem is HealthPotion)
+                                    {
+                                        if (button.Item.Name == TemporaryItem.Name)
+                                        {
+                                            ((Potion)button.Item).StackSize++;
+                                            TemporaryItem = null;
+                                            TemporaryItemButton = null;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (TemporaryItemButton is ShopButton)
+                                        {
+                                            Save.Kevin.PickUp(Dupe(button.Item));
+                                            TemporaryItem = null;
+                                            TemporaryItemButton = null;
+                                        }
+                                        else
+                                        {
+                                            Item switcherino = button.Item;
+                                            button.Item = TemporaryItem;
+                                            TemporaryItemButton.Item = switcherino;
+                                            TemporaryItem = null;
+                                            TemporaryItemButton = null;
+                                        }
+                                    }
+                                    return true;
+                                }
+                                else
+                                    return false;
+                            }
+                            else if (button.Type == TemporaryItem.Type)
+                            {
+                                if (button.Item == null)
+                                {
+                                    if (TemporaryItemButton is ShopButton)
+                                    {
+                                        button.Item = TemporaryItem;
+                                        TemporaryItem = null;
+                                        TemporaryItemButton = null;
+                                    }
+                                    else
+                                    {
+                                        Item switcherino = button.Item;
+                                        button.Item = TemporaryItem;
+                                        TemporaryItemButton.Item = switcherino;
+                                        TemporaryItem = null;
+                                        TemporaryItemButton = null;
+                                    }
+                                }
+                                else
+                                {
+                                    Save.Kevin.PickUp(button.Item);
+                                    button.Item = TemporaryItem;
+                                    TemporaryItem = null;
+                                    TemporaryItemButton = null;
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                    if (Trading && MouseOver(Scrapper))
+                    {
+                        Save.Kevin.Wealth += TemporaryItem.Value;
+                        TemporaryItem = null;
+                        TemporaryItemButton = null;
+                        return true;
+                    }
+                    if (TemporaryItemButton is ShopButton)
+                    {
+                        ((ShopButton)TemporaryItemButton).Stock++;
+                        Save.Kevin.Wealth += ((ShopButton)TemporaryItemButton).Cost;
+                    }
+                    TemporaryItemButton.Item = TemporaryItem;
+                    TemporaryItem = null;
+                    TemporaryItemButton = null;
+                    return true;
+                }
+            }
+            return false;
         }
 
         void HandleGameInput(Button button)
         {
             Room CurrentRoom = Save.GetRoom();
-            if (button is Attack)
-                UpdateOptions = Attack((Attack)button);
-            else if (button is Movement)
-                UpdateOptions =  Move((Movement)button);
+            if (button is Attack && DescriptionList.Count == 0 && !MegaMapMode)
+                UpdateOptions = DoAttack((Attack)button);
+            else if (button is Movement && DescriptionList.Count == 0 && !MegaMapMode)
+                UpdateOptions = DoMovement((Movement)button);
             switch (button.Action)
             {
                 case "interact":
@@ -123,9 +345,10 @@ namespace Rougelike
                         {
                             ChangeFloors();
                         }
-                        else if (NextToNPC())
+                        else if (GetAdjacentNPC() != null)
                         {
                             //Interact with NPC
+                            Interact(GetAdjacentNPC());
                         }
                     }
                     break;
@@ -141,13 +364,12 @@ namespace Rougelike
                     if (!MegaMapMode)
                     {
                         Save.GetRoom().UpdateTiles();
-                        for (int i = 0; i < Save.GetRoom().Entities.Count; i++)
+                        foreach (Entity entity in Save.GetRoom().Entities)
                         {
-                            Entity entity = Save.GetRoom().Entities.ElementAt(i);
                             if (entity is Enemy)
-                            {
-                                ((Enemy)entity).DoTurn(Save.GetRoom(), Save.Kevin);
-                                ((Creature)entity).EndTurn();
+                            {                                
+                                Enemy enemy = entity as Enemy;
+                                DoTurn(enemy);
                             }
                         }
                         if (Save.Kevin.HP <= 0)
@@ -156,7 +378,7 @@ namespace Rougelike
                         }
                         else
                         {
-                            Save.Kevin.EndTurn();
+                            Save.Kevin.ApplyEndTurnEffects();
                             UpdateOptions = true;
                         }
                     }
@@ -171,17 +393,61 @@ namespace Rougelike
                     break;
 
                 case "4x":
-                    MegaMapMode = !MegaMapMode;
-                    foreach (Button b in GameButtons)
-                    {
-                        if (b.Action == "room")
-                            ((RoomButton)b).Visable = !((RoomButton)b).Visable;
-                    }
-                    break;
-
-                case "room":
+                    if (!Trading)
+                        MegaMapMode = !MegaMapMode;
                     break;
             }
+        }
+
+        /*  WHEN
+         *  We right clicked on an InventoryButton
+         *  
+         *  RETURN
+         *  true if we use up a consumable stack (remove description)
+         *  false otherwise
+         */
+        bool RightClick(InventoryButton button)
+        {
+            // IF ITS A CONSUMABLE
+            if (button.Item is Consumable)
+            {
+                ((HealthPotion)button.Item).Use(Save.Kevin);
+                if (((Potion)button.Item).StackSize <= 0)
+                {
+                    button.Item = null;
+                }
+            }
+            //// IF ITS IN MY LOADOUT
+            //foreach (InvButton Button in GetLoadout())
+            //{
+            //    if (Button == ClickedButton)
+            //    {
+            //        AddToInventory(Button.Item);
+            //        Button.Item = null;
+            //        return true;
+            //    }
+            //}
+            ////IF ITS IN MY INVENTORY
+            //foreach (InvButton Button in GetLoadout())
+            //{                    
+            //    if (Button.Slot == ClickedButton.Item.Type)
+            //    {
+            //        if (ClickedButton.Item.Type == Item.ItemType.WEILD)
+            //        {
+            //            if (GetRight() != null && GetLeft() == null)
+            //            {
+            //                Items[(int)Slot.LEFT].Item = ClickedButton.Item;
+            //                ClickedButton.Item = null;
+            //                return true;
+            //            }
+            //        }
+            //        Item tamp = Button.Item;
+            //        Button.Item = ClickedButton.Item;
+            //        ClickedButton.Item = tamp;
+            //        return true;
+            //    }
+            //}
+            return false;
         }
 
         void DrawGameScreen()
@@ -189,7 +455,7 @@ namespace Rougelike
             Draw(GameBackground);
 
             DrawGameRoom();
-           
+
             foreach (Button button in GameButtons)
             {
                 if (button is Movement)
@@ -207,40 +473,20 @@ namespace Rougelike
 
             DrawMiniMap();
 
-            DrawDescriptions();
-
             if (MegaMapMode)
             {
-                Draw4X();
+                DrawMegaMap();
+                DrawSkills();
             }
+
+            if (Trading)
+                DrawTradeWindow();
+
+            DrawDescriptions();
+
         }
 
-        bool Move(Movement movement)
-        {
-            if (!MegaMapMode)
-            {
-                if (Save.Kevin.AP >= movement.Cost)
-                {
-                    Save.Kevin.Position = new Vector2(movement.X, movement.Y);
-                    Save.Kevin.AP = Save.Kevin.AP - movement.Cost;
-                    Save.GetRoom().UpdateTiles();
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        bool Attack(Attack attack)
-        {
-            if (!MegaMapMode)
-            {
-                Creature.Attack(Save.Kevin, attack.Target, Save.GetRoom());
-                return true;
-            }
-            return false;
-        }
-
-        void Examine()
+        void HandleRightClick()
         {
             Description descriptor = null;
             foreach (Entity entity in Save.GetRoom().Entities)
@@ -252,12 +498,32 @@ namespace Rougelike
             }
             foreach (InventoryButton button in Save.Kevin.Equipment.Items)
             {
-                if (button.Item != null && MouseOver(button))
+                if (button.Item != null && MouseOver(button) != Vector2.Zero)
                 {
-                    if (!(button.Item is Consumable))
-                        descriptor = new Description(button);
-                    else
-                        Save.Kevin.RightClick(button);
+                    //if (!Trading)
+                    {
+                        //if ((button.Item is Consumable))
+                        //{
+                        //    Sell(button.Item);
+                        //    ((Potion)(button.Item)).StackSize--;
+                        //    if (((Potion)(button.Item)).StackSize == 0)
+                        //    {
+                        //        button.Item = null;
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    Sell(button.Item);
+                        //    button.Item = null;
+                        //}
+                    //}
+                    //else
+                    //{
+                        if ((button.Item is Consumable))
+                            RightClick(button);
+                        else
+                            descriptor = new Description(button);
+                    }
                 }
             }
             if (descriptor != null)
@@ -332,30 +598,13 @@ namespace Rougelike
                 }
             }
             Save.GetRoom().AddToRoom(Save.Kevin);
+            UpdateOptions = true;
             if (newroom)
                 Do4XTurn();
         }
 
         void ChangeFloors()
         {
-            //if (Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y].Steps == Stairs.UP)
-            //{
-            //    Save.GetRoom().Remove(Save.Kevin);
-            //    Save.GoUp();
-            //    Save.GetRoom().Visible = true;
-            //    for (int i = 0; i < 15; i++)
-            //    {
-            //        for (int j = 0; j < 10; j++)
-            //        {
-            //            if (Save.GetRoom().Tiles[i, j].Steps == Stairs.DOWN)
-            //            {
-            //                Save.Kevin.Position = new Vector2(i, j);
-            //            }
-            //        }
-            //    }
-            //    Save.GetRoom().AddToRoom(Save.Kevin);
-            //}
-            //else
             if (Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y].Steps == Stairs.DOWN)
             {
                 Save.GetRoom().Remove(Save.Kevin);
@@ -373,50 +622,10 @@ namespace Rougelike
                 }
                 Save.GetRoom().AddToRoom(Save.Kevin);
                 Save.GetRoom().PermaWorked = true;
+                Save.GetRoom().Worked = true;
             }
+            ChangedFloors = true;
             UpdateOptions = true;
-            ChangedFloor = true;
-        }
-
-        void BuildMegaMap()
-        {
-            GameButtons.RemoveAll(item => item is Movement);
-            int imin = (int)Save.GetFloor().Position.X;
-            int imax = (int)Save.GetFloor().Position.X;
-            int jmin = (int)Save.GetFloor().Position.Y;
-            int jmax = (int)Save.GetFloor().Position.Y;
-            for (int i = 0; i < Save.GetFloor().Max.X; i++)
-            {
-                for (int j = 0; j < Save.GetFloor().Max.Y; j++)
-                {
-                    if (Save.GetFloor().Rooms[i, j].Exists)
-                    {
-                        if (i < imin)
-                            imin = i;
-                        if (i > imax)
-                            imax = i;
-                        if (j < jmin)
-                            jmin = j;
-                        if (j > jmax)
-                            jmax = j;
-                    }
-                }
-            }
-
-            Vector2 offset = new Vector2((imax - imin) * 58, (jmax - jmin) * 58);
-            Vector2 diff = new Vector2(524, 364) - offset / 2;
-
-            for (int i = 0; i < Save.GetFloor().Max.X; i++)
-            {
-                for (int j = 0; j < Save.GetFloor().Max.Y; j++)
-                {
-                    if (Save.GetFloor().Rooms[i, j].Exists)
-                    {
-                        GameButtons.Add(new RoomButton(Save.GetFloor().Rooms[i, j], diff + new Vector2((i - imin) * 58, (j - jmin) * 58)));
-                    }
-                }
-            }
-
         }
 
         bool OnDoor()
@@ -429,11 +638,6 @@ namespace Rougelike
             return Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y].Steps != Stairs.NONE;
         }
 
-        bool NextToNPC()
-        {
-            return false;
-        }
-
         void PickUp()
         {
             Item result = Save.GetRoom().GetAdjacent(Save.Kevin.Position);
@@ -442,8 +646,59 @@ namespace Rougelike
                 Save.Kevin.PickUp(result);
                 Save.GetRoom().Remove(result);
                 Save.GetRoom().UpdateTiles();
-                Save.Kevin.UpdateOptions(Save.GetRoom(), GameButtons);
+                UpdatePlayerOptions();
             }
+        }
+
+        void Interact(NPC npc)
+        {
+            switch (npc.Type)
+            {
+                case NPCType.ENCHANTER:
+                    break;
+
+                case NPCType.MERCHANT:
+                    Trading = !Trading;
+                    if (Trader == null)
+                        Trader = npc;
+                    else
+                        Trader = null;
+                    break;
+
+                case NPCType.ALCHEMIST:
+                    break;
+            }
+        }
+
+        void Sell(Item item)
+        {
+            Save.Kevin.Wealth += item.Value;
+        }
+
+        Item Dupe(Item original)
+        {
+            //if (original is Creature)
+            //{
+            //    if (original is Enemy)
+            //        return ((Enemy)original).Copy(HashID++);
+            //    else if (original is NPC)
+            //        return ((NPC)original).Copy(HashID++);
+            //}
+            //else if (original is Item)
+            //{
+            if (original is Weapon)
+                return ((Weapon)original).Copy(HashID++);
+            else if (original is Armor)
+                return ((Armor)original).Copy(HashID++);
+            else if (original is Armor)
+                return ((Armor)original).Copy(HashID++);
+            else if (original is Potion)
+            {
+                if (original is HealthPotion)
+                    return ((HealthPotion)original).Copy(HashID++);
+            }
+            //}
+            return null;
         }
     }
 }
