@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Rougelike
 {
@@ -10,11 +11,11 @@ namespace Rougelike
     {
         public int X;
         public int Y;
-        public int Cost;
-        public int AssetIndex = (int)Texture.MOVEMENT;
+        public int Cost;        
 
-        public Movement(int x, int y)
+        public Movement(Texture2D sprite, int x, int y)
         {
+            Sprite = sprite;
             X = x;
             Y = y;
             Cost = 0;
@@ -23,8 +24,9 @@ namespace Rougelike
             Description = " ";
         }
 
-        public Movement(int x, int y, int cost)
+        public Movement(Texture2D sprite, int x, int y, int cost)
         {
+            Sprite = sprite;
             X = x;
             Y = y;
             Cost = cost;

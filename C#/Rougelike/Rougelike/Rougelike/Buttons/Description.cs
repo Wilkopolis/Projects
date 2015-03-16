@@ -52,7 +52,7 @@ namespace Rougelike
             }
         }
 
-        public Description(InventoryButton button)
+        public Description(ItemButton button)
         {
             Source = button.Item;
             Mods = button.Item.GetModStrings();

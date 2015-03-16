@@ -12,27 +12,38 @@ namespace Rougelike
         public int Selection;
         public Equipment Equipment;
         public List<Skill> Skills;
+        public List<Effect> Buffs;
 
         public int Power;
         public int Wealth;
         public int Experience;
 
+        public int WealthPerTurn = 1;
+        public int PowerPerTurn = 1;
+
+        //Mayor
+        public int ExperiencePerTurn;
+
         public Class Class;
 
-        public Player(int hashid)
+        public Player(Texture2D sprite, int hashid, Class playerclass)
         {
             Name = "You";
-            AssetIndex = (int)Texture.PLAYER;
+            Sprite = sprite;
             Origin = new Vector2(40, 40);
-            HP = 4;
-            MaxHP = 6;
+            HP = 6;
+            MaxHP = 8;
             AP = 5;
             MaxAP = 5;
             Side = Faction.COOLGUY;
             Brains = Nature.DUMB;
             HashID = hashid;
+            Class = playerclass;
+            if (Class == Class.MASTERMIND)
+                ExperiencePerTurn = 1;
             Equipment = new Equipment();
             Skills = new List<Skill>();
+            Buffs = new List<Effect>();
         }
 
         public void PickUp(Item item)
@@ -45,7 +56,15 @@ namespace Rougelike
 
         public Dictionary<Effect, int> GetEffects()
         {
-            return Equipment.GetEffects();
+            Dictionary<Effect, int> results = Equipment.GetEffects();
+            foreach (Effect e in Buffs)
+            {
+                if (results.ContainsKey(e))
+                    results[e]++;
+                else
+                    results.Add(e, 1);
+            }
+            return results;
         }
 
         override public Dictionary<Effect, int> GetOffensiveEffects()
@@ -58,9 +77,18 @@ namespace Rougelike
             return Equipment.GetDefensiveEffects();
         }
 
-        override public int GetDamage()
+        override public int GetDamage(Random seed)
         {
-            return Equipment.GetDamage();
+            int damage = Equipment.GetDamage();
+            Dictionary<Effect, int> effects = GetEffects();
+            if (effects.ContainsKey(Effect.DMGUP))
+                damage += effects[Effect.DMGUP];
+            if (effects.ContainsKey(Effect.DMGDOWN))
+                damage -= effects[Effect.DMGDOWN];
+            if (effects.ContainsKey(Effect.CRITUP))
+                if (seed.Next(effects[Effect.CRITUP], 5) == 4)
+                    damage *= 2;
+            return damage;
         }
 
         override public int GetAttackCost()
@@ -75,15 +103,14 @@ namespace Rougelike
 
         override public string[] GetModStrings()
         {
-            Dictionary<Effect, int> Mods = Equipment.GetEffects();
-
+            Dictionary<Effect, int> Mods = GetEffects();
             LinkedList<string> mods = new LinkedList<string>();
+
             foreach (Effect E in Mods.Keys)
             {
-                if ((int)E < 100)
+                if ((int)E < 200)
                     mods.AddLast(Item.ModToString(E) + " " + Item.StrengthToString(Mods[E]));
-            }
-
+            } 
             string[] result = { "", "", "", "" };
             int i = 0;
             foreach (string mod in mods)
@@ -98,14 +125,16 @@ namespace Rougelike
             return result;
         }
 
-        public int MyWealthPerTurn()
+        public bool InventoryFull()
         {
-            return 0;
-        }
-
-        public int MyPowerPerTurn()
-        {
-            return 0;
+            for (int i = 10; i < 26; i++)
+            {
+                if (Equipment.Items[i].Item == null)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

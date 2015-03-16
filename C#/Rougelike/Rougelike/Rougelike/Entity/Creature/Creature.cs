@@ -21,9 +21,9 @@ namespace Rougelike
         public int MaxAP;
         public int MaxHP;
         public Nature Brains;
-        public bool Dead;
+        public bool HasMoved;
 
-        public abstract int GetDamage();
+        public abstract int GetDamage(Random seed);
         public abstract int GetAttackCost();
         public abstract Dictionary<Effect, int> GetOffensiveEffects();
         public abstract Dictionary<Effect, int> GetDefensiveEffects();

@@ -16,18 +16,27 @@ namespace Rougelike
         // This is here for ease of change
         int mod = 1;
 
+        bool DoAttack(Attack attack)
+        {
+            if (Attack(Save.Kevin, attack.Target))
+            {
+                if (Save.Kevin.Class != Class.MASTERMIND)
+                    Save.Kevin.Experience++;
+                if (Save.GetRoom().Entities.FindAll(entity => entity is Enemy && ((Enemy)entity).HP > 0).Count == 0)
+                {
+                    Save.GetRoom().AddToRoom(GeneratePrize());
+                }
+            }
+            return true;
+        }
+
         bool Deal(Fighter victim, float damage)
         {
             victim.HP -= (int)Math.Round(damage);
 
             if (victim.HP <= 0)
             {
-                if (victim is Enemy)
-                {
-                    Save.GetRoom().Remove(victim);
-                    Save.GetRoom().UpdateTiles();
-                    return true;
-                }
+                return true;
             }
             return false;
         }
@@ -35,101 +44,203 @@ namespace Rougelike
         bool Attack(Fighter attacker, Fighter victim)
         {
             // Calculate Damage
-            float damage = attacker.GetDamage();
+            float damage = attacker.GetDamage(Random);
 
             // If we have enough AP
             if (attacker.AP >= attacker.GetAttackCost())
             {
                 attacker.AP -= attacker.GetAttackCost();
 
+                // Apply Damage
+                Deal(victim, damage);
+
                 // Apply Attacker Effects
                 Dictionary<Effect, int> mods = attacker.GetOffensiveEffects();
-
                 foreach (Effect E in mods.Keys)
                 {
-                    ApplyEffects(attacker, victim, E, mods[E], damage);
+                    ApplyEffect(attacker, victim, E, mods[E], damage);
                 }
 
                 // Apply Defensive Effects
                 mods = victim.GetDefensiveEffects();
                 foreach (Effect E in mods.Keys)
                 {
-                    ApplyEffects(attacker, victim, E, mods[E], damage);
+                    ApplyEffect(attacker, victim, E, mods[E], damage);
                 }
+            }
+            return victim.HP <= 0;
+        }
 
-                // Apply Damage
-                return Deal(victim, damage);
+        void DoEnemyTurns()
+        {
+            while (APLeft())
+            {
+                foreach (Enemy enemy in Save.GetRoom().Entities.FindAll(entity => entity is Enemy))
+                {
+                    if (AreAdjacent(enemy, Save.Kevin))
+                    {
+                        if (!FindAnotherSpot(enemy))
+                            Fight(enemy);
+                    }
+                    else
+                    {
+                        Movement move = GetNextMove(enemy);
+                        Enemy inmyway = SpotIsClear(move);
+                        if (inmyway == null)
+                        {
+                            Take(enemy, move);
+                            enemy.WaitingOn = null;
+                        }
+                        else
+                        {
+                            if (enemy.WaitingOn == inmyway && inmyway.AP == 0)
+                                enemy.AP = 0;
+                            else
+                                enemy.WaitingOn = inmyway;
+                        }
+                    }
+                }
+            }
+            foreach (Enemy enemy in Save.GetRoom().Entities.FindAll(entity => entity is Enemy))
+            {
+                enemy.ApplyEndTurnEffects();
+            }
+            Save.GetRoom().UpdateTiles();
+        }
+
+        bool FindAnotherSpot(Enemy me)
+        {
+            foreach (Enemy enemy in Save.GetRoom().Entities.FindAll(entity => entity is Enemy))
+            {
+                if (enemy.WaitingOn == me)
+                {
+                    int left = 100, right = 100, up = 100, down = 100;
+                    if (Save.Kevin.Position.X > 0)
+                    {
+                        if (!Save.GetRoom().Tiles[(int)Save.Kevin.Position.X - 1, (int)Save.Kevin.Position.Y].Solid)
+                        {
+                            left = (int)(Math.Abs(Save.Kevin.Position.X - 1 - me.Position.X) + Math.Abs(Save.Kevin.Position.Y - me.Position.Y));
+                        }
+                    }
+                    if (Save.Kevin.Position.Y > 0)
+                    {
+                        if (!Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y - 1].Solid)
+                        {
+                            up = (int)(Math.Abs(Save.Kevin.Position.X - me.Position.X) + Math.Abs(Save.Kevin.Position.Y - 1 - me.Position.Y));
+                        }
+                    }
+                    if (Save.Kevin.Position.X < 14)
+                    {
+                        if (!Save.GetRoom().Tiles[(int)Save.Kevin.Position.X + 1, (int)Save.Kevin.Position.Y].Solid)
+                        {
+                            right = (int)(Math.Abs(Save.Kevin.Position.X + 1 - me.Position.X) + Math.Abs(Save.Kevin.Position.Y - me.Position.Y));
+                        }
+                    }
+                    if (Save.Kevin.Position.Y < 9)
+                    {
+                        if (!Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y + 1].Solid)
+                        {
+                            down = (int)(Math.Abs(Save.Kevin.Position.X - me.Position.X) + Math.Abs(Save.Kevin.Position.Y + 1 - me.Position.Y));
+                        }
+                    }
+                    if (up != 0 && up < down && up < left && up < right)
+                    {
+                        AStarHorseshit(me, 1, Save.Kevin.Position - new Vector2(0, 1));
+                    }
+                    else if (left != 0 && left < down && left < up && left < right)
+                    {
+                        AStarHorseshit(me, 1, Save.Kevin.Position - new Vector2(1, 0));
+                    }
+                    else if (right != 0 && right < down && right < up && right < left)
+                    {
+                        AStarHorseshit(me, 1, Save.Kevin.Position + new Vector2(1, 0));
+                    }
+                    else if (down != 0 && down < right && down < up && down < left)
+                    {
+                        AStarHorseshit(me, 1, Save.Kevin.Position + new Vector2(0, 1));
+                    }
+                     if (me.Movements.Count > 0)
+                    {
+                        Enemy inmyway = SpotIsClear(me.Movements.First.Value);
+                        if (inmyway == null)
+                            Take(enemy, me.Movements.First.Value);
+                    }
+                }
             }
             return false;
         }
 
-        void DoTurn(Enemy star)
+        void Fight(Enemy enemy)
         {
-            // Calc Moves
-            star.Movements = new LinkedList<Movement>();
-            if (star.Brains == Nature.DUMB)
+            while (enemy.AP >= enemy.GetAttackCost() && enemy.HP >= 0)
             {
-                GetEnemyMovementOptions(star);
+                Attack(enemy, Save.Kevin);
             }
-            else
-            {
-                AStarHorseshit(star, 1);
-            }
-
-            // Do Movements
-            if (star.Brains == Nature.SMART)
-            {
-                while (star.AP > 0 && star.Movements.Count != 0)
-                {
-                    star.Position = star.Movements.First.Value.GetVector();
-                    star.AP = star.AP - star.Movements.First.Value.Cost;
-                    Save.GetRoom().Tiles[(int)star.Position.X, (int)star.Position.Y].Solid = true;
-                    star.Movements.Remove(star.Movements.First);
-                }
-            }
-            else
-            {
-                int distance;
-                do
-                {
-                    distance = (int)(Math.Abs(Save.Kevin.Position.X - star.Position.X) + Math.Abs(Save.Kevin.Position.Y - star.Position.Y));
-                    Movement result = ChooseBest(star);
-                    star.Position = new Vector2(result.X, result.Y);
-                    star.AP = star.AP - result.Cost;
-                    Save.GetRoom().Tiles[(int)star.Position.X, (int)star.Position.Y].Solid = true;
-                    GetEnemyMovementOptions(star);
-                }
-                while (distance != (int)(Math.Abs(Save.Kevin.Position.X - (star.Position.X)) + Math.Abs(Save.Kevin.Position.Y - (star.Position.Y))) && star.AP > 0);
-            }
-
-            //Get Attack Options
-            GetEnemyAttackOptions(star);
-            if (Math.Abs(Save.Kevin.Position.X - star.Position.X) + Math.Abs(Save.Kevin.Position.Y - (star.Position.Y)) == 1)
-            {
-                while (star.AP >= star.GetAttackCost() && star.HP >= 0)
-                {
-                    Attack(star, Save.Kevin);
-                }
-            }
-            if (star.HP <= 0)
-            {
-                Save.Kevin.Experience += star.XP;
-            }
-            Save.GetRoom().UpdateTiles();
-            star.ApplyEndTurnEffects();
         }
 
-        bool DoAttack(Attack attack)
+        Movement GetNextMove(Enemy enemy)
         {
-            if (Attack(Save.Kevin, attack.Target))
+            enemy.Movements = new LinkedList<Movement>();
+            Save.GetRoom().UpdateTilesForEnemy();
+            AStarHorseshit(enemy, 1, Save.Kevin.Position);
+            LinkedList<Movement> flatmovements = new LinkedList<Movement>(enemy.Movements);
+            int flatvalue = enemy.Movements.Count;
+            foreach (Movement movement in enemy.Movements)
             {
-                if (Save.GetRoom().IsClear())
+                foreach (Entity entity in Save.GetRoom().Entities)
                 {
-                    Save.GetRoom().AddToRoom(GenerateRoomPrize());
+                    if (entity is Enemy)
+                    {
+                        if (movement.GetVector() == entity.Position)
+                        {
+                            flatvalue += 4;
+                        }
+                    }
                 }
-                Save.Kevin.Experience++;
             }
-            return true;
+            enemy.Movements = new LinkedList<Movement>();
+            Save.GetRoom().UpdateTiles();
+            AStarHorseshit(enemy, 1, Save.Kevin.Position);
+            int tallvalue = enemy.Movements.Count;
+            if (flatvalue < tallvalue || tallvalue == 0)
+                return flatmovements.First.Value;
+            else
+                return enemy.Movements.First.Value;
+        }
+
+        void Take(Enemy enemy, Movement movement)
+        {
+            Save.GetRoom().Tiles[(int)enemy.Position.X, (int)enemy.Position.Y].Solid = false;
+            enemy.Position = movement.GetVector();
+            enemy.AP--;
+            Save.GetRoom().Tiles[(int)enemy.Position.X, (int)enemy.Position.Y].Solid = true;
+        }
+
+        bool APLeft()
+        {
+            foreach (Enemy enemy in Save.GetRoom().Entities.FindAll(entity => entity is Enemy))
+            {
+                if (enemy.AP > 0)
+                    return true;
+            }
+            return false;
+        }
+
+        Enemy SpotIsClear(Movement movement)
+        {
+            foreach (Enemy enemy in Save.GetRoom().Entities.FindAll(entity => entity is Enemy))
+            {
+                if (enemy.Position == movement.GetVector())
+                {
+                    return enemy;
+                }
+            }
+            return null;
+        }
+
+        bool AreAdjacent(Entity one, Entity two)
+        {
+            return Math.Abs(one.Position.X - two.Position.X) + Math.Abs(one.Position.Y - two.Position.Y) == 1;
         }
 
         bool DoMovement(Movement movement)
@@ -146,7 +257,7 @@ namespace Rougelike
 
         public void GetEnemyMovementOptions(Enemy mover)
         {
-            mover.Movements.AddLast(new Movement((int)mover.Position.X, (int)mover.Position.Y, 0));
+            mover.Movements.AddLast(new Movement(MovementSprite, (int)mover.Position.X, (int)mover.Position.Y, 0));
 
             int duration = mover.AP;
             int initialduration = mover.AP;
@@ -163,7 +274,7 @@ namespace Rougelike
                     {
                         if (!Save.GetRoom().Tiles[movement.X, movement.Y - 1].Solid)
                         {
-                            Movement next = new Movement(movement.X, movement.Y - 1, cost);
+                            Movement next = new Movement(MovementSprite, movement.X, movement.Y - 1, cost);
                             if (!(mover.Movements.Contains(next)))
                             {
                                 mover.Movements.AddLast(next);
@@ -174,7 +285,7 @@ namespace Rougelike
                     {
                         if (!Save.GetRoom().Tiles[movement.X - 1, movement.Y].Solid)
                         {
-                            Movement next = new Movement(movement.X - 1, movement.Y, cost);
+                            Movement next = new Movement(MovementSprite, movement.X - 1, movement.Y, cost);
                             if (!(mover.Movements.Contains(next)))
                             {
                                 mover.Movements.AddLast(next);
@@ -185,7 +296,7 @@ namespace Rougelike
                     {
                         if (!Save.GetRoom().Tiles[movement.X + 1, movement.Y].Solid)
                         {
-                            Movement next = new Movement(movement.X + 1, movement.Y, cost);
+                            Movement next = new Movement(MovementSprite, movement.X + 1, movement.Y, cost);
                             if (!(mover.Movements.Contains(next)))
                             {
                                 mover.Movements.AddLast(next);
@@ -196,7 +307,7 @@ namespace Rougelike
                     {
                         if (!Save.GetRoom().Tiles[movement.X, movement.Y + 1].Solid)
                         {
-                            Movement next = new Movement(movement.X, movement.Y + 1, cost);
+                            Movement next = new Movement(MovementSprite, movement.X, movement.Y + 1, cost);
                             if (!(mover.Movements.Contains(next)))
                             {
                                 mover.Movements.AddLast(next);
@@ -208,30 +319,10 @@ namespace Rougelike
             }
         }
 
-        void GetEnemyAttackOptions(Enemy attacker)
-        {
-            attacker.Attacks = new List<Attack>();
-            foreach (Entity entity in Save.GetRoom().Entities)
-            {
-                // if creature
-                if (entity is Enemy)
-                {
-                    // if different faction
-                    if (((Enemy)entity).Side != attacker.Side)
-                    {
-                        if (Math.Abs(entity.Position.X - attacker.Position.X) + Math.Abs(entity.Position.Y - attacker.Position.Y) == 1)
-                        {
-                            attacker.Attacks.Add(new Attack((Enemy)entity));
-                        }
-                    }
-                }
-            }
-        }
-
         void UpdatePlayerOptions()
         {
-            Save.GetRoom().Entities.RemoveAll(entity => entity is Enemy && ((Enemy)entity).HP <= 0);
             GameButtons.RemoveAll(item => item is Attack || item is Movement);
+            Save.GetRoom().UpdateTiles();
             if (Save.GetRoom().IsClear())
             {
                 for (int i = 0; i < 15; i++)
@@ -239,7 +330,7 @@ namespace Rougelike
                     for (int j = 0; j < 10; j++)
                     {
                         if (!Save.GetRoom().Tiles[i, j].Solid)
-                            GameButtons.Add(new Movement(i, j));
+                            GameButtons.Add(new Movement(MovementSprite, i, j));
                     }
                 }
                 Save.Kevin.AP = Save.Kevin.MaxAP;
@@ -253,7 +344,7 @@ namespace Rougelike
         void GetPlayerMovementOptions()
         {
             List<Movement> openset = new List<Movement>();
-            openset.Add(new Movement((int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y, 0));
+            openset.Add(new Movement(MovementSprite, (int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y, 0));
 
             int duration = Save.Kevin.AP;
             int initialduration = Save.Kevin.AP;
@@ -270,7 +361,7 @@ namespace Rougelike
                     {
                         if (!Save.GetRoom().Tiles[movement.X, movement.Y - 1].Solid)
                         {
-                            Movement next = new Movement(movement.X, movement.Y - 1, cost);
+                            Movement next = new Movement(MovementSprite, movement.X, movement.Y - 1, cost);
                             if (!(openset.Contains(next)))
                             {
                                 openset.Add(next);
@@ -281,7 +372,7 @@ namespace Rougelike
                     {
                         if (!Save.GetRoom().Tiles[movement.X - 1, movement.Y].Solid)
                         {
-                            Movement next = new Movement(movement.X - 1, movement.Y, cost);
+                            Movement next = new Movement(MovementSprite, movement.X - 1, movement.Y, cost);
                             if (!(openset.Contains(next)))
                             {
                                 openset.Add(next);
@@ -292,7 +383,7 @@ namespace Rougelike
                     {
                         if (!Save.GetRoom().Tiles[movement.X + 1, movement.Y].Solid)
                         {
-                            Movement next = new Movement(movement.X + 1, movement.Y, cost);
+                            Movement next = new Movement(MovementSprite, movement.X + 1, movement.Y, cost);
                             if (!(openset.Contains(next)))
                             {
                                 openset.Add(next);
@@ -303,7 +394,7 @@ namespace Rougelike
                     {
                         if (!Save.GetRoom().Tiles[movement.X, movement.Y + 1].Solid)
                         {
-                            Movement next = new Movement(movement.X, movement.Y + 1, cost);
+                            Movement next = new Movement(MovementSprite, movement.X, movement.Y + 1, cost);
                             if (!(openset.Contains(next)))
                             {
                                 openset.Add(next);
@@ -313,7 +404,7 @@ namespace Rougelike
                 }
                 duration -= mod;
             }
-            openset.Remove(new Movement((int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y, 0));
+            openset.Remove(new Movement(MovementSprite, (int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y, 0));
             foreach (Movement move in openset)
             {
                 GameButtons.Add(move);
@@ -322,26 +413,21 @@ namespace Rougelike
 
         void GetPlayerAttackOptions()
         {
-            foreach (Entity entity in Save.GetRoom().Entities)
+            foreach (Enemy enemy in Save.GetRoom().Entities.FindAll(entity => entity is Enemy))
             {
-                // if creature
-                if (entity is Enemy)
+                if (enemy.Side != Save.Kevin.Side)
                 {
-                    // if different faction
-                    if (((Enemy)entity).Side != Save.Kevin.Side)
+                    if (Math.Abs(enemy.Position.X - Save.Kevin.Position.X) + Math.Abs(enemy.Position.Y - Save.Kevin.Position.Y) == 1)
                     {
-                        if (Math.Abs(entity.Position.X - Save.Kevin.Position.X) + Math.Abs(entity.Position.Y - Save.Kevin.Position.Y) == 1)
-                        {
-                            GameButtons.Add(new Attack((Enemy)entity));
-                        }
+                        GameButtons.Add(new Attack(enemy));
                     }
                 }
             }
         }
-        
+
         Movement ChooseBest(Enemy star)
         {
-            Movement result = new Movement((int)star.Position.X, (int)star.Position.Y, 0);
+            Movement result = new Movement(MovementSprite, (int)star.Position.X, (int)star.Position.Y, 0);
             int heurisitc = (int)(Math.Abs(Save.Kevin.Position.X - star.Position.X) + Math.Abs(Save.Kevin.Position.Y - star.Position.Y));
             int temp = 0;
             foreach (Movement movement in star.Movements)
@@ -357,38 +443,40 @@ namespace Rougelike
             return result;
         }
 
-        void AStarHorseshit(Enemy mover, int Distance)
+        /*  WHEN
+         *  When an Enemy needs to know where to go
+         *  
+         *  WHAT
+         *  Fills an enemy with a linked list of movements toward
+         *  the player
+         */
+        void AStarHorseshit(Enemy mover, int Distance, Vector2 destination)
         {
             LinkedList<AStarNode> closedset = new LinkedList<AStarNode>();
             LinkedList<AStarNode> openset = new LinkedList<AStarNode>();
 
-            AStarNode current = new AStarNode();
-            current.X = (int)mover.Position.X;
-            current.Y = (int)mover.Position.Y;
-            current.fscore = (int)CalcFScore(current, Save.Kevin);
+            AStarNode current = new AStarNode(mover.Position.X, mover.Position.Y);
+            current.FScore = CalcFScore(current);
 
             openset.AddLast(current);
 
             while (openset.Count() != 0)
             {
-                current = FindLowestFScore(openset, Save.Kevin);
-                if (Math.Abs(Save.Kevin.Position.X - current.X) + Math.Abs(Save.Kevin.Position.Y - current.Y) == Distance)
+                current = FindLowestFScore(openset);
+                if (Math.Abs(destination.X - current.X) + Math.Abs(destination.Y - current.Y) == Distance)
                 {
                     break;
                 }
                 openset.Remove(current);
                 closedset.AddLast(current);
-                foreach (AStarNode a in closedset)
+                foreach (AStarNode node in closedset)
                 {
-                    if (a.Y - 1 >= 0)
+                    if (node.Y - 1 >= 0)
                     {
-                        if (!Save.GetRoom().Tiles[a.X, a.Y - 1].Solid)
+                        if (!Save.GetRoom().Tiles[node.X, node.Y - 1].Solid)
                         {
-                            AStarNode next = new AStarNode();
-                            next.X = a.X;
-                            next.Y = a.Y - 1;
-                            next.previous = a;
-                            next.fscore = CalcFScore(next, Save.Kevin);
+                            AStarNode next = new AStarNode(node.X, node.Y - 1, node);
+                            next.FScore = CalcFScore(next);
                             if (!closedset.Contains(next))
                             {
                                 if (!openset.Contains(next))
@@ -396,15 +484,12 @@ namespace Rougelike
                             }
                         }
                     }
-                    if (a.X - 1 >= 0)
+                    if (node.X - 1 >= 0)
                     {
-                        if (!Save.GetRoom().Tiles[a.X - 1, a.Y].Solid)
+                        if (!Save.GetRoom().Tiles[node.X - 1, node.Y].Solid)
                         {
-                            AStarNode next = new AStarNode();
-                            next.X = a.X - 1;
-                            next.Y = a.Y;
-                            next.previous = a;
-                            next.fscore = CalcFScore(next, Save.Kevin);
+                            AStarNode next = new AStarNode(node.X - 1, node.Y, node);
+                            next.FScore = CalcFScore(next);
                             if (!closedset.Contains(next))
                             {
                                 if (!openset.Contains(next))
@@ -412,15 +497,12 @@ namespace Rougelike
                             }
                         }
                     }
-                    if (a.X + 1 < 15)
+                    if (node.X + 1 < 15)
                     {
-                        if (!Save.GetRoom().Tiles[a.X + 1, a.Y].Solid)
+                        if (!Save.GetRoom().Tiles[node.X + 1, node.Y].Solid)
                         {
-                            AStarNode next = new AStarNode();
-                            next.X = a.X + 1;
-                            next.Y = a.Y;
-                            next.previous = a;
-                            next.fscore = CalcFScore(next, Save.Kevin);
+                            AStarNode next = new AStarNode(node.X + 1, node.Y, node);
+                            next.FScore = CalcFScore(next);
                             if (!closedset.Contains(next))
                             {
                                 if (!openset.Contains(next))
@@ -428,15 +510,12 @@ namespace Rougelike
                             }
                         }
                     }
-                    if (a.Y + 1 < 10)
+                    if (node.Y + 1 < 10)
                     {
-                        if (!Save.GetRoom().Tiles[a.X, a.Y + 1].Solid)
+                        if (!Save.GetRoom().Tiles[node.X, node.Y + 1].Solid)
                         {
-                            AStarNode next = new AStarNode();
-                            next.X = a.X;
-                            next.Y = a.Y + 1;
-                            next.previous = a;
-                            next.fscore = CalcFScore(next, Save.Kevin);
+                            AStarNode next = new AStarNode(node.X, node.Y + 1, node);
+                            next.FScore = CalcFScore(next);
                             if (!closedset.Contains(next))
                             {
                                 if (!openset.Contains(next))
@@ -446,28 +525,29 @@ namespace Rougelike
                     }
                 }
             }
-            if (Math.Abs(Save.Kevin.Position.X - current.X) + Math.Abs(Save.Kevin.Position.Y - current.Y) == Distance)
+
+            if (Math.Abs(destination.X - current.X) + Math.Abs(destination.Y - current.Y) == Distance)
             {
-                while (current.previous != null)
+                while (current.Previous != null)
                 {
-                    mover.Movements.AddFirst(new Movement((int)current.X, (int)current.Y, mod));
-                    current = current.previous;
+                    mover.Movements.AddFirst(new Movement(MovementSprite, (int)current.X, (int)current.Y, mod));
+                    current = current.Previous;
                 }
             }
             else
             {
-                AStarHorseshit(mover, ++Distance);
+                AStarHorseshit(mover, ++Distance, destination);
             }
         }
 
-        AStarNode FindLowestFScore(LinkedList<AStarNode> list, Player kevin)
+        AStarNode FindLowestFScore(LinkedList<AStarNode> list)
         {
             AStarNode result = list.ElementAt(0);
-            result.fscore = CalcFScore(result, kevin);
+            //result.FScore = CalcFScore(result);
             foreach (AStarNode node in list)
             {
-                node.fscore = CalcFScore(node, kevin);
-                if (node.fscore <= result.fscore)
+                //node.FScore = CalcFScore(node);
+                if (node.FScore <= result.FScore)
                 {
                     result = node;
                 }
@@ -475,45 +555,60 @@ namespace Rougelike
             return result;
         }
 
-        int CalcFScore(AStarNode node, Player kevin)
+        int CalcFScore(AStarNode node)
         {
             //Calc hscore
-            int up = (int)(Math.Abs(kevin.Position.X - node.X) + Math.Abs((kevin.Position.Y - 1) - node.Y));
-            int down = (int)(Math.Abs(kevin.Position.X - node.X) + Math.Abs((kevin.Position.Y + 1) - node.Y));
-            int left = (int)(Math.Abs((kevin.Position.X - 1) - node.X) + Math.Abs(kevin.Position.Y - node.Y));
-            int right = (int)(Math.Abs((kevin.Position.X + 1) - node.X) + Math.Abs(kevin.Position.Y - node.Y));
+            //int up = (int)(Math.Abs(Save.Kevin.Position.X - node.X) + Math.Abs((Save.Kevin.Position.Y - 1) - node.Y));
+            //int down = (int)(Math.Abs(Save.Kevin.Position.X - node.X) + Math.Abs((Save.Kevin.Position.Y + 1) - node.Y));
+            //int left = (int)(Math.Abs((Save.Kevin.Position.X - 1) - node.X) + Math.Abs(Save.Kevin.Position.Y - node.Y));
+            //int right = (int)(Math.Abs((Save.Kevin.Position.X + 1) - node.X) + Math.Abs(Save.Kevin.Position.Y - node.Y));
 
-            if (up <= down && up <= left && up <= right)
-                node.hscore = up;
-            else if (down <= up && down <= left && down <= right)
-                node.hscore = down;
-            else if (left <= up && left <= down && left <= right)
-                node.hscore = left;
-            else if (right <= up && right <= down && right <= left)
-                node.hscore = right;
+            //if (up <= down && up <= left && up <= right)
+            //    node.HScore = up;
+            //else if (down <= up && down <= left && down <= right)
+            //    node.HScore = down;
+            //else if (left <= up && left <= down && left <= right)
+            //    node.HScore = left;
+            //else if (right <= up && right <= down && right <= left)
+            //    node.HScore = right;
+
+            node.HScore = (int)(Math.Abs(Save.Kevin.Position.X - node.X) + Math.Abs(Save.Kevin.Position.Y - node.Y));
 
             //Calc gscore
             int count = 0;
             AStarNode current = node;
-            while (current.previous != null)
+            while (current.Previous != null)
             {
                 count++;
-                current = current.previous;
+                current = current.Previous;
             }
-            node.gscore = count;
-            return node.gscore + node.hscore;
-        }        
+            node.GScore = count;
+            return node.GScore + node.HScore;
+        }
     }
 
     class AStarNode : IEquatable<AStarNode>
     {
         public int X;
         public int Y;
-        public int fscore;
-        public int hscore;
-        public int gscore;
+        public int FScore;
+        public int HScore;
+        public int GScore;
 
-        public AStarNode previous;
+        public AStarNode Previous;
+
+        public AStarNode(float x, float y, AStarNode previous)
+        {
+            X = (int)x;
+            Y = (int)y;
+            Previous = previous;
+        }
+
+        public AStarNode(float x, float y)
+        {
+            X = (int)x;
+            Y = (int)y;
+        }
 
         public bool Equals(AStarNode other)
         {

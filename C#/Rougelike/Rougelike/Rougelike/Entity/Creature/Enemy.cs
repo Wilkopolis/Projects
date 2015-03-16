@@ -15,15 +15,20 @@ namespace Rougelike
         public int Damage;
         public int Cost = 1;
         public int XP;
+        public Enemy WaitingOn;
 
         public Enemy()
         {
+            Movements = new LinkedList<Movement>();
         }
 
-        public Enemy(String name)
+        public Enemy(Texture2D sprite, String name)
         {
             Name = name;
+            Side = Faction.NERD;
             Position = Vector2.Zero;
+            Sprite = sprite;
+            Movements = new LinkedList<Movement>();
             Damage = 1;
             HP = 1;
             MaxHP = 1;
@@ -43,7 +48,7 @@ namespace Rougelike
             Result.Brains = Brains;
             Result.Origin = Origin;
             Result.Position = Position;
-            Result.AssetIndex = AssetIndex;
+            Result.Sprite = Sprite;
             Result.Side = Side;
             Result.Damage = Damage;
             Result.Cost = Cost;
@@ -63,7 +68,7 @@ namespace Rougelike
             Result.Brains = Brains;
             Result.Origin = Origin;
             Result.Position = Position;
-            Result.AssetIndex = AssetIndex;
+            Result.Sprite = Sprite;
             Result.Damage = Damage;
             Result.Cost = Cost;
             Result.Side = Side;
@@ -72,7 +77,7 @@ namespace Rougelike
             return Result;
         }
 
-        override public int GetDamage()
+        override public int GetDamage(Random seed)
         {
             return Damage;
         }

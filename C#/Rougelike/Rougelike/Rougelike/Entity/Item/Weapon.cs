@@ -46,11 +46,6 @@ namespace Rougelike
             return Result;
         }
 
-        public bool IsLight()
-        {
-            return Mods.ContainsKey(Effect.LIGHT);
-        }
-
         public bool IsOneHanded()
         {
             return Mods.ContainsKey(Effect.ONEHANDED);

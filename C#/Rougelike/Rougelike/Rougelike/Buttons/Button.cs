@@ -8,16 +8,10 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Rougelike
 {
-    public class ItemButton : Button
-    {
-        public Item Item;
-        public ItemType Type;
-    }
-
     public class Button
     {
         public bool Visable = true;
-        public bool WasPressed;
+        public bool WasPressed = false;
         public bool WasClicked;
         public bool WasRightClicked;
         public bool Selected;

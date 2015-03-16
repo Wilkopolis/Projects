@@ -11,11 +11,11 @@ namespace Rougelike
     {
         public Enemy Enemy;
 
-        public EnemyButton(Texture2D sprite, String name)
+        public EnemyButton(Texture2D sprite, Texture2D enemysprite, String name)
         {
             Sprite = sprite;
             Origin = new Vector2(Sprite.Width / 2, Sprite.Height / 2);
-            Enemy = new Enemy(name);
+            Enemy = new Enemy(enemysprite, name);
             Action = "enemy";
             Visable = false;
         }

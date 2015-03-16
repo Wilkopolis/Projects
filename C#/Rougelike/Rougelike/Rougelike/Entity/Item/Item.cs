@@ -7,13 +7,15 @@ using Microsoft.Xna.Framework;
 
 namespace Rougelike
 {
-    public enum Effect {THORNS = -1, STYLISH = 1, SHARP = 2, LIGHT = 3, LONG = 4, SPLINTER = 5, DOUBLING = 6, ONEHANDED = 101, SWORD = 102};
     public enum ItemType { HEAD, CHEST, LEGS, BOOTS, BELT, WEILD, NECK, RINGL, RINGR, CONSUMABLE, INVENTORY, SHOP };
+
+    public class Stackable : Item
+    {
+        public int StackSize = 1;
+    }
 
     public abstract class Item : Entity, IEquatable<Item>
     {
-        public Texture2D Sprite;
-
         public Dictionary<Effect, int> Mods = new Dictionary<Effect, int>();
         public ItemType Type;
 
@@ -44,7 +46,7 @@ namespace Rougelike
             LinkedList<string> mods = new LinkedList<string>();
             foreach(Effect E in Mods.Keys)
             {
-                if ((int)E < 100)
+                if ((int)E < 200)
                     mods.AddLast(ModToString(E) + " " + StrengthToString(Mods[E]));
             }
 
@@ -59,6 +61,19 @@ namespace Rougelike
             if (result[i] != "")
                 result[i] = result[i].Substring(0,result[i].Length-2);
 
+            return result;
+        }
+
+        public List<Effect> GetEquipEffects()
+        {
+            List<Effect> result = new List<Effect>();
+            foreach (Effect effect in Mods.Keys)
+            {
+                if ((int)effect > 200)
+                {
+                    result.Add(effect);
+                }
+            }
             return result;
         }
 
@@ -78,20 +93,16 @@ namespace Rougelike
         {
             switch (E)
             {
-                case Effect.LIGHT:
-                    return "Light";
-                case Effect.LONG:
-                    return "Long";
-                case Effect.SHARP:
-                    return "Sharp";
                 case Effect.SPLINTER:
                     return "Splinter";
-                case Effect.STYLISH:
-                    return "Stylish";
                 case Effect.THORNS:
                     return "Thorns";
                 case Effect.DOUBLING:
                     return "Doubling";
+                case Effect.ABSORB:
+                    return "Absorb";
+                case Effect.BEEFUP:
+                    return "BeefUp";
                 default:
                     return "";
             }

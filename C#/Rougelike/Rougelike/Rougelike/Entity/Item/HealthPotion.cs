@@ -11,10 +11,10 @@ namespace Rougelike
 
     interface Consumable
     {
-        void Use(Fighter creature);
+        void Use(Player player);
     }
 
-    public class HealthPotion : Potion, Consumable
+    public class HealthPotion : Stackable, Consumable
     {         
         public Strength Intensity;
 
@@ -70,7 +70,7 @@ namespace Rougelike
             return Result;
         }
 
-        new public HealthPotion Copy(int hashid)
+        public HealthPotion Copy(int hashid)
         {
             HealthPotion Result = new HealthPotion();
             Result.Sprite = Sprite;
@@ -83,27 +83,27 @@ namespace Rougelike
             return Result;
         }
 
-        public void Use(Fighter creature)
+        public void Use(Player player)
         {
-            if (creature.HP < creature.MaxHP)
+            if (player.HP < player.MaxHP)
             {
                 if (Intensity == Strength.SMALL)
                 {
-                    creature.HP = creature.HP + GetHP();
-                    if (creature.HP >= creature.MaxHP)
-                        creature.HP = creature.MaxHP;
+                    player.HP = player.HP + GetHP();
+                    if (player.HP >= player.MaxHP)
+                        player.HP = player.MaxHP;
                 }
                 else if (Intensity == Strength.MEDIUM)
                 {
-                    creature.HP = creature.HP + GetHP();
-                    if (creature.HP >= creature.MaxHP)
-                        creature.HP = creature.MaxHP;
+                    player.HP = player.HP + GetHP();
+                    if (player.HP >= player.MaxHP)
+                        player.HP = player.MaxHP;
                 }
                 else
                 {
-                    creature.HP = creature.HP + GetHP();
-                    if (creature.HP >= creature.MaxHP)
-                        creature.HP = creature.MaxHP;
+                    player.HP = player.HP + GetHP();
+                    if (player.HP >= player.MaxHP)
+                        player.HP = player.MaxHP;
                 }
                 StackSize--;
             }
@@ -129,6 +129,5 @@ namespace Rougelike
         {
             return "Restores HP";
         }
-
     }
 }

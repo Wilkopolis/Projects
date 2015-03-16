@@ -3,45 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Rougelike
 {
+    public enum NPCType { MERCHANT, ENCHANTER, ALCHEMIST, GAMBLER, MEDIC, PHARMACIST };
+
     class NPC : Creature
     {
         public NPCType Type;
+        public int Uses;
 
-        public List<ShopButton> Inventory;
+        public NPC(NPCType type, Texture2D sprite)
+        {
+            Type = type;
+            if (Type == NPCType.PHARMACIST || Type == NPCType.GAMBLER || Type == NPCType.MEDIC)
+                Uses = 5;
+            Sprite = sprite;
+            Position = new Vector2(7, 5);
+        }
 
         public NPC Copy(int hashid)
         {
-            NPC result = new NPC(Type);
+            NPC result = new NPC(Type, Sprite);
             result.HashID = hashid;
             return result;
-        }
-
-        public NPC (NPCType type)
-        {
-            switch (type)
-            {
-                case NPCType.ENCHANTER:                    
-                    AssetIndex = (int)Texture.ENCHANTER;
-                    Type = NPCType.ENCHANTER;
-                    Position = new Vector2(7, 5);
-                    break;
-
-                case NPCType.MERCHANT:                    
-                    AssetIndex = (int)Texture.MERCHANT;
-                    Inventory = new List<ShopButton>();
-                    Type = NPCType.MERCHANT;
-                    Position = new Vector2(7, 5);
-                    break;
-
-                case NPCType.ALCHEMIST:                    
-                    //AssetIndex = (int)Texture.ALCHEMIST;
-                    Type = NPCType.ALCHEMIST;
-                    Position = new Vector2(7, 5);
-                    break;
-            }
         }
 
         override public string GetClass()

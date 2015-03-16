@@ -10,32 +10,30 @@ namespace Rougelike
     {
         public string Name;
         public int HashID;
-        public Tile[,] Tiles;
+        public Tile[,] Tiles = new Tile[15,10];
         public int Difficulty = 0;
         public List<Entity> Entities = new List<Entity>();
         public Vector2 Payout;
         public bool Golden;
 
-        public RoomTemplate()
+        public RoomTemplate(Tile[,] tiles)
         {
-            Tiles = new Tile[15, 10];
             for (int i = 0; i < 15; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    Tiles[i, j] = new Tile(false);
+                    Tiles[i, j] = tiles[i,j].Copy();
                 }
             }
         }
 
-        public RoomTemplate(String name, int difficulty)
+        public RoomTemplate(Tile[,] tiles, String name, int difficulty)
         {
-            Tiles = new Tile[15, 10];
             for (int i = 0; i < 15; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    Tiles[i, j] = new Tile(false);
+                    Tiles[i, j] = tiles[i, j].Copy();
                 }
             }
             Name = name;

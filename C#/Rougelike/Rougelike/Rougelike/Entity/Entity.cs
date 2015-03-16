@@ -13,7 +13,7 @@ namespace Rougelike
         public int HashID;
         public Vector2 Position;
         public Vector2 Origin;
-        public int AssetIndex;
+        public Texture2D Sprite;
 
         public abstract string[] GetModStrings();
         public abstract string GetClass();

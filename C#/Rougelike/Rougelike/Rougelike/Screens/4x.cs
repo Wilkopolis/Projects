@@ -13,27 +13,49 @@ namespace Rougelike
         Texture2D CommonBackground;
         Texture2D GoldRoomSelected;
         Texture2D GoldRoomUnselected;
+        Texture2D MegaDoorVertical;
+        Texture2D MegaDoorHorizontal;
+        Texture2D MegaRoom;
+        Texture2D PoweredRoom;
+        Texture2D CurrentRoom;
 
         bool GoldRoomChosen;
 
         List<Button> MegaMapButtons;
 
-        void Initialize4XButtons()
+        void Initialize4XButtons(Class playerclass)
         {
             MegaMapButtons = new List<Button>();
             GoldRoomSelected = Content.Load<Texture2D>("textures/game/4x/selected");
             GoldRoomUnselected = Content.Load<Texture2D>("textures/game/4x/unselected");
+            MegaDoorVertical = Content.Load<Texture2D>("textures/game/4x/megadoorvertical");
+            MegaDoorHorizontal = Content.Load<Texture2D>("textures/game/4x/megadoorhorizontal");
+            MegaRoom = Content.Load<Texture2D>("textures/game/4x/megaroom");
+            PoweredRoom = Content.Load<Texture2D>("textures/game/4x/poweredroom");
+            CurrentRoom = Content.Load<Texture2D>("textures/game/4x/currentroom");
 
             CommonBackground = Content.Load<Texture2D>("textures/game/4x/4xback");
 
             Button merchant = new Button(GoldRoomUnselected, new Vector2(200, 300), "merchant");
             MegaMapButtons.Add(merchant);
 
-            //Button enchanter = new Button(GoldRoomUnselected, new Vector2(200, 360), "enchanter");
-            //MegaMapButtons.Add(enchanter);
+            Button enchanter = new Button(GoldRoomUnselected, new Vector2(200, 350), "enchanter");
+            MegaMapButtons.Add(enchanter);
 
-            //Button alchemist = new Button(GoldRoomUnselected, new Vector2(200, 420), "alchemist");
-            //MegaMapButtons.Add(alchemist);
+            Button alchemist = new Button(GoldRoomUnselected, new Vector2(200, 400), "alchemist");
+            MegaMapButtons.Add(alchemist);
+
+            Button medic = new Button(GoldRoomUnselected, new Vector2(200, 450), "medic");
+            MegaMapButtons.Add(medic);
+
+            Button gambler = new Button(GoldRoomUnselected, new Vector2(200, 500), "gambler");
+            MegaMapButtons.Add(gambler);
+
+            if (playerclass == Class.PHARMACIST)
+            {
+                Button pharmacist = new Button(GoldRoomUnselected, new Vector2(200, 550), "pharmacist");
+                MegaMapButtons.Add(pharmacist);
+            }
         }
 
         void CheckMegaMapButtons()
@@ -57,6 +79,8 @@ namespace Rougelike
                     }
                 }
             }
+            if (GoldRoomChosen)
+                MegaMapButtons.RemoveAll(button => button.Sprite == GoldRoomUnselected);
         }
 
         void Handle4XButton(Button button)
@@ -67,7 +91,8 @@ namespace Rougelike
                     if (!GoldRoomChosen)
                     {
                         button.Sprite = GoldRoomSelected;
-                        Save.GetGoldRoom().AddToRoom(new NPC(NPCType.ENCHANTER));
+                        Save.GetGoldRoom().AddToRoom(Enchanter.Copy(HashID++));
+                        EnchanterButtons = GenerateEnchantments();
                         UpdateOptions = true;
                         GoldRoomChosen = true;
                     }
@@ -77,9 +102,8 @@ namespace Rougelike
                     if (!GoldRoomChosen)
                     {
                         button.Sprite = GoldRoomSelected;
-                        NPC merchant = new NPC(NPCType.MERCHANT);
-                        merchant.Inventory = GenerateShopInventory();
-                        Save.GetGoldRoom().AddToRoom(merchant);
+                        ShopInventory = GenerateShopInventory();
+                        Save.GetGoldRoom().AddToRoom(Merchant.Copy(HashID++));
                         UpdateOptions = true;
                         GoldRoomChosen = true;
                     }
@@ -89,7 +113,37 @@ namespace Rougelike
                     if (!GoldRoomChosen)
                     {
                         button.Sprite = GoldRoomSelected;
-                        Save.GetGoldRoom().AddToRoom(new NPC(NPCType.ALCHEMIST));
+                        Save.GetGoldRoom().AddToRoom(Alchemist.Copy(HashID++));
+                        UpdateOptions = true;
+                        GoldRoomChosen = true;
+                    }
+                    break;
+
+                case "medic":
+                    if (!GoldRoomChosen)
+                    {
+                        button.Sprite = GoldRoomSelected;
+                        Save.GetGoldRoom().AddToRoom(Medic.Copy(HashID++));
+                        UpdateOptions = true;
+                        GoldRoomChosen = true;
+                    }
+                    break;
+
+                case "gambler":
+                    if (!GoldRoomChosen)
+                    {
+                        button.Sprite = GoldRoomSelected;
+                        Save.GetGoldRoom().AddToRoom(Gambler.Copy(HashID++));
+                        UpdateOptions = true;
+                        GoldRoomChosen = true;
+                    }
+                    break;
+
+                case "pharmacist":
+                    if (!GoldRoomChosen)
+                    {
+                        button.Sprite = GoldRoomSelected;
+                        Save.GetGoldRoom().AddToRoom(Pharmacist.Copy(HashID++));
                         UpdateOptions = true;
                         GoldRoomChosen = true;
                     }
@@ -99,8 +153,12 @@ namespace Rougelike
                     if (!((RoomButton)button).Room.Worked && Save.Kevin.Power >= ((RoomButton)button).Room.Cost)
                     {
                         ((RoomButton)button).Room.Worked = true;
+                        ((RoomButton)button).Room.Visited = true;
                         Save.Kevin.Power -= ((RoomButton)button).Room.Cost;
-                        button.Sprite = Assets[(int)Texture.POWEREDROOM];
+                        Save.Kevin.PowerPerTurn += ((RoomButton)button).Room.Power;
+                        Save.Kevin.WealthPerTurn += ((RoomButton)button).Room.Wealth;
+                        Save.Kevin.ExperiencePerTurn++;
+                        button.Sprite = PoweredRoom;
                     }
                     break;
 
@@ -121,14 +179,15 @@ namespace Rougelike
                     SpriteBatch.DrawString(Cousine12, button.Action, button.Position + OffsetVector - new Vector2(43, 8), Color.White);
                 else if (button is RoomButton)
                 {
-                    if (((RoomButton)button).Room.Visible)
+                    RoomButton roombutton = button as RoomButton;
+                    if (roombutton.Room.Visited)
                     {
-                        SpriteBatch.DrawString(Cousine12, "P:" + ((RoomButton)button).Room.Power.ToString(), button.Position - new Vector2(14, 17), Color.Black);
-                        SpriteBatch.DrawString(Cousine12, "W:" + ((RoomButton)button).Room.Wealth.ToString(), button.Position - new Vector2(14, -1), Color.Black);
+                        SpriteBatch.DrawString(Cousine12, "P:" + roombutton.Room.Power.ToString(), button.Position - new Vector2(14, 17), Color.Black);
+                        SpriteBatch.DrawString(Cousine12, "W:" + roombutton.Room.Wealth.ToString(), button.Position - new Vector2(14, -1), Color.Black);
                     }
-                    if (((RoomButton)button).Room == Save.GetRoom())
+                    if (roombutton.Room == Save.GetRoom())
                     {
-                        Draw(40, button.Position - new Vector2(27, 27));
+                        Draw(CurrentRoom, button.Position - new Vector2(27, 27));
                     }
                 }
             }
@@ -137,80 +196,12 @@ namespace Rougelike
             SpriteBatch.DrawString(Cousine16, "The " + Save.Kevin.Class.ToString(), OffsetVector + new Vector2(50, 70), Color.White);
         }
 
-        //void DrawMegaMap()
-        //{
-        //    // Get center offset Vector
-        //    int imin = (int)Save.GetFloor().Position.X;
-        //    int imax = (int)Save.GetFloor().Position.X;
-        //    int jmin = (int)Save.GetFloor().Position.Y;
-        //    int jmax = (int)Save.GetFloor().Position.Y;
-        //    for (int i = 0; i < Save.GetFloor().Max.X; i++)
-        //    {
-        //        for (int j = 0; j < Save.GetFloor().Max.Y; j++)
-        //        {
-        //            if (Save.GetFloor().Rooms[i, j].Exists)
-        //            {
-        //                if (i < imin)
-        //                    imin = i;
-        //                if (i > imax)
-        //                    imax = i;
-        //                if (j < jmin)
-        //                    jmin = j;
-        //                if (j > jmax)
-        //                    jmax = j;
-        //            }
-        //        }
-        //    }
-
-        //    Vector2 offset = new Vector2((imax - imin) * 58, (jmax - jmin) * 58);
-        //    Vector2 diff = new Vector2(524, 364) - offset / 2;
-
-        //    for (int i = 0; i < Save.GetFloor().Max.X; i++)
-        //    {
-        //        for (int j = 0; j < Save.GetFloor().Max.Y; j++)
-        //        {
-        //            if (Save.GetFloor().Rooms[i, j].Exists)
-        //            {
-        //                if (Save.GetFloor().Rooms[i, j].Worked || Save.GetFloor().Rooms[i, j].PermaWorked)
-        //                    SpriteBatch.Draw(Assets[(int)Texture.CURRENTROOM], OffsetVector + diff + new Vector2((i - imin) * 58, (j - jmin) * 58), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-        //                else
-        //                {
-        //                    SpriteBatch.Draw(Assets[(int)Texture.MEGAROOM], OffsetVector + diff + new Vector2((i - imin) * 58, (j - jmin) * 58), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-        //                }
-        //                if (Save.GetFloor().Rooms[i, j].HasSouthDoor())
-        //                {
-        //                    SpriteBatch.Draw(Assets[(int)Texture.MEGADOOR], OffsetVector + diff + new Vector2((i - imin) * 58 + 13, (j - jmin) * 58 + 50), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-        //                }
-        //                if (Save.GetFloor().Rooms[i, j].HasWestDoor())
-        //                {
-        //                    SpriteBatch.Draw(Assets[(int)Texture.MEGADOORH], OffsetVector + diff + new Vector2((i - imin) * 58 - 8, (j - jmin) * 58 + 13), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-        //                }
-        //                if (Save.GetFloor().Rooms[i, j].Visible)
-        //                {
-        //                    SpriteBatch.DrawString(Cousine12, "P:" + Save.GetFloor().Rooms[i, j].Power.ToString(), OffsetVector + diff + new Vector2((i - imin) * 58 + 11, (j - jmin) * 58 + 8), Color.Black);
-        //                    SpriteBatch.DrawString(Cousine12, "W:" + Save.GetFloor().Rooms[i, j].Wealth.ToString(), OffsetVector + diff + new Vector2((i - imin) * 58 + 11, (j - jmin) * 58 + 26), Color.Black);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    SpriteBatch.Draw(Assets[40], OffsetVector + diff + new Vector2((Save.GetFloor().Position.X - imin) * 58 - 2, (Save.GetFloor().Position.Y - jmin) * 58 - 2), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-        //}
-
         void Do4XTurn()
         {
-            for (int i = 0; i < Save.GetFloor().Max.X; i++)
-            {
-                for (int j = 0; j < Save.GetFloor().Max.Y; j++)
-                {
-                    if (Save.GetFloor().Rooms[i, j].Worked || Save.GetFloor().Rooms[i, j].PermaWorked)
-                    {
-                        Save.Kevin.Wealth += Save.GetFloor().Rooms[i, j].Wealth;
-                        Save.Kevin.Power += Save.GetFloor().Rooms[i, j].Power;
-                    }
-                }
-            }
-            Save.Kevin.Wealth += Save.Kevin.MyWealthPerTurn();
-            Save.Kevin.Power += Save.Kevin.MyPowerPerTurn();
+            Save.Kevin.Wealth += Save.Kevin.WealthPerTurn;
+            Save.Kevin.Power += Save.Kevin.PowerPerTurn;
+            if (Save.Kevin.Class == Class.MASTERMIND)
+                Save.Kevin.Experience += Save.Kevin.ExperiencePerTurn;
         }
 
         void BuildMegaMap()
@@ -250,19 +241,19 @@ namespace Rougelike
                     {
                         if (Save.GetFloor().Rooms[i, j].Worked)
                         {
-                            MegaMapButtons.Add(new RoomButton(Assets[(int)Texture.POWEREDROOM], diff + new Vector2((i - imin) * 58, (j - jmin) * 58), Save.GetFloor().Rooms[i, j]));
+                            MegaMapButtons.Add(new RoomButton(PoweredRoom, diff + new Vector2((i - imin) * 58, (j - jmin) * 58), Save.GetFloor().Rooms[i, j]));
                         }
                         else
                         {
-                            MegaMapButtons.Add(new RoomButton(Assets[(int)Texture.MEGAROOM], diff + new Vector2((i - imin) * 58, (j - jmin) * 58), Save.GetFloor().Rooms[i, j]));
+                            MegaMapButtons.Add(new RoomButton(MegaRoom, diff + new Vector2((i - imin) * 58, (j - jmin) * 58), Save.GetFloor().Rooms[i, j]));
                         }
                         if (Save.GetFloor().Rooms[i, j].HasSouthDoor())
                         {
-                            MegaMapButtons.Add(new Button(Assets[(int)Texture.MEGADOOR], diff + new Vector2((i - imin) * 58 + 13, (j - jmin) * 58 + 50) - new Vector2(14, 21), "door"));
+                            MegaMapButtons.Add(new Button(MegaDoorHorizontal, diff + new Vector2((i - imin) * 58 + 13, (j - jmin) * 58 + 50) - new Vector2(14, 21), "door"));
                         }
                         if (Save.GetFloor().Rooms[i, j].HasWestDoor())
                         {
-                            MegaMapButtons.Add(new Button(Assets[(int)Texture.MEGADOORH], diff + new Vector2((i - imin) * 58 - 8, (j - jmin) * 58 + 13) - new Vector2(21, 14), "door"));
+                            MegaMapButtons.Add(new Button(MegaDoorVertical, diff + new Vector2((i - imin) * 58 - 8, (j - jmin) * 58 + 13) - new Vector2(21, 14), "door"));
                         }
                     }
                 }

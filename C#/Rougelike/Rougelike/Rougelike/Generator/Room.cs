@@ -12,7 +12,8 @@ namespace Rougelike
         public Tile[,] Tiles;
         public List<Entity> Entities = new List<Entity>();
         public Vector2 Payout;
-        public bool Visible;
+        public bool Visited;
+        public bool Known;
         public bool Exists;
         public bool HasStairs;
         public bool Worked;
@@ -28,7 +29,7 @@ namespace Rougelike
 
         public Room(RoomTemplate template)
         {
-            this.Tiles = new Tile[15,10];
+            Tiles = new Tile[15,10];
             for (int i = 0; i < 15; i++)
             {
                 for (int j = 0; j < 10; j++)
@@ -63,10 +64,28 @@ namespace Rougelike
                 if (entity is Enemy)
                 {
                     Enemy enemy = entity as Enemy;
+                    enemy.HasMoved = false;
                     if (enemy.HP <= 0)
                         Tiles[(int)enemy.Position.X, (int)enemy.Position.Y].Solid = false;
                     else
                         Tiles[(int)entity.Position.X, (int)entity.Position.Y].Solid = true;
+                }
+                else
+                    Tiles[(int)entity.Position.X, (int)entity.Position.Y].Solid = true;
+            }
+        }
+
+        internal void UpdateTilesForEnemy()
+        {
+            foreach (Tile tile in Tiles)
+            {
+                tile.Reset();
+            }
+            foreach (Entity entity in Entities)
+            {
+                if (entity is Enemy)
+                {
+                    Tiles[(int)entity.Position.X, (int)entity.Position.Y].Solid = false;
                 }
                 else
                     Tiles[(int)entity.Position.X, (int)entity.Position.Y].Solid = true;

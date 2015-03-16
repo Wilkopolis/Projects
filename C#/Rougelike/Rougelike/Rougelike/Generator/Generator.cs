@@ -10,13 +10,13 @@ namespace Rougelike
 {
     partial class Rougelike
     {
-        Save GenerateGame()
+        Save GenerateGame(Class playerclass)
         {
             Save Result = new Save();
 
-            Result.Floors = GenerateFloors(5);
+            Player Kevin = new Player(PlayerSprite, HashID++, playerclass);
 
-            Player Kevin = new Player(HashID++);
+            Result.Floors = GenerateFloors(5);
 
             Kevin.Position = new Vector2(5, 7);
 
@@ -103,7 +103,8 @@ namespace Rougelike
                         }
                     }
                     // Set the tile
-                    stairlist2.ElementAt(Random.Next(0, stairlist2.Count)).Steps = Stairs.DOWN;
+                    Tile temp = stairlist2.ElementAt(Random.Next(0, stairlist2.Count));
+                    temp = StairsTile.Copy();
                     floor.Rooms[(int)choice2.X, (int)choice2.Y].HasStairs = true;
                 }
             }
@@ -130,18 +131,18 @@ namespace Rougelike
         Floor GenerateFloor(int depth)
         {
             Vector2 max = Vector2.Zero;
-            switch (Random.Next(0, 1))
+            switch (Random.Next(0, 3))
             {
                 case 0:
-                    max = new Vector2(5, 5);
+                    max = new Vector2(4, 4);
                     break;
 
                 case 1:
-                    max = new Vector2(7, 7);
+                    max = new Vector2(5, 5);
                     break;
 
                 case 2:
-                    max = new Vector2(9, 9);
+                    max = new Vector2(6, 6);
                     break;
             }
             Floor result = new Floor(max);
@@ -218,7 +219,15 @@ namespace Rougelike
                     result.Entities.Add(GenerateItem(E.Position));
                 else if (E is Enemy)
                     result.Entities.Add(((Enemy)E).Copy(HashID++));
-                //else if (E is NPC)
+                else if (E is NPC)
+                {
+                    NPC guy = ((NPC)E).Copy(HashID++);
+                    if (guy.Type == NPCType.MERCHANT)
+                        ShopInventory = GenerateShopInventory();
+                    else if (guy.Type == NPCType.ENCHANTER)
+                        EnchanterButtons = GenerateEnchantments();
+                    result.Entities.Add(guy);
+                }
             }
             result.Payout = template.Payout;
             
@@ -235,7 +244,7 @@ namespace Rougelike
 
             int rand = Random.Next(0, 100);
 
-            if (rand < 70)
+            if (rand < 95)
                 prize = Rares.ElementAt(Random.Next(0, Rares.Count()));
             else
                 prize = Legendarys.ElementAt(Random.Next(0, Legendarys.Count()));
@@ -260,7 +269,7 @@ namespace Rougelike
             return Dupe(result);
         }
 
-        Item GenerateRoomPrize()
+        Item GeneratePrize()
         {
             Item result = Commons.ElementAt(Random.Next(0, Commons.Count()));
             if (result is HealthPotion)
@@ -271,6 +280,8 @@ namespace Rougelike
             {
                 return ((Coin)result).Copy(Save.GetRoom().Payout, HashID++, Random.Next(0, 10));
             }
+            else if (result is Pill)
+                return ((Pill)result).Copy(Save.GetRoom().Payout, HashID++, Random, PlayerHasSkill("prescription"), PlayerHasSkill("fda"));
             return null;
         }
 
@@ -292,18 +303,7 @@ namespace Rougelike
 
         RoomTemplate PickBadTemplate(int depth)
         {
-            int MinDiff = (depth - 1) * Difficulty;
-            int MaxDiff = (depth + 1) * Difficulty;
-            LinkedList<RoomTemplate> results = new LinkedList<RoomTemplate>();
-
-            foreach (RoomTemplate R in BadTemps)
-            {
-                if (MinDiff <= R.Difficulty && R.Difficulty <= MaxDiff)
-                {
-                    results.AddLast(R);
-                }
-            }
-
+            List<RoomTemplate> results = BadTemps.FindAll(template => template.Difficulty == depth);
             return results.ElementAt(Random.Next(0, results.Count));
         }
 
@@ -324,7 +324,7 @@ namespace Rougelike
                                 {
                                     if (current.Tiles[0, k].Door)
                                     {
-                                        current.Tiles[0, k].Door = false;
+                                        current.Tiles[0, k] = EmptyTile.Copy();
                                     }
                                 }
                             }
@@ -335,7 +335,7 @@ namespace Rougelike
                             {
                                 if (current.Tiles[0, k].Door)
                                 {
-                                    current.Tiles[0, k].Door = false;
+                                    current.Tiles[0, k] = EmptyTile.Copy();
                                 }
                             }
                         }
@@ -347,7 +347,7 @@ namespace Rougelike
                                 {
                                     if (current.Tiles[k, 0].Door)
                                     {
-                                        current.Tiles[k, 0].Door = false;
+                                        current.Tiles[k, 0] = EmptyTile.Copy();
                                     }
                                 }
                             }
@@ -358,7 +358,7 @@ namespace Rougelike
                             {
                                 if (current.Tiles[k, 0].Door)
                                 {
-                                    current.Tiles[k, 0].Door = false;
+                                    current.Tiles[k, 0] = EmptyTile.Copy();
                                 }
                             }
                         }
@@ -370,7 +370,7 @@ namespace Rougelike
                                 {
                                     if (current.Tiles[14, k].Door)
                                     {
-                                        current.Tiles[14, k].Door = false;
+                                        current.Tiles[14, k] = EmptyTile.Copy();
                                     }
                                 }
                             }
@@ -381,7 +381,7 @@ namespace Rougelike
                             {
                                 if (current.Tiles[14, k].Door)
                                 {
-                                    current.Tiles[14, k].Door = false;
+                                    current.Tiles[14, k] = EmptyTile.Copy();
                                 }
                             }
                         }
@@ -393,7 +393,7 @@ namespace Rougelike
                                 {
                                     if (current.Tiles[k, 9].Door)
                                     {
-                                        current.Tiles[k, 9].Door = false;
+                                        current.Tiles[k, 9] = EmptyTile.Copy();
                                     }
                                 }
                             }
@@ -404,7 +404,7 @@ namespace Rougelike
                             {
                                 if (current.Tiles[k, 9].Door)
                                 {
-                                    current.Tiles[k, 9].Door = false;
+                                    current.Tiles[k, 9] = EmptyTile.Copy();
                                 }
                             }
                         }
@@ -434,13 +434,57 @@ namespace Rougelike
             ShopButton uno = new ShopButton(SmallHealthPotion, Random.Next(3, 5));
             uno.Position = new Vector2(300, 300);
             result.Add(uno);
-            ShopButton dos = new ShopButton(GenerateItem(), Random.Next(1, 4));
+            ShopButton dos = new ShopButton(GenerateItem(), 1);
             dos.Position = new Vector2(420, 300);
             result.Add(dos);
-            ShopButton tre = new ShopButton(GenerateItem(), Random.Next(1, 4));
+            ShopButton tre = new ShopButton(GenerateItem(), 1);
             tre.Position = new Vector2(540, 300);
             result.Add(tre);
             return result;
+        }
+
+        List<EnchantmentButton> GenerateEnchantments()
+        {
+            List<EnchantmentButton> result = new List<EnchantmentButton>();
+            result.Add(GenerateEnchantmentButton(new Vector2(700, 320)));
+            result.Add(GenerateEnchantmentButton(new Vector2(700, 400)));
+            result.Add(GenerateEnchantmentButton(new Vector2(700, 480)));
+            return result;
+        }
+
+        EnchantmentButton GenerateEnchantmentButton(Vector2 position)
+        {
+            Effect effect;
+            int cost;
+
+            int rand = Random.Next(0, 100);
+            if (rand < 10)
+            {
+                effect = Effect.ABSORB;
+                cost = 15;
+            }
+            else if (rand < 20)
+            {
+                effect = Effect.BEEFUP;
+                cost = 10;
+            }
+            else if (rand < 30)
+            {
+                effect = Effect.DOUBLING;
+                cost = 30;
+            }
+            else if (rand < 40)
+            {
+                effect = Effect.SPLINTER;
+                cost = 10;
+            }
+            else
+            {
+                effect = Effect.THORNS;
+                cost = 10;
+            }
+
+            return new EnchantmentButton(EnchantmentButtonBack, position, effect, cost);
         }
     }
 }

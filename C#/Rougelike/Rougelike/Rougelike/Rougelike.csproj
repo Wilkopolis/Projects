@@ -113,10 +113,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Buttons\ShopButton.cs" />
+    <Compile Include="Buttons\ItemButton.cs" />
     <Compile Include="Buttons\MegaMapButton.cs" />
     <Compile Include="Entity\Creature\Simulate.cs" />
     <Compile Include="Entity\Item\Coin.cs" />
+    <Compile Include="Entity\Item\Pill.cs" />
     <Compile Include="Graphics\Drawer.cs" />
     <Compile Include="Screens\4x.cs" />
     <Compile Include="Screens\ClassSelectionScreen.cs" />
@@ -125,7 +126,7 @@
     <Compile Include="Screens\GameScreen.cs" />
     <Compile Include="Generator\Content.cs" />
     <Compile Include="Graphics\Graphics.cs" />
-    <Compile Include="Screens\Merchant.cs" />
+    <Compile Include="Screens\NPCScreen.cs" />
     <Compile Include="Screens\TitleScreen.cs" />
     <Compile Include="Generator\Shared.cs" />
     <Compile Include="Entity\Creature\ApplyEffects.cs" />
@@ -148,7 +149,6 @@
     <Compile Include="Buttons\Movement.cs" />
     <Compile Include="Entity\Creature\NPC.cs" />
     <Compile Include="Entity\Creature\Player.cs" />
-    <Compile Include="Entity\Item\Potion.cs" />
     <Compile Include="Generator\Room.cs" />
     <Compile Include="Buttons\TemplateButton.cs" />
     <Compile Include="Generator\Tile.cs" />

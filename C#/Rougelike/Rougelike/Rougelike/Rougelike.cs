@@ -21,11 +21,11 @@ namespace Rougelike
         MouseState LastMouseState;
         KeyboardState CurrentKeyboard;
         KeyboardState LastKeyboard;
-        
+
         State GameState = State.LOADING;
 
         Save Save;
-        
+
         public Rougelike()
         {
             Content.RootDirectory = "Content";
@@ -40,54 +40,56 @@ namespace Rougelike
         protected override void LoadContent()
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            
-            Assets = new Texture2D[45];
-            Assets[0] = Content.Load<Texture2D>("textures/game/empty");
-            Assets[1] = Content.Load<Texture2D>("textures/game/rock");
-            Assets[2] = Content.Load<Texture2D>("textures/game/enemy");
-            Assets[3] = Content.Load<Texture2D>("textures/game/player");
-            Assets[4] = Content.Load<Texture2D>("textures/game/door");
-            Assets[5] = Content.Load<Texture2D>("textures/game/movement");
-            Assets[6] = Content.Load<Texture2D>("textures/game/attack");
-            Assets[7] = Content.Load<Texture2D>("textures/game/blockcursor");
-            Assets[8] = Content.Load<Texture2D>("textures/game/creaturehealthbar");
-            Assets[9] = Content.Load<Texture2D>("textures/game/creaturehealthbaroutline");
-            Assets[10] = Content.Load<Texture2D>("textures/title/background");
-            Assets[11] = Content.Load<Texture2D>("textures/options/background");
-            Assets[12] = Content.Load<Texture2D>("textures/game/background");
-            Assets[13] = Content.Load<Texture2D>("textures/game/grid");
-            Assets[14] = Content.Load<Texture2D>("textures/game/stairs");
-            Assets[15] = Content.Load<Texture2D>("textures/game/healthbar");
-            Assets[16] = Content.Load<Texture2D>("textures/game/healthbaroutline");
-            Assets[17] = Content.Load<Texture2D>("textures/game/apbar");
-            Assets[18] = Content.Load<Texture2D>("textures/game/minimap/visited");
-            Assets[19] = Content.Load<Texture2D>("textures/game/minimap/minidoor");
-            Assets[20] = Content.Load<Texture2D>("textures/game/minimap/minidoorh");
-            Assets[21] = Content.Load<Texture2D>("textures/game/minimap/currentminiroom");
-            Assets[22] = Content.Load<Texture2D>("textures/game/minimap/clear");
-            Assets[23] = Content.Load<Texture2D>("textures/game/minimap/health");
-            Assets[24] = Content.Load<Texture2D>("textures/game/minimap/item");
-            Assets[25] = Content.Load<Texture2D>("textures/game/descriptor/back");
-            Assets[26] = Content.Load<Texture2D>("textures/game/enemy2");
-            Assets[27] = Content.Load<Texture2D>("textures/game/descriptor/backdrop");
-            Assets[28] = Content.Load<Texture2D>("textures/game/descriptor/exit");
-            Assets[29] = Content.Load<Texture2D>("textures/game/enemy3");
-            Assets[30] = Content.Load<Texture2D>("textures/game/minimap/stairs");
-            Assets[31] = Content.Load<Texture2D>("textures/game/enemy4");
-            Assets[32] = Content.Load<Texture2D>("textures/game/bigboss");
-            Assets[33] = Content.Load<Texture2D>("textures/editor/background");
-            Assets[34] = Content.Load<Texture2D>("textures/editor/enemybackdrop");
-            Assets[35] = Content.Load<Texture2D>("textures/game/4x/poweredroom");
-            Assets[36] = Content.Load<Texture2D>("textures/game/4x/megadoorh");
-            Assets[37] = Content.Load<Texture2D>("textures/game/4x/megadoor");
-            Assets[38] = Content.Load<Texture2D>("textures/game/4x/megaroom");
-            Assets[39] = Content.Load<Texture2D>("textures/classselection/background");
-            Assets[40] = Content.Load<Texture2D>("textures/game/4x/currentroom");
-            Assets[41] = Content.Load<Texture2D>("textures/game/minimap/unvisited");
-            Assets[42] = Content.Load<Texture2D>("textures/game/gempty");
-            Assets[43] = Content.Load<Texture2D>("textures/game/merchant");
-            Assets[44] = Content.Load<Texture2D>("textures/editor/payout");
-            
+
+            //Assets = new Texture2D[50];
+            //Assets[0] = Content.Load<Texture2D>("textures/game/empty");
+            //Assets[1] = Content.Load<Texture2D>("textures/game/rock");
+            //Assets[2] = Content.Load<Texture2D>("textures/game/enemy");
+            //Assets[3] = Content.Load<Texture2D>("textures/game/player");
+            //Assets[4] = Content.Load<Texture2D>("textures/game/door");
+            //Assets[5] = Content.Load<Texture2D>("textures/game/movement");
+            //Assets[6] = Content.Load<Texture2D>("textures/game/attack");
+            //Assets[7] = Content.Load<Texture2D>("textures/game/blockcursor");
+            //Assets[8] = Content.Load<Texture2D>("textures/game/creaturehealthbar");
+            //Assets[9] = Content.Load<Texture2D>("textures/game/creaturehealthbaroutline");
+            //Assets[10] = Content.Load<Texture2D>("textures/title/background");
+            //Assets[11] = Content.Load<Texture2D>("textures/options/background");
+            //Assets[12] = Content.Load<Texture2D>("textures/game/background");
+            //Assets[13] = Content.Load<Texture2D>("textures/game/grid");
+            //Assets[14] = Content.Load<Texture2D>("textures/game/stairs");
+            //Assets[15] = Content.Load<Texture2D>("textures/game/healthbar");
+            //Assets[16] = Content.Load<Texture2D>("textures/game/healthbaroutline");
+            //Assets[17] = Content.Load<Texture2D>("textures/game/apbar");
+            //Assets[18] = Content.Load<Texture2D>("textures/game/minimap/visited");
+            //Assets[19] = Content.Load<Texture2D>("textures/game/minimap/minidoor");
+            //Assets[20] = Content.Load<Texture2D>("textures/game/minimap/minidoorh");
+            //Assets[21] = Content.Load<Texture2D>("textures/game/minimap/currentminiroom");
+            //Assets[22] = Content.Load<Texture2D>("textures/game/minimap/clear");
+            //Assets[23] = Content.Load<Texture2D>("textures/game/minimap/health");
+            //Assets[24] = Content.Load<Texture2D>("textures/game/minimap/item");
+            //Assets[25] = Content.Load<Texture2D>("textures/game/descriptor/back");
+            //Assets[26] = Content.Load<Texture2D>("textures/game/enemy2");
+            //Assets[29] = Content.Load<Texture2D>("textures/game/enemy3");
+            //Assets[31] = Content.Load<Texture2D>("textures/game/enemy4");
+            //Assets[32] = Content.Load<Texture2D>("textures/game/bigboss");
+            //Assets[33] = Content.Load<Texture2D>("textures/editor/background");
+            //Assets[34] = Content.Load<Texture2D>("textures/editor/enemybackdrop");
+            //Assets[35] = Content.Load<Texture2D>("textures/game/4x/poweredroom");
+            //Assets[36] = Content.Load<Texture2D>("textures/game/4x/megadoorh");
+            //Assets[37] = Content.Load<Texture2D>("textures/game/4x/megadoor");
+            //Assets[38] = Content.Load<Texture2D>("textures/game/4x/megaroom");
+            //Assets[39] = Content.Load<Texture2D>("textures/classselection/background");
+            //Assets[40] = Content.Load<Texture2D>("textures/game/4x/currentroom");
+            //Assets[41] = Content.Load<Texture2D>("textures/game/minimap/unvisited");
+            //Assets[42] = Content.Load<Texture2D>("textures/game/gempty");
+            //Assets[43] = Content.Load<Texture2D>("textures/game/npc/merchant/merchant");
+            //Assets[44] = Content.Load<Texture2D>("textures/editor/payout");
+            //Assets[45] = Content.Load<Texture2D>("textures/game/npc/alchemist/alchemist");
+            //Assets[46] = Content.Load<Texture2D>("textures/game/npc/medic");
+            //Assets[47] = Content.Load<Texture2D>("textures/game/npc/gambler");
+            //Assets[48] = Content.Load<Texture2D>("textures/game/npc/enchanter/enchanter");
+            //Assets[49] = Content.Load<Texture2D>("textures/game/npc/pharmacist/pharmacist");
+
             dot = Content.Load<Texture2D>("textures/dot");
 
             SegeoUiMono = Content.Load<SpriteFont>("fonts/SegeoUiMono");
@@ -125,6 +127,43 @@ namespace Rougelike
 
                 case State.GAME:
                     CheckGameInput();
+
+                    if (MegaMapMode)
+                    {
+                        CheckMegaMapButtons();
+                        CheckSkillButtons();
+                    }
+
+                    CheckActiveSkills();
+
+                    if (InteractingWithNPC())
+                        CheckNPCButtons();
+
+                    if (DescriptionList.Count == 0)
+                        CheckItemDragging();
+
+                    CheckMouseHover();
+                    CheckDescriptions();
+
+                    if (UpdateOptions)
+                    {
+                        Save.GetRoom().Entities.RemoveAll(entity => entity is Fighter && ((Fighter)entity).HP <= 0);
+                        if (Save.Kevin.AP == 0)
+                            EndTurn();
+                        UpdatePlayerOptions();
+                        UpdateOptions = false;
+                    }
+
+                    if (ChangedFloors)
+                    {
+                        if (Save.Depth == 1)
+                        {
+                            Button megamap = new Button("4x", Keys.Tab);
+                            GameButtons.Add(megamap);
+                        }
+                        BuildMegaMap();
+                        ChangedFloors = false;
+                    }
                     break;
 
                 case State.OPTIONS:
@@ -188,15 +227,16 @@ namespace Rougelike
             this.Exit();
         }
 
-        public void NewGame(Class Class)
+        public void NewGame(Class playerclass)
         {
-            Save = GenerateGame();
+            Save = GenerateGame(playerclass);
             UpdatePlayerOptions();
         }
 
         public void GameOver()
         {
             GameState = State.TITLE;
+            GoldRoomChosen = false;
         }
     }
 }

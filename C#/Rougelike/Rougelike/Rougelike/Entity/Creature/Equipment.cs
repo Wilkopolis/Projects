@@ -112,7 +112,7 @@ namespace Rougelike
                     {
                         if (Items[i].Item.Name == Item.Name)
                         {
-                            ((Potion)Items[i].Item).StackSize++;
+                            ((Stackable)Items[i].Item).StackSize++;
                             return true;
                         }
                     }
@@ -202,7 +202,10 @@ namespace Rougelike
                 {
                     foreach (Effect E in I.Item.Mods.Keys)
                     {
-                        results.Add(E, I.Item.Mods[E]);
+                        if (results.ContainsKey(E))
+                            results[E]++;
+                        else
+                            results.Add(E, I.Item.Mods[E]);
                     }
                 }
             }

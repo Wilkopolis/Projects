@@ -10,8 +10,12 @@ namespace Rougelike
 {
     partial class Rougelike
     {
-        Tile Empty = new Tile(false);
-        Tile Solid = new Tile(true);
+        Tile EmptyTile;
+        Tile SolidTile;
+        Tile StairsTile;
+        Tile DoorTile;
+        Tile[,] DoorTiles;
+        Tile[,] EmptyTiles;
         Random Random = new Random();
         Vector2 Origin = new Vector2(34, 34);
 
@@ -28,12 +32,17 @@ namespace Rougelike
         RoomTemplate Golden;
         Weapon StarterSword;
         HealthPotion SmallHealthPotion;
+        Pill MasterPill;
+        NPC Alchemist;
+        NPC Pharmacist;
+        NPC Enchanter;
+        NPC Medic;
+        NPC Merchant;
+        NPC Gambler;
 
         String[] NameBank = { "Mac", "KickstarterBacker", "Jebidiah", "Jules", "Fuji", "Llama", "DC", "Tazdingo", "Yuri", "Seany" };
-
-        int Difficulty = 5;
-
-        void InitializeGenerator()
+        
+        void InitializeGenerator(Class playerclass)
         {
             Commons = new List<Item>();
             Rares = new List<Item>();
@@ -44,70 +53,144 @@ namespace Rougelike
 
             EnemyTemplates = new List<Enemy>();
 
-            //Starting Room
-            Start = new RoomTemplate();
-            Start.Tiles[7, 1].Steps = Stairs.DOWN;
+            EmptyTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/empty"), false);
+            SolidTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/solid"), true);
+            StairsTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/stairs"), false);
+            StairsTile.Steps = Stairs.DOWN;
+            DoorTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/door"), false);
+            DoorTile.Door = true;
+            Enemy1 = Content.Load<Texture2D>("textures/game/creatures/enemy");
+            EnemySprites[0] = Enemy1;
+            Enemy2 = Content.Load<Texture2D>("textures/game/creatures/enemy2");
+            EnemySprites[1] = Enemy2;
+            Enemy3 = Content.Load<Texture2D>("textures/game/creatures/enemy3");
+            EnemySprites[2] = Enemy3;
+            Enemy4 = Content.Load<Texture2D>("textures/game/creatures/enemy4");
+            EnemySprites[3] = Enemy4;
+            Payout = Content.Load<Texture2D>("textures/editor/payout");
 
-            Golden = new RoomTemplate();
-            Golden.Golden = true;
+            EmptyTiles = new Tile[15, 10];
             for (int i = 0; i < 15; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    Golden.Tiles[i, j].AssetIndex = (int)Texture.GOLDENEMPTY;
+                    EmptyTiles[i, j] = EmptyTile.Copy();
                 }
             }
-            Golden.Tiles[0, 4].Door = true;
-            Golden.Tiles[0, 5].Door = true;
-            Golden.Tiles[7, 0].Door = true;
-            Golden.Tiles[7, 9].Door = true;
-            Golden.Tiles[14, 4].Door = true;
-            Golden.Tiles[14, 5].Door = true;
+
+            DoorTiles = new Tile[15, 10];
+            for (int i = 0; i < 15; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    DoorTiles[i, j] = EmptyTile.Copy();
+                }
+            }
+            DoorTiles[0, 4] = DoorTile.Copy();
+            DoorTiles[0, 5] = DoorTile.Copy();
+            DoorTiles[7, 0] = DoorTile.Copy();
+            DoorTiles[7, 9] = DoorTile.Copy();
+            DoorTiles[14, 4] = DoorTile.Copy();
+            DoorTiles[14, 5] = DoorTile.Copy();
+
+            //Starting Room
+            Start = new RoomTemplate(EmptyTiles);
+            Start.Tiles[7, 1] = StairsTile;
+
+            Golden = new RoomTemplate(DoorTiles);
+            Golden.Golden = true;
+
+            Alchemist = new NPC(NPCType.ALCHEMIST, Content.Load<Texture2D>("textures/game/npc/alchemist/alchemist"));
+            Pharmacist = new NPC(NPCType.PHARMACIST, Content.Load<Texture2D>("textures/game/npc/pharmacist/pharmacist"));
+            Enchanter = new NPC(NPCType.ENCHANTER, Content.Load<Texture2D>("textures/game/npc/enchanter/enchanter"));
+            Merchant = new NPC(NPCType.MERCHANT, Content.Load<Texture2D>("textures/game/npc/merchant/merchant"));
+            Medic = new NPC(NPCType.MEDIC, Content.Load<Texture2D>("textures/game/npc/medic"));
+            Gambler = new NPC(NPCType.GAMBLER, Content.Load<Texture2D>("textures/game/npc/gambler"));
+
+            //Casino
+            RoomTemplate casino = new RoomTemplate(DoorTiles);
+            casino.Entities.Add(Gambler.Copy(HashID++));
+            GoodTemps.Add(casino);
+
+            //Hospital
+            RoomTemplate hospital = new RoomTemplate(DoorTiles);
+            hospital.Entities.Add(Medic.Copy(HashID++));
+            GoodTemps.Add(hospital);
+
+            //Recycling Plant
+            RoomTemplate merchant = new RoomTemplate(DoorTiles);
+            merchant.Entities.Add(Merchant.Copy(HashID++));
+            GoodTemps.Add(merchant);
+
+            //Enchanter
+            RoomTemplate enchanter = new RoomTemplate(DoorTiles);
+            enchanter.Entities.Add(Enchanter.Copy(HashID++));
+            GoodTemps.Add(enchanter);
+
+            //Alchemist
+            RoomTemplate alchemist = new RoomTemplate(DoorTiles);
+            alchemist.Entities.Add(Alchemist.Copy(HashID++));
+            GoodTemps.Add(alchemist);
+
+            if (playerclass == Class.PHARMACIST)
+            {
+                //Pharmacist
+                RoomTemplate pharmacy = new RoomTemplate(DoorTiles);
+                pharmacy.Entities.Add(Pharmacist.Copy(HashID++));
+                GoodTemps.Add(pharmacy);
+            }
 
             //Starter Weapon
-            StarterSword = new Weapon(Content.Load<Texture2D>("textures/game/items/woodsword"), 1, 1, 5, ItemType.WEILD, "Starter Sword", HashID++, new Effect[] {Effect.ONEHANDED, Effect.SWORD});
-            
+            StarterSword = new Weapon(Content.Load<Texture2D>("textures/game/items/woodsword"), 1, 1, 5, ItemType.WEILD, "Starter Sword", HashID++, new Effect[] { Effect.ONEHANDED, Effect.SWORD });
+
             ////////////////////////////////
             //          ENTITIES          //
             ////////////////////////////////
-                            
+
             /******************************/
             /*           ITEMS
             /******************************/
 
             #region
             /*
-            *      COMMONS   
-            */
-
-            // Small HP
+                *      COMMONS   
+                */            
             SmallHealthPotion = new HealthPotion(Content.Load<Texture2D>("textures/game/items/healthpotion"), Strength.SMALL, 5, HashID++);
             Commons.Add(SmallHealthPotion);
 
-            Item coin = new Coin(Content.Load<Texture2D>("textures/game/items/coin"), 5);
+            Coin coin = new Coin(Content.Load<Texture2D>("textures/game/items/coin"), 5);
             Commons.Add(coin);
+
+            if (playerclass == Class.PHARMACIST)
+            {
+                MasterPill = new Pill(new List<Texture2D>(){Content.Load<Texture2D>("textures/game/npc/pharmacist/bluepill"),Content.Load<Texture2D>("textures/game/npc/pharmacist/redpill"), Content.Load<Texture2D>("textures/game/npc/pharmacist/whitepill")});
+                Commons.Add(MasterPill);
+            }
 
             /*
              *      RARES   
              */
 
             // Splinter Wooden Sword
-            Weapon woodensword = new Weapon(Content.Load<Texture2D>("textures/game/items/woodsword"), 1, 1, 20, ItemType.WEILD, "Wooden Sword", HashID++, new Effect[] {Effect.ONEHANDED, Effect.SWORD, Effect.SPLINTER});
+            Weapon woodensword = new Weapon(Content.Load<Texture2D>("textures/game/items/woodsword"), 1, 1, 20, ItemType.WEILD, "Wooden Sword", HashID++, new Effect[] { Effect.ONEHANDED, Effect.SWORD, Effect.SPLINTER });
             Rares.Add(woodensword);
 
             // Thorny Helmet
-            Armor spikyhelmet = new Armor(Content.Load<Texture2D>("textures/game/items/helmet"), 20, ItemType.HEAD, "Noodle Knocker", HashID++, new Effect[] {Effect.THORNS});
+            Armor spikyhelmet = new Armor(Content.Load<Texture2D>("textures/game/items/helmet"), 10, ItemType.HEAD, "Noodle Knocker", HashID++, new Effect[] { Effect.THORNS });
             Rares.Add(spikyhelmet);
 
-            //Armor 
-            //Rares.Add(spikyhelmet);
+            Armor meatshield = new Armor(Content.Load<Texture2D>("textures/game/items/shield"), 20, ItemType.WEILD, "Meat Shield", HashID++, new Effect[] { Effect.ONEHANDED, Effect.ABSORB });
+            Rares.Add(meatshield);
+
+            Armor gorillavest = new Armor(Content.Load<Texture2D>("textures/game/items/armor"), 15, ItemType.CHEST, "Gorilla Torso", HashID++, new Effect[] { Effect.BEEFUP });
+            Rares.Add(gorillavest);
 
             /*
              *      LEGENDARIES   
              */
 
             // Dagger of Doubling
-            Weapon doubledagger = new Weapon(Content.Load<Texture2D>("textures/game/items/dagger"), 2, 2, 30, ItemType.WEILD, "Dagger", HashID++, new Effect[] {Effect.ONEHANDED, Effect.SWORD, Effect.DOUBLING});
+            Weapon doubledagger = new Weapon(Content.Load<Texture2D>("textures/game/items/dagger"), 2, 1, 30, ItemType.WEILD, "Dagger", HashID++, new Effect[] { Effect.ONEHANDED, Effect.SWORD, Effect.DOUBLING });
             Legendarys.Add(doubledagger);
             #endregion
 
@@ -129,7 +212,7 @@ namespace Rougelike
 
                     string[] contents = importedlevel.Replace("\r\n", "").Replace("\n", "").Replace("\r", "").Split('-');
 
-                    RoomTemplate result = new RoomTemplate();
+                    RoomTemplate result = new RoomTemplate(EmptyTiles);
 
                     string[] solids = contents[0].Split(':')[1].Split(',');
                     foreach (string s in solids)
@@ -137,7 +220,7 @@ namespace Rougelike
                         if (s != "")
                         {
                             string[] pair = s.Split('/');
-                            result.Tiles[Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])] = new Tile(true);
+                            result.Tiles[Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])] = SolidTile.Copy();
                         }
                     }
 
@@ -147,7 +230,7 @@ namespace Rougelike
                         if (d != "")
                         {
                             string[] pair = d.Split('/');
-                            result.Tiles[Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])].Door = true;
+                            result.Tiles[Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])] = DoorTile.Copy();
                         }
                     }
 
@@ -215,7 +298,7 @@ namespace Rougelike
                     result.MaxHP = Convert.ToInt32(stats[1].Split('=')[1]);
                     result.AP = Convert.ToInt32(stats[2].Split('=')[1]);
                     result.MaxAP = Convert.ToInt32(stats[2].Split('=')[1]);
-                    result.AssetIndex = Convert.ToInt32(stats[3].Split('=')[1]);
+                    result.Sprite = EnemySprites[Convert.ToInt32(stats[3].Split('=')[1])];
                     result.Damage = Convert.ToInt32(stats[4].Split('=')[1]);
                     result.Origin = Origin;
                     result.Side = Faction.NERD;

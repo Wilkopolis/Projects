@@ -11,16 +11,9 @@ namespace Rougelike
 {
 
     enum SettingIndex { DISPLAYWIDTH = 1, DISPLAYHEIGHT = 3, ASPECTRATIO = 5, FULLSCREEN = 7, BORDERLESS = 9, LETTERBOX = 11 };
-    enum Texture
-    {
-        EMPTY = 0, ROCK = 1, ENEMY1 = 2, PLAYER = 3, DOOR = 4, MOVEMENT = 5, HEALTHVIAL = 6, HEALTHBARFILL = 8, HEALTHBAROUTLINE = 9, STAIRS = 14, ENEMY2 = 26,
-        ENEMY3 = 29, ENEMY4 = 31, ENEMYBACKDROP = 34, POWEREDROOM = 35, MEGADOOR = 36, MEGADOORH = 37, MEGAROOM = 38, GOLDENEMPTY = 42, MERCHANT = 43, ENCHANTER = 43,
-        PAYOUT = 44
-    };
 
     public partial class Rougelike
     {
-        Texture2D[] Assets;
         Texture2D dot;
 
         string[] Settings;

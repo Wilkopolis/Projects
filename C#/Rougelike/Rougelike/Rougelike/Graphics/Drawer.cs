@@ -28,16 +28,21 @@ namespace Rougelike
             if (texture != null)
                 SpriteBatch.Draw(texture, OffsetVector + position, null, Color.White, 0, origin, 1, SpriteEffects.None, 0);
         }
-
-        void Draw(int assetindex, Vector2 position, Vector2 origin)
-        {
-            SpriteBatch.Draw(Assets[assetindex], OffsetVector + position, null, Color.White, 0, origin, 1, SpriteEffects.None, 0);
-        }
-
+        
         void Draw(Texture2D texture, Vector2 position)
         {
             if (texture != null)
                 SpriteBatch.Draw(texture, OffsetVector + position, Color.White);
+        }
+
+        void Draw(Tile tile, Vector2 position)
+        {
+            SpriteBatch.Draw(tile.Sprite, OffsetVector + position, Color.White);
+        }
+
+        void Draw(Entity entity)
+        {
+            SpriteBatch.Draw(entity.Sprite, OffsetVector + new Vector2(34, 34) + entity.Position * 66, Color.White);
         }
 
         void Draw(EnemyButton button)
@@ -45,7 +50,7 @@ namespace Rougelike
             if (button.Visable)
             {
                 SpriteBatch.Draw(button.Sprite, OffsetVector + button.Position, null, Color.White, 0, button.Origin, 1, SpriteEffects.None, 0);
-                SpriteBatch.Draw(Assets[button.Enemy.AssetIndex], OffsetVector + button.Position - new Vector2(35, 6), null, Color.White, 0, button.Origin, .65f, SpriteEffects.None, 0);
+                SpriteBatch.Draw(button.Enemy.Sprite, OffsetVector + button.Position - new Vector2(35, 6), null, Color.White, 0, button.Origin, .65f, SpriteEffects.None, 0);
                 SpriteBatch.DrawString(Calibri, button.Enemy.Name, OffsetVector + button.Position + new Vector2(58, -22), Color.White);
             }
         }
@@ -55,22 +60,19 @@ namespace Rougelike
             if (button.Item != null)
             {
                 Draw(button.Item.Sprite, button.Position, button.Origin);
-                if (button.Item is Potion && ((Potion)button.Item).StackSize > 1)
+                if (button.Item is Stackable && ((Stackable)button.Item).StackSize > 1)
                 {
-                    SpriteBatch.DrawString(SegeoUiMono, ((Potion)button.Item).StackSize.ToString(), OffsetVector + button.Position, Color.White);
+                    SpriteBatch.DrawString(SegeoUiMono, ((Stackable)button.Item).StackSize.ToString(), OffsetVector + button.Position, Color.White);
                 }
             }
         }
 
-        void Draw(ShopButton button)
+        void Draw(ItemButton button)
         {
+            Draw(ShopButtonBack, button.Position, button.Origin);
             if (button.Item != null)
             {
                 Draw(button.Item.Sprite, button.Position, button.Origin);
-                if (button.Item is Potion && ((Potion)button.Item).StackSize > 1)
-                {
-                    SpriteBatch.DrawString(SegeoUiMono, ((Potion)button.Item).StackSize.ToString(), OffsetVector + button.Position, Color.White);
-                }
             }
         }
 
@@ -81,7 +83,7 @@ namespace Rougelike
             else
                 SpriteBatch.Draw(button.Sprite, OffsetVector + button.Position, null, Color.White * .5f, 0, button.Origin, 1, SpriteEffects.None, 0);
         }
-        
+
         void Draw(TemplateButton button)
         {
             if (button.Visable)
@@ -91,7 +93,7 @@ namespace Rougelike
                 {
                     for (int k = 0; k < 10; k++)
                     {
-                        if (button.Template.Tiles[j, k].AssetIndex == 1)
+                        if (button.Template.Tiles[j, k].Solid)
                             Draw(MiniSolid, button.Position + new Vector2(4 + MiniSolid.Width * j, 4 + MiniSolid.Height * k), button.Origin);
                         else
                         {
@@ -132,19 +134,73 @@ namespace Rougelike
                 SpriteBatch.Draw(button.Sprite, button.Position + OffsetVector, null, Color.White, 0, button.Origin, 1, SpriteEffects.None, 0);
         }
 
-        void Draw(Movement button)
+        void Draw(EnchantmentButton button)
         {
-            SpriteBatch.Draw(Assets[button.AssetIndex], button.Position + OffsetVector, null, Color.White, 0, button.Origin, 1, SpriteEffects.None, 0);
+            Draw((Button)button);
+            SpriteBatch.DrawString(Cousine16, button.Enchantment.ToString(), OffsetVector + button.Position + new Vector2(-38, -10), Color.White);
+            SpriteBatch.DrawString(Cousine12, button.Cost.ToString(), OffsetVector + button.Position + new Vector2(-75, -6), Color.White);
         }
 
-        void Draw(int assetindex, Vector2 position)
+        void Draw(Description descriptor)
         {
-            SpriteBatch.Draw(Assets[assetindex], OffsetVector + position, Color.White);
-        }
+            int currrentheight = 0;
+            //draw description box
+            for (int j = 0; j < descriptor.Length; j++)
+            {
+                SpriteBatch.Draw(DesciptionBack, OffsetVector + descriptor.Position + new Vector2(0, 24 * j), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            }
 
-        void Draw(Texture assetindex, Vector2 position)
-        {
-            SpriteBatch.Draw(Assets[(int)assetindex], OffsetVector + position, Color.White);
+            //draw catagory
+            if (descriptor.Source is Weapon)
+            {
+                SpriteBatch.DrawString(Calibri, "Weapon", OffsetVector + descriptor.Position + new Vector2(4, 4), softgray);
+            }
+            else if (descriptor.Source is Armor)
+                SpriteBatch.DrawString(Calibri, "Armor", OffsetVector + descriptor.Position + new Vector2(4, 4), softgray);
+            else if (descriptor.Source is Creature)
+                SpriteBatch.DrawString(Calibri, "Creature", OffsetVector + descriptor.Position + new Vector2(4, 4), softgray);
+            else if (descriptor.Source is Stackable)
+                SpriteBatch.DrawString(Calibri, "Consumable", OffsetVector + descriptor.Position + new Vector2(4, 4), softgray);
+
+            //draw exit button
+            SpriteBatch.Draw(DesciptionExit, OffsetVector + descriptor.Position + new Vector2(210, 2), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+
+            currrentheight -= 24;
+            //draw name
+            for (int j = 0; j < descriptor.Name.Length; j++)
+            {
+                if (descriptor.Name[j] != "")
+                    currrentheight += 24;
+                SpriteBatch.DrawString(Cousine22, descriptor.Name[j], OffsetVector + descriptor.Position + new Vector2(4, 26 + currrentheight), whiteorange);
+            }
+
+            //draw backdrop
+            SpriteBatch.Draw(DescriptionSourceBackdrop, OffsetVector + descriptor.Position + new Vector2(160, currrentheight + 60), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+
+            //draw portrait
+            Draw(descriptor.Source.Sprite, descriptor.Position + new Vector2(160, currrentheight + 60));
+
+            //draw class
+            SpriteBatch.DrawString(Calibri, descriptor.Source.GetClass(), OffsetVector + descriptor.Position + new Vector2(4, currrentheight + 58), softgray);
+
+            if (descriptor.Source is Weapon)
+            {
+                //draw weapon cost
+                SpriteBatch.DrawString(Calibri, ((Weapon)descriptor.Source).Cost.ToString() + " AP", OffsetVector + descriptor.Position + new Vector2(4, currrentheight + 84), lightblue);
+                //draw weapon dmg
+                SpriteBatch.DrawString(CenturyGothic, ((Weapon)descriptor.Source).Damage.ToString() + " Dmg", OffsetVector + descriptor.Position + new Vector2(4, currrentheight + 92), brightwhite);
+            }
+            else if (descriptor.Source is HealthPotion)
+            {
+                //draw heal amount
+                SpriteBatch.DrawString(CenturyGothic, ((HealthPotion)descriptor.Source).GetHP().ToString() + " HP", OffsetVector + descriptor.Position + new Vector2(4, currrentheight + 92), brightwhite);
+            }
+            //draw mods
+            for (int j = 0; j < descriptor.Mods.Length; j++)
+            {
+                currrentheight += 24;
+                SpriteBatch.DrawString(Cousine16, descriptor.Mods[j], OffsetVector + descriptor.Position + new Vector2(10, 110 + currrentheight), orange);
+            }
         }
 
         void DrawLetterbox()
@@ -162,30 +218,14 @@ namespace Rougelike
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    Draw(CurrentTemplate.Tiles[i, j].AssetIndex, new Vector2(34, 34) + new Vector2(i * 66, j * 66));
-                    if (CurrentTemplate.Tiles[i, j].Door)
-                    {
-                        Draw(Texture.DOOR, new Vector2(34, 34) + new Vector2(i * 66, j * 66));
-                    }
-                    else if (CurrentTemplate.Tiles[i, j].Steps != Stairs.NONE)
-                    {
-                        Draw(Texture.STAIRS, new Vector2(34, 34) + new Vector2(i * 66, j * 66));
-                    }
+                    Draw(CurrentTemplate.Tiles[i, j], new Vector2(i , j) * 66 + new Vector2(34, 34));
                 }
             }
             if (CurrentTemplate.Payout != Vector2.Zero && CurrentTemplate.Difficulty != 0)
-                SpriteBatch.Draw(Assets[(int)Texture.PAYOUT], OffsetVector + CurrentTemplate.Payout * 66 + new Vector2(34, 34), Color.White);
+                Draw(Payout, OffsetVector + CurrentTemplate.Payout * 66 + new Vector2(34, 34));
             foreach (Entity entity in CurrentTemplate.Entities)
             {
-                if (entity is Creature)
-                {
-                    Creature creature = (Creature)entity;
-                    Draw(creature.AssetIndex, new Vector2(34, 34) + entity.Position * 66);
-                }
-                else
-                {
-                    Draw(((Item)entity).Sprite, new Vector2(34, 34) + entity.Position * 66);
-                }
+                Draw(entity);
             }
 
             SpriteBatch.DrawString(SegeoUiMono, CurrentTemplate.Difficulty.ToString(), OffsetVector + new Vector2(1220, 466), Color.White);
@@ -197,46 +237,30 @@ namespace Rougelike
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    Draw(Save.GetRoom().Tiles[i, j].AssetIndex, new Vector2(34, 34) + new Vector2(i * 66, j * 66));
-                    if (Save.GetRoom().Tiles[i, j].Door)
-                    {
-                        Draw(Texture.DOOR, new Vector2(34, 34) + new Vector2(i * 66, j * 66));
-                    }
-                    else if (Save.GetRoom().Tiles[i, j].Steps != Stairs.NONE)
-                    {
-                        Draw(Texture.STAIRS, new Vector2(34, 34) + new Vector2(i * 66, j * 66));
-                    }
+                    Draw(Save.GetRoom().Tiles[i, j], new Vector2(34, 34) + new Vector2(i * 66, j * 66));
                 }
             }
             foreach (Entity entity in Save.GetRoom().Entities)
             {
-                if (entity is Creature)
+                Draw(entity);
+                if (entity is Fighter)
                 {
-                    Draw(entity.AssetIndex, new Vector2(34, 34) + entity.Position * 66);
-                    if (entity is Fighter)
+                    Fighter fighter = entity as Fighter;
+                    if (fighter.HP != fighter.MaxHP)
                     {
-                        Fighter fighter = entity as Fighter;
-                        if (fighter.HP != fighter.MaxHP)
-                        {
-                            Draw(Texture.HEALTHBAROUTLINE, new Vector2(34, 34) + fighter.Position * 66);
-                            SpriteBatch.Draw(Assets[(int)Texture.HEALTHBARFILL], OffsetVector + new Vector2(34, 34) + fighter.Position * 66, new Rectangle(0, 0, (int)Math.Ceiling(Assets[8].Width * (fighter.HP / (double)fighter.MaxHP)),
-                            Assets[(int)Texture.HEALTHBARFILL].Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                        }
+                        Draw(CreatureHealthBarOutline, new Vector2(34, 34) + fighter.Position * 66);
+                        SpriteBatch.Draw(CreatureHealthBarFill, OffsetVector + new Vector2(34, 34) + fighter.Position * 66, new Rectangle(0, 0, (int)Math.Ceiling(CreatureHealthBarFill.Width * (fighter.HP / (double)fighter.MaxHP)), CreatureHealthBarFill.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                     }
-                }
-                else
-                {
-                    Draw(((Item)entity).Sprite, new Vector2(34, 34) + entity.Position * 66);
                 }
             }
         }
 
         void DrawCurrentEnemy()
         {
-            Draw(Texture.ENEMYBACKDROP, new Vector2(1045, 500));
+            Draw(EnemyBackground, new Vector2(1045, 500));
             if (CurrentEnemy != null)
             {
-                Draw(CurrentEnemy.AssetIndex, new Vector2(1070, 545));
+                Draw(CurrentEnemy.Sprite, new Vector2(1070, 545));
                 SpriteBatch.DrawString(SegeoUiMono, "Name: " + CurrentEnemy.Name, OffsetVector + new Vector2(1060, 510), Color.White);
                 SpriteBatch.DrawString(SegeoUiMono, "Max HP: " + CurrentEnemy.HP.ToString(), OffsetVector + new Vector2(1150, 543), Color.White);
                 SpriteBatch.DrawString(SegeoUiMono, "Max AP: " + CurrentEnemy.AP.ToString(), OffsetVector + new Vector2(1150, 563), Color.White);
@@ -248,30 +272,20 @@ namespace Rougelike
         {
             SpriteBatch.DrawString(SegeoUiMono, "HP: ", OffsetVector + new Vector2(8, 1), Color.White);
             SpriteBatch.DrawString(SegeoUiMono, Save.Kevin.HP.ToString() + "/" + Save.Kevin.MaxHP.ToString(), new Vector2(42, 1), brightwhite);
-            SpriteBatch.Draw(Assets[15], OffsetVector + new Vector2(82, 7), new Rectangle(0, 0, (int)Math.Ceiling(Assets[15].Width * (Save.Kevin.HP / (double)Save.Kevin.MaxHP)),
-                        Assets[15].Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            SpriteBatch.Draw(Assets[16], OffsetVector + new Vector2(82, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            SpriteBatch.DrawString(SegeoUiMono, "AP: ", OffsetVector + new Vector2(230, 1), Color.White);
-            SpriteBatch.DrawString(SegeoUiMono, Save.Kevin.AP.ToString() + "/" + Save.Kevin.MaxAP.ToString(), new Vector2(264, 1), brightwhite);
-            SpriteBatch.Draw(Assets[17], OffsetVector + new Vector2(306, 7), new Rectangle(0, 0, (int)Math.Ceiling(Assets[17].Width * (Save.Kevin.AP / (double)Save.Kevin.MaxAP)),
-                        Assets[17].Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            SpriteBatch.Draw(Assets[16], OffsetVector + new Vector2(306, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            int wpt = Save.Kevin.MyWealthPerTurn();
-            int ppt = Save.Kevin.MyPowerPerTurn();
-            for (int i = 0; i < Save.GetFloor().Max.X; i++)
-            {
-                for (int j = 0; j < Save.GetFloor().Max.Y; j++)
-                {
-                    if (Save.GetFloor().Rooms[i, j].Worked || Save.GetFloor().Rooms[i, j].PermaWorked)
-                    {
-                        wpt += Save.GetFloor().Rooms[i, j].Wealth;
-                        ppt += Save.GetFloor().Rooms[i, j].Power;
-                    }
-                }
-            }
-            SpriteBatch.DrawString(SegeoUiMono, "Wealth:" + Save.Kevin.Wealth.ToString() + "(+" + wpt.ToString() + ")", OffsetVector + new Vector2(455, 1), brightwhite);
-            SpriteBatch.DrawString(SegeoUiMono, "Power:" + Save.Kevin.Power.ToString() + "(+" + ppt.ToString() + ")", OffsetVector + new Vector2(600, 1), brightwhite);
-            SpriteBatch.DrawString(SegeoUiMono, "XP:" + Save.Kevin.Experience.ToString(), OffsetVector + new Vector2(730, 1), whiteorange);
+            SpriteBatch.Draw(HealthBarUI, OffsetVector + new Vector2(102, 7), new Rectangle(0, 0, (int)Math.Ceiling(HealthBarUI.Width * (Save.Kevin.HP / (double)Save.Kevin.MaxHP)),
+                        HealthBarUI.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            SpriteBatch.Draw(UIOutline, OffsetVector + new Vector2(102, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            SpriteBatch.DrawString(SegeoUiMono, "AP: ", OffsetVector + new Vector2(250, 1), Color.White);
+            SpriteBatch.DrawString(SegeoUiMono, Save.Kevin.AP.ToString() + "/" + Save.Kevin.MaxAP.ToString(), new Vector2(284, 1), brightwhite);
+            SpriteBatch.Draw(APBarUI, OffsetVector + new Vector2(346, 7), new Rectangle(0, 0, (int)Math.Ceiling(APBarUI.Width * (Save.Kevin.AP / (double)Save.Kevin.MaxAP)),
+                        APBarUI.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            SpriteBatch.Draw(UIOutline, OffsetVector + new Vector2(346, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            SpriteBatch.DrawString(SegeoUiMono, "Wealth:" + Save.Kevin.Wealth.ToString() + "(+" + Save.Kevin.WealthPerTurn.ToString() + ")", OffsetVector + new Vector2(495, 1), brightwhite);
+            SpriteBatch.DrawString(SegeoUiMono, "Power:" + Save.Kevin.Power.ToString() + "(+" + Save.Kevin.PowerPerTurn.ToString() + ")", OffsetVector + new Vector2(670, 1), brightwhite);
+            if (Save.Kevin.Class == Class.MASTERMIND)
+                SpriteBatch.DrawString(SegeoUiMono, "XP:" + Save.Kevin.Experience.ToString() + "(+" + Save.Kevin.ExperiencePerTurn.ToString() + ")", OffsetVector + new Vector2(850, 1), whiteorange);
+            else
+                SpriteBatch.DrawString(SegeoUiMono, "XP:" + Save.Kevin.Experience.ToString(), OffsetVector + new Vector2(850, 1), whiteorange);
         }
 
         void DrawMiniMap()
@@ -311,37 +325,37 @@ namespace Rougelike
                     if (room.Exists)
                     {
                         if (room == Save.GetRoom())
-                            SpriteBatch.Draw(Assets[21], OffsetVector + diff + new Vector2((i - imin) * 23, (j - jmin) * 23), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                            SpriteBatch.Draw(CurrentMiniRoom, OffsetVector + diff + new Vector2((i - imin) * 23, (j - jmin) * 23), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                         else
                         {
-                            if (room.Visible)
-                                SpriteBatch.Draw(Assets[18], OffsetVector + diff + new Vector2((i - imin) * 23, (j - jmin) * 23), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                            if (room.Known)
+                                Draw(VisitedMiniRoom, diff + new Vector2((i - imin) * 23, (j - jmin) * 23));
                             else
-                                SpriteBatch.Draw(Assets[41], OffsetVector + diff + new Vector2((i - imin) * 23, (j - jmin) * 23), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                            if (room.HasEnemy() && room.Visible)
+                                Draw(UnVisitedMiniRoom, diff + new Vector2((i - imin) * 23, (j - jmin) * 23));
+                            if (room.HasEnemy() && room.Visited)
                             {
-                                SpriteBatch.Draw(Assets[22], OffsetVector + diff + new Vector2((i - imin) * 23 + 2, (j - jmin) * 23 + 6), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                                Draw(MiniEnemy, diff + new Vector2((i - imin) * 23 + 2, (j - jmin) * 23 + 6));
                             }
-                            if (room.HasHealth() && room.Visible)
+                            if (room.HasHealth() && room.Visited)
                             {
-                                SpriteBatch.Draw(Assets[23], OffsetVector + diff + new Vector2((i - imin) * 23 + 2, (j - jmin) * 23 + 10), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                                Draw(MiniDoor, diff + new Vector2((i - imin) * 23 + 2, (j - jmin) * 23 + 10));
                             }
-                            if (room.HasItem() && room.Visible)
+                            if (room.HasItem() && room.Visited)
                             {
-                                SpriteBatch.Draw(Assets[24], OffsetVector + diff + new Vector2((i - imin) * 23 + 2, (j - jmin) * 23 + 14), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                                Draw(MiniPrize, diff + new Vector2((i - imin) * 23 + 2, (j - jmin) * 23 + 14));
                             }
-                            if (room.HasStairs && room.Visible)
+                            if (room.HasStairs && room.Visited)
                             {
-                                SpriteBatch.Draw(Assets[30], OffsetVector + diff + new Vector2((i - imin) * 23 + 6, (j - jmin) * 23 + 6), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                                Draw(MiniSolid, diff + new Vector2((i - imin) * 23 + 6, (j - jmin) * 23 + 6));
                             }
                         }
                         if (room.HasSouthDoor())
                         {
-                            SpriteBatch.Draw(Assets[20], OffsetVector + diff + new Vector2((i - imin) * 23 + 4, (j - jmin) * 23 + 19), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                            SpriteBatch.Draw(MiniDoorHorizontal, OffsetVector + diff + new Vector2((i - imin) * 23 + 4, (j - jmin) * 23 + 19), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                         }
                         if (room.HasWestDoor())
                         {
-                            SpriteBatch.Draw(Assets[19], OffsetVector + diff + new Vector2((i - imin) * 23 - 4, (j - jmin) * 23 + 4), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                            SpriteBatch.Draw(MiniDoorVertrical, OffsetVector + diff + new Vector2((i - imin) * 23 - 4, (j - jmin) * 23 + 4), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                         }
                     }
                 }
@@ -350,79 +364,12 @@ namespace Rougelike
 
         void DrawDescriptions()
         {
-            if (DescriptionList.Count > 0)
+            foreach (Description descriptor in DescriptionList)
             {
-                for (int i = DescriptionList.Count() - 1; i >= 0; i--)
-                {
-                    Description D = DescriptionList.ElementAt(i);
-
-                    int currrentheight = 0;
-                    //draw description box
-                    for (int j = 0; j < D.Length; j++)
-                    {
-                        SpriteBatch.Draw(Assets[25], OffsetVector + D.Position + new Vector2(0, 24 * j), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                    }
-
-                    //draw catagory
-                    if (D.Source is Weapon)
-                    {
-                        SpriteBatch.DrawString(Calibri, "Weapon", OffsetVector + D.Position + new Vector2(4, 4), softgray);
-                    }
-                    else if (D.Source is Armor)
-                        SpriteBatch.DrawString(Calibri, "Armor", OffsetVector + D.Position + new Vector2(4, 4), softgray);
-                    else if (D.Source is Creature)
-                        SpriteBatch.DrawString(Calibri, "Creature", OffsetVector + D.Position + new Vector2(4, 4), softgray);
-                    else if (D.Source is Potion)
-                        SpriteBatch.DrawString(Calibri, "Consumable", OffsetVector + D.Position + new Vector2(4, 4), softgray);
-
-                    //draw exit button
-                    SpriteBatch.Draw(Assets[28], OffsetVector + D.Position + new Vector2(210, 2), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-
-                    currrentheight -= 24;
-                    //draw name
-                    for (int j = 0; j < D.Name.Length; j++)
-                    {
-                        if (D.Name[j] != "")
-                            currrentheight += 24;
-                        SpriteBatch.DrawString(Cousine22, D.Name[j], OffsetVector + D.Position + new Vector2(4, 26 + currrentheight), whiteorange);
-                    }
-
-                    //draw backdrop
-                    SpriteBatch.Draw(Assets[27], OffsetVector + D.Position + new Vector2(160, currrentheight + 60), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-
-                    //draw portrait
-                    if (D.Source is Creature)
-                    {
-                        SpriteBatch.Draw(Assets[((Creature)D.Source).AssetIndex], OffsetVector + D.Position + new Vector2(160, currrentheight + 60), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                    }
-                    else
-                    {
-                        SpriteBatch.Draw(((Item)D.Source).Sprite, OffsetVector + D.Position + new Vector2(160, currrentheight + 60), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                    }
-
-                    //draw class
-                    SpriteBatch.DrawString(Calibri, D.Source.GetClass(), OffsetVector + D.Position + new Vector2(4, currrentheight + 58), softgray);
-
-                    if (D.Source is Weapon)
-                    {
-                        //draw weapon cost
-                        SpriteBatch.DrawString(Calibri, ((Weapon)D.Source).Cost.ToString() + " AP", OffsetVector + D.Position + new Vector2(4, currrentheight + 84), lightblue);
-                        //draw weapon dmg
-                        SpriteBatch.DrawString(CenturyGothic, ((Weapon)D.Source).Damage.ToString() + " Dmg", OffsetVector + D.Position + new Vector2(4, currrentheight + 92), brightwhite);
-                    }
-                    else if (D.Source is HealthPotion)
-                    {
-                        //draw heal amount
-                        SpriteBatch.DrawString(CenturyGothic, ((HealthPotion)D.Source).GetHP().ToString() + " HP", OffsetVector + D.Position + new Vector2(4, currrentheight + 92), brightwhite);
-                    }
-                    //draw mods
-                    for (int j = 0; j < D.Mods.Length; j++)
-                    {
-                        currrentheight += 24;
-                        SpriteBatch.DrawString(Cousine16, D.Mods[j], OffsetVector + D.Position + new Vector2(10, 110 + currrentheight), orange);
-                    }
-                }
+                Draw(descriptor);
             }
+            if (HoverDescription != null)
+                Draw(HoverDescription);
         }
 
         void DrawSaved()

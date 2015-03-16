@@ -31,6 +31,13 @@ namespace Rougelike
         Texture2D MiniDoor;
         Texture2D MiniPrize;
         Texture2D SavedBackground;
+        Texture2D EnemyBackground;
+        Texture2D Enemy1;
+        Texture2D Enemy2;
+        Texture2D Enemy3;
+        Texture2D Enemy4;
+        Texture2D Payout;
+        Texture2D[] EnemySprites = new Texture2D[4];
         List<Button> EditorButtons;
         List<EnemyButton> EnemyButtons;
         List<TemplateButton> TemplateButtons;
@@ -44,8 +51,23 @@ namespace Rougelike
             EnemyButtons = new List<EnemyButton>();
             TemplateButtons = new List<TemplateButton>();
 
+            EmptyTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/empty"), false);
+            SolidTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/solid"), true);
+            StairsTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/stairs"), false);
+            DoorTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/door"), false);
+            DoorTile.Door = true;
+
+            EmptyTiles = new Tile[15, 10];
+            for (int i = 0; i < 15; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    EmptyTiles[i, j] = EmptyTile.Copy();
+                }
+            }
+
             CurrentTab = Tab.TEMPLATES;
-            CurrentTemplate = new RoomTemplate();
+            CurrentTemplate = new RoomTemplate(EmptyTiles);
 
             EditorBackground = Content.Load<Texture2D>("textures/editor/background");
             SelectedTab = Content.Load<Texture2D>("textures/editor/buttons/selectedtab");
@@ -58,6 +80,16 @@ namespace Rougelike
             MiniDoor = Content.Load<Texture2D>("textures/editor/template/door");
             MiniEnemy = Content.Load<Texture2D>("textures/editor/template/enemy");
             MiniPrize = Content.Load<Texture2D>("textures/editor/template/prize");
+            Enemy1 = Content.Load<Texture2D>("textures/game/creatures/enemy");
+            EnemySprites[0] = Enemy1;
+            Enemy2 = Content.Load<Texture2D>("textures/game/creatures/enemy2");
+            EnemySprites[1] = Enemy2;
+            Enemy3 = Content.Load<Texture2D>("textures/game/creatures/enemy3");
+            EnemySprites[2] = Enemy3;
+            Enemy4 = Content.Load<Texture2D>("textures/game/creatures/enemy4");
+            EnemySprites[3] = Enemy4;
+            Payout = Content.Load<Texture2D>("textures/editor/payout");
+            EnemyBackground = Content.Load<Texture2D>("textures/editor/enemybackdrop");
             SavedBackground = Content.Load<Texture2D>("textures/editor/saved");
 
             Button templatestabbutton = new Button(SelectedTab, new Vector2(1100, 40), "templatestab", Keys.A);
@@ -338,21 +370,21 @@ namespace Rougelike
                         break;
 
                     case "sprite":
-                        if (CurrentEnemy.AssetIndex == (int)Texture.ENEMY1)
+                        if (CurrentEnemy.Sprite == Enemy1)
                         {
-                            CurrentEnemy.AssetIndex = (int)Texture.ENEMY2;
+                            CurrentEnemy.Sprite = Enemy2;
                         }
-                        else if (CurrentEnemy.AssetIndex == (int)Texture.ENEMY2)
+                        else if (CurrentEnemy.Sprite == Enemy2)
                         {
-                            CurrentEnemy.AssetIndex = (int)Texture.ENEMY3;
+                            CurrentEnemy.Sprite = Enemy3;
                         }
-                        else if (CurrentEnemy.AssetIndex == (int)Texture.ENEMY3)
+                        else if (CurrentEnemy.Sprite == Enemy3)
                         {
-                            CurrentEnemy.AssetIndex = (int)Texture.ENEMY4;
+                            CurrentEnemy.Sprite = Enemy4;
                         }
-                        else if (CurrentEnemy.AssetIndex == (int)Texture.ENEMY4)
+                        else if (CurrentEnemy.Sprite == Enemy4)
                         {
-                            CurrentEnemy.AssetIndex = (int)Texture.ENEMY1;
+                            CurrentEnemy.Sprite = Enemy1;
                         }
                         break;
 
@@ -406,14 +438,14 @@ namespace Rougelike
                         if (CurrentTab == Tab.TEMPLATES)
                         {
                             CurrentTemplateName = Convert.ToString(Convert.ToInt32(CurrentTemplateName.Split('.')[0]) + 1);
-                            TemplateButton result = new TemplateButton(UnselectedSummary, CurrentTemplateName + ".lvl", 0);
+                            TemplateButton result = new TemplateButton(UnselectedSummary, CurrentTemplateName + ".lvl", EmptyTiles, 0);
                             TemplateButtons.Add(result);
                             ReallignTemplates();
                         }
                         else if (CurrentTab == Tab.ENEMIES)
                         {
-                            CurrentCreatureName = Convert.ToString(Convert.ToInt32(CurrentCreatureName.Split('.')[0]) + 1);
-                            EnemyButton result = new EnemyButton(UnselectedSummary, CurrentCreatureName);
+                            CurrentCreatureName = Convert.ToString(Convert.ToInt32(CurrentCreatureName.Split('.')[0]) + 1) + ".nme";
+                            EnemyButton result = new EnemyButton(UnselectedSummary, Enemy1, CurrentCreatureName);
                             EnemyButtons.Add(result);
                             ReallignEnemies();
                         }
@@ -426,8 +458,7 @@ namespace Rougelike
                             {
                                 if (MouseOver(i, j))
                                 {
-                                    CurrentTemplate.Tiles[i, j].Door = !CurrentTemplate.Tiles[i, j].Door;
-                                    CurrentTemplate.Tiles[i, j].AssetIndex = 0;
+                                    CurrentTemplate.Tiles[i, j] = DoorTile.Copy();
                                 }
                             }
                         }
@@ -483,21 +514,21 @@ namespace Rougelike
                         break;
 
                     case "sprite":
-                        if (CurrentEnemy.AssetIndex == (int)Texture.ENEMY1)
+                        if (CurrentEnemy.Sprite == Enemy1)
                         {
-                            CurrentEnemy.AssetIndex = (int)Texture.ENEMY4;
+                            CurrentEnemy.Sprite = Enemy4;
                         }
-                        else if (CurrentEnemy.AssetIndex == (int)Texture.ENEMY2)
+                        else if (CurrentEnemy.Sprite == Enemy2)
                         {
-                            CurrentEnemy.AssetIndex = (int)Texture.ENEMY1;
+                            CurrentEnemy.Sprite = Enemy3;
                         }
-                        else if (CurrentEnemy.AssetIndex == (int)Texture.ENEMY3)
+                        else if (CurrentEnemy.Sprite == Enemy3)
                         {
-                            CurrentEnemy.AssetIndex = (int)Texture.ENEMY2;
+                            CurrentEnemy.Sprite = Enemy2;
                         }
-                        else if (CurrentEnemy.AssetIndex == (int)Texture.ENEMY4)
+                        else if (CurrentEnemy.Sprite == Enemy4)
                         {
-                            CurrentEnemy.AssetIndex = (int)Texture.ENEMY3;
+                            CurrentEnemy.Sprite = Enemy1;
                         }
                         break;
 
@@ -564,10 +595,11 @@ namespace Rougelike
                 {
                     if (MouseOver(i, j))
                     {
-                        if (CurrentTemplate.Tiles[i, j].AssetIndex == (int)Texture.EMPTY)
-                            CurrentTemplate.Tiles[i, j].AssetIndex = (int)Texture.ROCK;
+                        CurrentTemplate.Tiles[i, j].Solid = !CurrentTemplate.Tiles[i, j].Solid;
+                        if (CurrentTemplate.Tiles[i, j].Solid)
+                            CurrentTemplate.Tiles[i, j] = SolidTile.Copy();
                         else
-                            CurrentTemplate.Tiles[i, j].AssetIndex = (int)Texture.EMPTY;
+                            CurrentTemplate.Tiles[i, j] = EmptyTile.Copy();
                     }
                 }
             }
@@ -616,7 +648,7 @@ namespace Rougelike
                     string[] stats = contents[0].Split(':')[1].Split(',');
 
                     CurrentCreatureName = Strip(file);
-                    EnemyButton result = new EnemyButton(UnselectedSummary, CurrentCreatureName);
+                    EnemyButton result = new EnemyButton(UnselectedSummary, EnemySprites[Convert.ToInt32(stats[3].Split('=')[1])], CurrentCreatureName);
                     result.Enemy.HashID = Convert.ToInt32(CurrentCreatureName.Split('.')[0]);
                     if (stats[0].Split('=')[1].Trim() == "Smart")
                         result.Enemy.Brains = Nature.SMART;
@@ -625,8 +657,7 @@ namespace Rougelike
                     result.Enemy.HP = Convert.ToInt32(stats[1].Split('=')[1]);
                     result.Enemy.MaxHP = Convert.ToInt32(stats[1].Split('=')[1]);
                     result.Enemy.AP = Convert.ToInt32(stats[2].Split('=')[1]);
-                    result.Enemy.MaxAP = Convert.ToInt32(stats[2].Split('=')[1]);
-                    result.Enemy.AssetIndex = Convert.ToInt32(stats[3].Split('=')[1]);
+                    result.Enemy.MaxAP = Convert.ToInt32(stats[2].Split('=')[1]);  
                     result.Enemy.Damage = Convert.ToInt32(stats[4].Split('=')[1]);
                     result.Enemy.Origin = Origin;
                     result.Enemy.Side = Faction.NERD;
@@ -665,7 +696,7 @@ namespace Rougelike
                     string[] contents = importedlevel.Replace("\r\n", "").Replace("\n", "").Replace("\r", "").Split('-');
 
                     CurrentTemplateName = Strip(file);
-                    TemplateButton result = new TemplateButton(UnselectedSummary, CurrentTemplateName, 0);
+                    TemplateButton result = new TemplateButton(UnselectedSummary, CurrentTemplateName, EmptyTiles, 0);
 
                     string[] solids = contents[0].Split(':')[1].Split(',');
                     foreach (string s in solids)
@@ -673,7 +704,7 @@ namespace Rougelike
                         if (s != "")
                         {
                             string[] pair = s.Split('/');
-                            result.Template.Tiles[Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])] = new Tile(true);
+                            result.Template.Tiles[Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])] = SolidTile.Copy();
                         }
                     }
 
@@ -683,7 +714,7 @@ namespace Rougelike
                         if (d != "")
                         {
                             string[] pair = d.Split('/');
-                            result.Template.Tiles[Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])].Door = true;
+                            result.Template.Tiles[Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])] = DoorTile.Copy();
                         }
                     }
 
@@ -720,7 +751,7 @@ namespace Rougelike
                 Console.WriteLine("The file could not be read:");
                 Console.WriteLine(e.Message);
             }            
-            ReallignTemplates();
+        ReallignTemplates();
         }
 
         void SaveContent()
@@ -747,7 +778,7 @@ namespace Rougelike
                 content += ",";
                 content += "\n";
                 content += "Texture = ";
-                content += E.Enemy.AssetIndex.ToString();
+                content += Array.IndexOf(EnemySprites, E.Sprite).ToString();
                 content += ",";
                 content += "\n";
                 content += "Damage = ";
@@ -779,7 +810,7 @@ namespace Rougelike
                 {
                     for (int k = 0; k < 10; k++)
                     {
-                        if (T.Template.Tiles[j,k].AssetIndex == (int)Texture.ROCK)
+                        if (T.Template.Tiles[j,k].Solid)
                         {
                             content += j.ToString();
                             content += "/";
@@ -885,8 +916,14 @@ namespace Rougelike
         {
             TemplateButtons.Sort(delegate(TemplateButton x, TemplateButton y)
             {
-                if (x.Template.Difficulty > y.Template.Difficulty) return 1;
-                else return -1;
+                if (x == null && y != null)
+                    return -1;
+                else if (y == null)
+                    return 0;
+                else if (x.Template.Difficulty > y.Template.Difficulty) 
+                    return 1;
+                else 
+                    return -1;
             });
             int pos = -CurrentTemplateIndex;
             foreach (TemplateButton t in TemplateButtons)

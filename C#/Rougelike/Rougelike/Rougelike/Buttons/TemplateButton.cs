@@ -11,9 +11,9 @@ namespace Rougelike
     {
         public RoomTemplate Template;
 
-        public TemplateButton(Texture2D sprite, String name, int difficulty)
+        public TemplateButton(Texture2D sprite, String name, Tile[,] tiles, int difficulty)
         {
-            Template = new RoomTemplate(name, difficulty);
+            Template = new RoomTemplate(tiles, name, difficulty);
             Sprite = sprite;
             Origin = new Vector2(Sprite.Width / 2, Sprite.Height / 2);
             Action = "room";

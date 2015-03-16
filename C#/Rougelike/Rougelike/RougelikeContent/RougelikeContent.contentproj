@@ -56,6 +56,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="textures\classselection\unselected.png">
+      <Name>unselected</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
     <Compile Include="textures\game\background.png">
       <Name>background</Name>
       <Importer>TextureImporter</Importer>
@@ -65,11 +70,6 @@
   <ItemGroup>
     <Compile Include="textures\game\items\shield.png">
       <Name>shield</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="textures\game\invispixel.png">
-      <Name>invispixel</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -95,15 +95,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\empty.png">
+    <Compile Include="textures\game\tiles\empty.png">
       <Name>empty</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\rock.png">
-      <Name>rock</Name>
+    <Compile Include="textures\game\tiles\solid.png">
+      <Name>solid</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -116,14 +116,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\enemy.png">
+    <Compile Include="textures\game\creatures\enemy.png">
       <Name>enemy</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\player.png">
+    <Compile Include="textures\game\creatures\player.png">
       <Name>player</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -137,40 +137,40 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\movement.png">
+    <Compile Include="textures\game\ui\movement.png">
       <Name>movement</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\door.png">
+    <Compile Include="textures\game\tiles\door.png">
       <Name>door</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\attack.png">
+    <Compile Include="textures\game\ui\attack.png">
       <Name>attack</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\blockcursor.png">
+    <Compile Include="textures\game\ui\blockcursor.png">
       <Name>blockcursor</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\creaturehealthbar.png">
+    <Compile Include="textures\game\ui\creaturehealthbar.png">
       <Name>creaturehealthbar</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\game\creaturehealthbaroutline.png">
+    <Compile Include="textures\game\ui\creaturehealthbaroutline.png">
       <Name>creaturehealthbaroutline</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -191,7 +191,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\stairs.png">
+    <Compile Include="textures\game\tiles\stairs.png">
       <Name>stairs</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -205,19 +205,19 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\healthbar.png">
+    <Compile Include="textures\game\ui\healthbar.png">
       <Name>healthbar</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\game\healthbaroutline.png">
+    <Compile Include="textures\game\ui\healthbaroutline.png">
       <Name>healthbaroutline</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\apbar.png">
+    <Compile Include="textures\game\ui\apbar.png">
       <Name>apbar</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -262,13 +262,6 @@
     </Compile>
     <Compile Include="textures\game\minimap\item.png">
       <Name>item</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="textures\game\description.png">
-      <Name>description</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -362,14 +355,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\enemy2.png">
+    <Compile Include="textures\game\creatures\enemy2.png">
       <Name>enemy2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\enemy3.png">
+    <Compile Include="textures\game\creatures\enemy3.png">
       <Name>enemy3</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -383,14 +376,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\enemy4.png">
+    <Compile Include="textures\game\creatures\enemy4.png">
       <Name>enemy4</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\bigboss.png">
+    <Compile Include="textures\game\creatures\bigboss.png">
       <Name>bigboss</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -544,13 +537,13 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\game\4x\megadoor.png">
-      <Name>megadoor</Name>
+    <Compile Include="textures\game\4x\megadoorvertical.png">
+      <Name>megadoorvertical</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\game\4x\megadoorh.png">
-      <Name>megadoorh</Name>
+    <Compile Include="textures\game\4x\megadoorhorizontal.png">
+      <Name>megadoorhorizontal</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -563,18 +556,6 @@
   <ItemGroup>
     <Compile Include="textures\classselection\background.png">
       <Name>background</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="textures\classselection\selected.png">
-      <Name>selected</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="textures\classselection\unselected.png">
-      <Name>unselected</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -594,14 +575,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\gempty.png">
-      <Name>gempty</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="textures\game\merchant.png">
+    <Compile Include="textures\game\npc\merchant\merchant.png">
       <Name>merchant</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -808,7 +782,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\npc\scrapper.png">
+    <Compile Include="textures\game\npc\merchant\scrapper.png">
       <Name>scrapper</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -836,34 +810,34 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\skills\cheaper.png">
+    <Compile Include="textures\game\skills\mayor\cheaper.png">
       <Name>cheaper</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\game\skills\inspect.png">
+    <Compile Include="textures\game\skills\mayor\inspect.png">
       <Name>inspect</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\game\skills\safe.png">
+    <Compile Include="textures\game\skills\mayor\safe.png">
       <Name>safe</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\game\skills\stronger.png">
+    <Compile Include="textures\game\skills\mayor\stronger.png">
       <Name>stronger</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="textures\game\skills\zap.png">
+    <Compile Include="textures\game\skills\mayor\zap.png">
       <Name>zap</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="textures\game\skills\zaproom.png">
+    <Compile Include="textures\game\skills\mayor\zaproom.png">
       <Name>zaproom</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -872,6 +846,97 @@
   <ItemGroup>
     <Compile Include="textures\editor\buttons\selectedtab.png">
       <Name>selectedtab</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\items\armor.png">
+      <Name>armor</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\npc\alchemist\alchemist.png">
+      <Name>alchemist</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\npc\medic.png">
+      <Name>medic</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\npc\gambler.png">
+      <Name>gambler</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\npc\alchemist\scramble.png">
+      <Name>scramble</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\npc\enchanter\enchanter.png">
+      <Name>enchanter</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\npc\enchanter\enchantmentbutton.png">
+      <Name>enchantmentbutton</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\npc\pharmacist\pharmacist.png">
+      <Name>pharmacist</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\npc\pharmacist\bluepill.png">
+      <Name>bluepill</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\npc\pharmacist\redpill.png">
+      <Name>redpill</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\npc\pharmacist\whitepill.png">
+      <Name>whitepill</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="textures\game\skills\pharmacist\degree.png">
+      <Name>degree</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\skills\pharmacist\fda.png">
+      <Name>fda</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\skills\pharmacist\grogsoakedblade.png">
+      <Name>grogsoakedblade</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="textures\game\skills\pharmacist\prescriptiononly.png">
+      <Name>prescriptiononly</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

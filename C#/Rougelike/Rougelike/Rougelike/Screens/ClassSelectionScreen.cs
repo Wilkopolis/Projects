@@ -11,28 +11,37 @@ namespace Rougelike
     public partial class Rougelike
     {
         List<Button> ClassSelectionButtons = new List<Button>();
-        Texture2D ClassSelected;
         Texture2D ClassUnselected;
         Texture2D ClassSelectionBackground;
 
+        bool ClassScreenInitialized;
+
         void InitializeClassSelectionScreen()
         {
-            //Load ClassSelectionScreen Buttons
-            ClassSelectionBackground = Content.Load<Texture2D>("textures/classselection/background");
+            if (!ClassScreenInitialized)
+            {
+                //Load ClassSelectionScreen Buttons
+                ClassSelectionBackground = Content.Load<Texture2D>("textures/classselection/background");
 
-            // The button sprites will change so this is necessary
-            ClassSelected = Content.Load<Texture2D>("textures/classselection/selected");
-            ClassUnselected = Content.Load<Texture2D>("textures/classselection/unselected");
+                // The button sprites will change so this is necessary
+                ClassUnselected = Content.Load<Texture2D>("textures/classselection/unselected");
 
-            //Mastermind Exists
-            Button mastermind = new Button(ClassUnselected, new Vector2(200, 300), "mastermind");
-            ClassSelectionButtons.Add(mastermind);
+                //Mastermind 
+                Button mastermind = new Button(ClassUnselected, new Vector2(200, 300), "mastermind");
+                ClassSelectionButtons.Add(mastermind);
 
-            Button breaky = new Button("break", Keys.P);
-            ClassSelectionButtons.Add(breaky);
+                //Pharmacist 
+                Button pharmacist = new Button(ClassUnselected, new Vector2(200, 450), "pharmacist");
+                ClassSelectionButtons.Add(pharmacist);
 
-            Button Quit = new Button("quit", Keys.F10);
-            ClassSelectionButtons.Add(Quit);
+                Button breaky = new Button("break", Keys.P);
+                ClassSelectionButtons.Add(breaky);
+
+                Button Quit = new Button("quit", Keys.F10);
+                ClassSelectionButtons.Add(Quit);
+
+                ClassScreenInitialized = true;
+            }
 
             //Change state
             GameState = State.CLASSSELECTION;
@@ -80,8 +89,13 @@ namespace Rougelike
             switch (b.Action)
             {
                 case "mastermind":
-                    InitializeGenerator();
-                    InitializeGame();
+                    GameState = State.LOADING;
+                    InitializeGame(Class.MASTERMIND);
+                    break;
+
+                case "pharmacist":
+                    GameState = State.LOADING;
+                    InitializeGame(Class.PHARMACIST);
                     break;
 
                 case "quit":

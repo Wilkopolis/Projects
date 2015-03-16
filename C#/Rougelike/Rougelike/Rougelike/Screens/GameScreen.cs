@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Rougelike
@@ -17,35 +17,76 @@ namespace Rougelike
         bool UpdateOptions;
         bool ChangedFloors = true;
         List<Description> DescriptionList;
+        Description HoverDescription;
         List<Button> GameButtons;
 
-        void InitializeGame()
+        Texture2D CreatureHealthBarOutline;
+        Texture2D CreatureHealthBarFill;
+        Texture2D PlayerSprite;
+        Texture2D MovementSprite;
+        Texture2D DesciptionBack;
+        Texture2D DesciptionExit;
+        Texture2D DescriptionSourceBackdrop;
+        Texture2D HealthBarUI;
+        Texture2D APBarUI;
+        Texture2D UIOutline;
+        Texture2D CurrentMiniRoom;
+        Texture2D VisitedMiniRoom;
+        Texture2D UnVisitedMiniRoom;
+        Texture2D MiniDoorVertrical;
+        Texture2D MiniDoorHorizontal;
+
+        bool GameInitialized;
+
+        void InitializeGame(Class playerclass)
         {
-            DescriptionList = new List<Description>();
-            GameButtons = new List<Button>();
+            if (!GameInitialized)
+            {
+                DescriptionList = new List<Description>();
+                GameButtons = new List<Button>();
 
-            GameBackground = Content.Load<Texture2D>("textures/game/background");
+                GameBackground = Content.Load<Texture2D>("textures/game/background");
+                CreatureHealthBarFill = Content.Load<Texture2D>("textures/game/ui/creaturehealthbar");
+                CreatureHealthBarOutline = Content.Load<Texture2D>("textures/game/ui/creaturehealthbaroutline");
+                PlayerSprite = Content.Load<Texture2D>("textures/game/creatures/player");
+                MovementSprite = Content.Load<Texture2D>("textures/game/ui/movement");
+                DesciptionBack = Content.Load<Texture2D>("textures/game/descriptor/back");
+                DesciptionExit = Content.Load<Texture2D>("textures/game/descriptor/exit");
+                DescriptionSourceBackdrop = Content.Load<Texture2D>("textures/game/descriptor/backdrop");
+                HealthBarUI = Content.Load<Texture2D>("textures/game/ui/healthbar");
+                UIOutline = Content.Load<Texture2D>("textures/game/ui/healthbaroutline");
+                APBarUI = Content.Load<Texture2D>("textures/game/ui/apbar");
+                CurrentMiniRoom = Content.Load<Texture2D>("textures/game/minimap/currentminiroom");
+                VisitedMiniRoom = Content.Load<Texture2D>("textures/game/minimap/visited");
+                UnVisitedMiniRoom = Content.Load<Texture2D>("textures/game/minimap/unvisited");
+                MiniItem = Content.Load<Texture2D>("textures/editor/template/item");
+                MiniDoor = Content.Load<Texture2D>("textures/editor/template/door");
+                MiniSolid = Content.Load<Texture2D>("textures/editor/template/solid");
+                MiniEnemy = Content.Load<Texture2D>("textures/editor/template/enemy");
+                MiniPrize = Content.Load<Texture2D>("textures/editor/template/prize");
+                MiniDoorVertrical = Content.Load<Texture2D>("textures/game/minimap/minidoor");
+                MiniDoorHorizontal = Content.Load<Texture2D>("textures/game/minimap/minidoorh");
 
-            Button endturn = new Button("endturn", Keys.Space);
-            GameButtons.Add(endturn);
+                Button endturn = new Button("endturn", Keys.Space);
+                GameButtons.Add(endturn);
 
-            Button pickup = new Button("pickup", Keys.S);
-            GameButtons.Add(pickup);
+                Button enter = new Button("interact", Keys.D);
+                GameButtons.Add(enter);
 
-            Button enter = new Button("interact", Keys.D);
-            GameButtons.Add(enter);
+                Button breaky = new Button("break", Keys.P);
+                GameButtons.Add(breaky);
 
-            Button breaky = new Button("break", Keys.P);
-            GameButtons.Add(breaky);
+                Button quit = new Button("quit", Keys.F10);
+                GameButtons.Add(quit);
 
-            Button quit = new Button("quit", Keys.F10);
-            GameButtons.Add(quit);
-            
-            Initialize4XButtons();
-            InitializeShopButtons();
-            InitializeSkillButtons();
+                InitializeGenerator(playerclass);
+                Initialize4XButtons(playerclass);
+                InitializeSkillButtons(playerclass);
+                InitializeNPCButtons();
+                GameInitialized = true;
+            }
 
-            NewGame(Class.MASTERMIND);
+            NewGame(playerclass);
 
             GameState = State.GAME;
         }
@@ -90,38 +131,6 @@ namespace Rougelike
 
             if (RightReleased())
                 HandleRightClick();
-
-            if (MegaMapMode)
-            {
-                CheckMegaMapButtons();
-                CheckSkillButtons();
-            }
-
-            if (Trading)
-                CheckTraderButtons();
-            else
-                CheckActiveSkills();
-
-            CheckItemDragging();
-
-            CheckDescriptions();
-
-            if (UpdateOptions)
-            {
-                UpdatePlayerOptions();
-                UpdateOptions = false;
-            }
-
-            if (ChangedFloors)
-            {
-                if (Save.Depth == 1)
-                {
-                    Button megamap = new Button("4x", Keys.Tab);
-                    GameButtons.Add(megamap);
-                }
-                BuildMegaMap();
-                ChangedFloors = false;
-            }
         }
 
         void CheckDescriptions()
@@ -169,15 +178,17 @@ namespace Rougelike
                                 TemporaryItem = button.Item;
                                 TemporaryItemButton = button;
                                 button.Item = null;
+                                if (TemporaryItem.Type == TemporaryItemButton.Type)
+                                    ApplyEquipEffects(TemporaryItem, false);
                                 return true;
                             }
                         }
                     }
                 }
             }
-            if (Trader != null)
+            if (Trading)
             {
-                foreach (ShopButton button in Trader.Inventory)
+                foreach (ShopButton button in ShopInventory)
                 {
                     if (button.Item != null)
                     {
@@ -208,6 +219,27 @@ namespace Rougelike
                                         return true;
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+            else if (InteractingWithNPC())
+            {
+                if (ItemHolder.Item != null)
+                {
+                    Vector2 offset = MouseOver(ItemHolder);
+                    if (offset != Vector2.Zero)
+                    {
+                        if (Click())
+                            ItemHolder.WasClicked = true;
+                        if (Hold() && ItemHolder.WasClicked)
+                        {
+                            if (TemporaryItem == null)
+                            {
+                                ItemDraggingOffsetVector = offset;
+                                TemporaryItem = Dupe(ItemHolder.Item);
+                                TemporaryItemButton = ItemHolder;
                             }
                         }
                     }
@@ -247,7 +279,7 @@ namespace Rougelike
                                     {
                                         if (button.Item.Name == TemporaryItem.Name)
                                         {
-                                            ((Potion)button.Item).StackSize++;
+                                            ((Stackable)button.Item).StackSize++;
                                             TemporaryItem = null;
                                             TemporaryItemButton = null;
                                         }
@@ -278,32 +310,25 @@ namespace Rougelike
                             {
                                 if (button.Item == null)
                                 {
-                                    if (TemporaryItemButton is ShopButton)
-                                    {
-                                        button.Item = TemporaryItem;
-                                        TemporaryItem = null;
-                                        TemporaryItemButton = null;
-                                    }
-                                    else
+                                    if (!(TemporaryItemButton is ShopButton))
                                     {
                                         Item switcherino = button.Item;
-                                        button.Item = TemporaryItem;
                                         TemporaryItemButton.Item = switcherino;
-                                        TemporaryItem = null;
-                                        TemporaryItemButton = null;
                                     }
                                 }
                                 else
                                 {
                                     Save.Kevin.PickUp(button.Item);
-                                    button.Item = TemporaryItem;
-                                    TemporaryItem = null;
-                                    TemporaryItemButton = null;
                                 }
+                                button.Item = TemporaryItem;
+                                TemporaryItem = null;
+                                TemporaryItemButton = null;
+                                ApplyEquipEffects(button.Item, true);
                                 return true;
                             }
                         }
                     }
+
                     if (Trading && MouseOver(Scrapper))
                     {
                         Save.Kevin.Wealth += TemporaryItem.Value;
@@ -311,6 +336,14 @@ namespace Rougelike
                         TemporaryItemButton = null;
                         return true;
                     }
+                    else if (InteractingWithNPC() && MouseOver(ItemHolder) != Vector2.Zero)
+                    {
+                        ItemHolder.Item = TemporaryItem;
+                        TemporaryItem = null;
+                        TemporaryItemButton = null;
+                        return true;
+                    }
+
                     if (TemporaryItemButton is ShopButton)
                     {
                         ((ShopButton)TemporaryItemButton).Stock++;
@@ -325,128 +358,115 @@ namespace Rougelike
             return false;
         }
 
+        bool CheckMouseHover()
+        {
+            foreach (InventoryButton button in Save.Kevin.Equipment.Items)
+            {
+                if (button.Item != null && MouseOver(button) != Vector2.Zero)
+                {
+                    if (HoverDescription == null)
+                    {
+                        HoverDescription = new Description(button);
+                    }
+                    return true;
+                }
+            }
+            if (InteractingWithNPC())
+            {
+                if (Trading)
+                {
+                    foreach (ShopButton button in ShopInventory)
+                    {
+                        if (button.Item != null && MouseOver(button) != Vector2.Zero)
+                        {
+                            if (HoverDescription == null)
+                            {
+                                HoverDescription = new Description(button);
+                            }
+                            return true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (ItemHolder.Item != null && MouseOver(ItemHolder) != Vector2.Zero)
+                    {
+                        if (HoverDescription == null)
+                        {
+                            HoverDescription = new Description(ItemHolder);
+                        }
+                        return true;
+                    }
+                }
+            }
+            HoverDescription = null;
+            return false;
+        }
+
         void HandleGameInput(Button button)
         {
             Room CurrentRoom = Save.GetRoom();
-            if (button is Attack && DescriptionList.Count == 0 && !MegaMapMode)
+            if (button is Attack && DescriptionList.Count == 0 && !MegaMapMode && !InteractingWithNPC())
                 UpdateOptions = DoAttack((Attack)button);
-            else if (button is Movement && DescriptionList.Count == 0 && !MegaMapMode)
+            else if (button is Movement && DescriptionList.Count == 0 && !MegaMapMode && !InteractingWithNPC())
                 UpdateOptions = DoMovement((Movement)button);
-            switch (button.Action)
+            else
             {
-                case "interact":
-                    if (!MegaMapMode)
-                    {
-                        if (OnDoor() && CurrentRoom.IsClear())
+                switch (button.Action)
+                {
+                    case "interact":
+                        if (!MegaMapMode)
                         {
-                            ChangeRooms();
-                        }
-                        else if (OnStairs() && CurrentRoom.IsClear())
-                        {
-                            ChangeFloors();
-                        }
-                        else if (GetAdjacentNPC() != null)
-                        {
-                            //Interact with NPC
-                            Interact(GetAdjacentNPC());
-                        }
-                    }
-                    break;
-
-                case "pickup":
-                    if (!MegaMapMode)
-                    {
-                        PickUp();
-                    }
-                    break;
-
-                case "endturn":
-                    if (!MegaMapMode)
-                    {
-                        Save.GetRoom().UpdateTiles();
-                        foreach (Entity entity in Save.GetRoom().Entities)
-                        {
-                            if (entity is Enemy)
-                            {                                
-                                Enemy enemy = entity as Enemy;
-                                DoTurn(enemy);
+                            if (OnDoor() && CurrentRoom.IsClear())
+                            {
+                                ChangeRooms();
                             }
+                            else if (OnStairs() && CurrentRoom.IsClear())
+                            {
+                                ChangeFloors();
+                            }
+                            else if (GetAdjacentNPC() != null)
+                            {
+                                Interact(GetAdjacentNPC());
+                            }
+                            PickUp();
                         }
-                        if (Save.Kevin.HP <= 0)
+                        break;
+
+                    case "endturn":
+                        if (!MegaMapMode)
                         {
-                            GameOver();
+                            EndTurn();
                         }
-                        else
-                        {
-                            Save.Kevin.ApplyEndTurnEffects();
-                            UpdateOptions = true;
-                        }
-                    }
-                    break;
+                        break;
 
-                case "quit":
-                    Quit();
-                    break;
+                    case "quit":
+                        Quit();
+                        break;
 
-                case "break":
-                    //Pause to debug
-                    break;
+                    case "break":
+                        //Pause to debug
+                        break;
 
-                case "4x":
-                    if (!Trading)
-                        MegaMapMode = !MegaMapMode;
-                    break;
+                    case "4x":
+                        if (!InteractingWithNPC())
+                            MegaMapMode = !MegaMapMode;
+                        break;
+                }
             }
         }
 
-        /*  WHEN
-         *  We right clicked on an InventoryButton
-         *  
-         *  RETURN
-         *  true if we use up a consumable stack (remove description)
-         *  false otherwise
-         */
         bool RightClick(InventoryButton button)
         {
             // IF ITS A CONSUMABLE
             if (button.Item is Consumable)
             {
-                ((HealthPotion)button.Item).Use(Save.Kevin);
-                if (((Potion)button.Item).StackSize <= 0)
+                ((Consumable)button.Item).Use(Save.Kevin);
+                if (((Stackable)button.Item).StackSize <= 0)
                 {
                     button.Item = null;
                 }
             }
-            //// IF ITS IN MY LOADOUT
-            //foreach (InvButton Button in GetLoadout())
-            //{
-            //    if (Button == ClickedButton)
-            //    {
-            //        AddToInventory(Button.Item);
-            //        Button.Item = null;
-            //        return true;
-            //    }
-            //}
-            ////IF ITS IN MY INVENTORY
-            //foreach (InvButton Button in GetLoadout())
-            //{                    
-            //    if (Button.Slot == ClickedButton.Item.Type)
-            //    {
-            //        if (ClickedButton.Item.Type == Item.ItemType.WEILD)
-            //        {
-            //            if (GetRight() != null && GetLeft() == null)
-            //            {
-            //                Items[(int)Slot.LEFT].Item = ClickedButton.Item;
-            //                ClickedButton.Item = null;
-            //                return true;
-            //            }
-            //        }
-            //        Item tamp = Button.Item;
-            //        Button.Item = ClickedButton.Item;
-            //        ClickedButton.Item = tamp;
-            //        return true;
-            //    }
-            //}
             return false;
         }
 
@@ -479,53 +499,43 @@ namespace Rougelike
                 DrawSkills();
             }
 
-            if (Trading)
-                DrawTradeWindow();
+            if (InteractingWithNPC())
+                DrawNPCScreen();
 
             DrawDescriptions();
-
         }
 
         void HandleRightClick()
         {
             Description descriptor = null;
-            foreach (Entity entity in Save.GetRoom().Entities)
+            if (!InteractingWithNPC() && !MegaMapMode)
             {
-                if (MouseOver(entity))
+                foreach (Entity entity in Save.GetRoom().Entities)
                 {
-                    descriptor = new Description(entity);
+                    if (MouseOver(entity))
+                    {
+                        descriptor = new Description(entity);
+                    }
+                }
+            }
+            else if (InteractingWithNPC())
+            {
+                if (ItemHolder.Item != null && MouseOver(ItemHolder) != Vector2.Zero)
+                {
+                    descriptor = new Description(ItemHolder.Item);
                 }
             }
             foreach (InventoryButton button in Save.Kevin.Equipment.Items)
             {
                 if (button.Item != null && MouseOver(button) != Vector2.Zero)
                 {
-                    //if (!Trading)
-                    {
-                        //if ((button.Item is Consumable))
-                        //{
-                        //    Sell(button.Item);
-                        //    ((Potion)(button.Item)).StackSize--;
-                        //    if (((Potion)(button.Item)).StackSize == 0)
-                        //    {
-                        //        button.Item = null;
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    Sell(button.Item);
-                        //    button.Item = null;
-                        //}
-                    //}
-                    //else
-                    //{
-                        if ((button.Item is Consumable))
-                            RightClick(button);
-                        else
-                            descriptor = new Description(button);
-                    }
+                    if ((button.Item is Consumable))
+                        RightClick(button);
+                    else
+                        descriptor = new Description(button);
                 }
             }
+            //Add or remove description
             if (descriptor != null)
             {
                 if (DescriptionList.Contains(descriptor))
@@ -544,9 +554,9 @@ namespace Rougelike
             if (Save.Kevin.Position.X == 0)
             {
                 Save.GetFloor().Position += new Vector2(-1, 0);
-                if (!Save.GetRoom().Visible)
+                if (!Save.GetRoom().Visited)
                     newroom = true;
-                Save.GetRoom().Visible = true;
+                Save.GetRoom().Visited = true;
                 for (int i = 1; i < 8; i++)
                 {
                     if (Save.GetRoom().Tiles[14, i].Door)
@@ -558,9 +568,9 @@ namespace Rougelike
             else if ((int)Save.Kevin.Position.X == 14)
             {
                 Save.GetFloor().Position += new Vector2(1, 0);
-                if (!Save.GetRoom().Visible)
+                if (!Save.GetRoom().Visited)
                     newroom = true;
-                Save.GetRoom().Visible = true;
+                Save.GetRoom().Visited = true;
                 for (int i = 1; i < 8; i++)
                 {
                     if (Save.GetRoom().Tiles[0, i].Door)
@@ -572,9 +582,9 @@ namespace Rougelike
             else if ((int)Save.Kevin.Position.Y == 0)
             {
                 Save.GetFloor().Position += new Vector2(0, -1);
-                if (!Save.GetRoom().Visible)
+                if (!Save.GetRoom().Visited)
                     newroom = true;
-                Save.GetRoom().Visible = true;
+                Save.GetRoom().Visited = true;
                 for (int i = 1; i < 13; i++)
                 {
                     if (Save.GetRoom().Tiles[i, 9].Door)
@@ -586,9 +596,6 @@ namespace Rougelike
             else if ((int)Save.Kevin.Position.Y == 9)
             {
                 Save.GetFloor().Position += new Vector2(0, 1);
-                if (!Save.GetRoom().Visible)
-                    newroom = true;
-                Save.GetRoom().Visible = true;
                 for (int i = 1; i < 13; i++)
                 {
                     if (Save.GetRoom().Tiles[i, 0].Door)
@@ -597,6 +604,10 @@ namespace Rougelike
                     }
                 }
             }
+            if (!Save.GetRoom().Visited)
+                newroom = true;
+            Save.GetRoom().Visited = true;
+            Save.GetRoom().Known = true;
             Save.GetRoom().AddToRoom(Save.Kevin);
             UpdateOptions = true;
             if (newroom)
@@ -605,27 +616,40 @@ namespace Rougelike
 
         void ChangeFloors()
         {
-            if (Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y].Steps == Stairs.DOWN)
+            Save.GetRoom().Remove(Save.Kevin);
+            Save.GoDown();
+            Save.GetRoom().Visited = true;
+            for (int i = 0; i < 15; i++)
             {
-                Save.GetRoom().Remove(Save.Kevin);
-                Save.GoDown();
-                Save.GetRoom().Visible = true;
-                for (int i = 0; i < 15; i++)
+                for (int j = 0; j < 10; j++)
                 {
-                    for (int j = 0; j < 10; j++)
+                    if (Save.GetRoom().Tiles[i, j].Steps == Stairs.UP)
                     {
-                        if (Save.GetRoom().Tiles[i, j].Steps == Stairs.UP)
-                        {
-                            Save.Kevin.Position = new Vector2(i, j);
-                        }
+                        Save.Kevin.Position = new Vector2(i, j);
                     }
                 }
-                Save.GetRoom().AddToRoom(Save.Kevin);
-                Save.GetRoom().PermaWorked = true;
-                Save.GetRoom().Worked = true;
             }
+            Save.GetRoom().AddToRoom(Save.Kevin);
+            Save.GetRoom().PermaWorked = true;
+            Save.GetRoom().Worked = true;
             ChangedFloors = true;
             UpdateOptions = true;
+            GoldRoomChosen = false;
+            Do4XTurn();
+        }
+
+        void EndTurn()
+        {
+            DoEnemyTurns();
+            if (Save.Kevin.HP <= 0)
+            {
+                GameOver();
+            }
+            else
+            {
+                Save.Kevin.ApplyEndTurnEffects();
+                UpdateOptions = true;
+            }
         }
 
         bool OnDoor()
@@ -635,18 +659,20 @@ namespace Rougelike
 
         bool OnStairs()
         {
-            return Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y].Steps != Stairs.NONE;
+            return Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y].Steps == Stairs.DOWN;
         }
 
         void PickUp()
         {
-            Item result = Save.GetRoom().GetAdjacent(Save.Kevin.Position);
-            if (Save.Kevin.Equipment.GetInventoryCount() < 12 && result != null)
+            foreach (Item item in Save.GetRoom().Entities.FindAll(item => item is Item))
             {
-                Save.Kevin.PickUp(result);
-                Save.GetRoom().Remove(result);
-                Save.GetRoom().UpdateTiles();
-                UpdatePlayerOptions();
+                if (Save.Kevin.Equipment.GetInventoryCount() < 12)
+                {
+                    Save.Kevin.PickUp(item);
+                    Save.GetRoom().Remove(item);
+                    Save.GetRoom().UpdateTiles();
+                    UpdatePlayerOptions();
+                }
             }
         }
 
@@ -655,19 +681,57 @@ namespace Rougelike
             switch (npc.Type)
             {
                 case NPCType.ENCHANTER:
+                    Enchanting = !Enchanting;
                     break;
 
                 case NPCType.MERCHANT:
                     Trading = !Trading;
-                    if (Trader == null)
-                        Trader = npc;
-                    else
-                        Trader = null;
                     break;
 
                 case NPCType.ALCHEMIST:
+                    Alcheming = !Alcheming;
+                    break;
+
+                case NPCType.MEDIC:
+                    if (Save.Kevin.Wealth >= 1)
+                    {
+                        Save.Kevin.Wealth--;
+                        Save.Kevin.HP++;
+                        if (Save.Kevin.HP >= Save.Kevin.MaxHP)
+                            Save.Kevin.HP = Save.Kevin.MaxHP;
+                        npc.Uses--;
+                        if (npc.Uses <= 0)
+                            Save.GetRoom().Entities.Remove(npc);
+                    }
+                    break;
+
+                case NPCType.GAMBLER:
+                    if (Save.Kevin.Wealth >= 1)
+                    {
+                        Save.Kevin.Wealth--;
+                        Gamble();
+                        npc.Uses--;
+                        if (npc.Uses <= 0)
+                            Save.GetRoom().Entities.Remove(npc);
+                    }
+                    break;
+
+                case NPCType.PHARMACIST:
+                    if (!Save.Kevin.InventoryFull() && Save.Kevin.Wealth >= 1)
+                    {
+                        Save.Kevin.Wealth--;
+                        Save.Kevin.PickUp(MasterPill.Copy(HashID++, Random, PlayerHasSkill("prescription"), PlayerHasSkill("fda")));
+                        npc.Uses--;
+                        if (npc.Uses <= 0)
+                            Save.GetRoom().Entities.Remove(npc);
+                    }
                     break;
             }
+        }
+
+        bool InteractingWithNPC()
+        {
+            return Trading || Alcheming || Enchanting;
         }
 
         void Sell(Item item)
@@ -677,28 +741,108 @@ namespace Rougelike
 
         Item Dupe(Item original)
         {
-            //if (original is Creature)
-            //{
-            //    if (original is Enemy)
-            //        return ((Enemy)original).Copy(HashID++);
-            //    else if (original is NPC)
-            //        return ((NPC)original).Copy(HashID++);
-            //}
-            //else if (original is Item)
-            //{
             if (original is Weapon)
                 return ((Weapon)original).Copy(HashID++);
             else if (original is Armor)
                 return ((Armor)original).Copy(HashID++);
             else if (original is Armor)
                 return ((Armor)original).Copy(HashID++);
-            else if (original is Potion)
-            {
-                if (original is HealthPotion)
-                    return ((HealthPotion)original).Copy(HashID++);
-            }
-            //}
+            else if (original is HealthPotion)
+                return ((HealthPotion)original).Copy(HashID++);
+            else if (original is Pill)                
+                return ((Pill)original).Copy(HashID++, Random, PlayerHasSkill("prescription"), PlayerHasSkill("fda"));
             return null;
+        }
+
+        void UsePill(Pill pill)
+        {
+            pill.Use(Save.Kevin);
+            switch (pill.Drug)
+            {
+                case DrugEffect.Uppers:
+                    Save.Kevin.MaxAP++;
+                    Save.Kevin.AP++;
+                    break;
+
+                //Prescription
+                case DrugEffect.Uppers2:
+                    Save.Kevin.MaxAP += 2;
+                    Save.Kevin.AP = Save.Kevin.MaxAP;
+                    break;
+
+                case DrugEffect.Painkiller1:
+                    Save.Kevin.Buffs.Add(Effect.ABSORB);
+                    break;
+
+                //Prescription
+                case DrugEffect.Painkiller2:
+                    Save.Kevin.Buffs.Add(Effect.ABSORB);
+                    Save.Kevin.Buffs.Add(Effect.REGEN);
+                    break;
+
+                case DrugEffect.Steroids:
+                    Save.Kevin.Buffs.Add(Effect.DMGUP);
+                    break;
+
+                //Prescription
+                case DrugEffect.Steroids2:
+                    Save.Kevin.Buffs.Add(Effect.DMGUP);
+                    Save.Kevin.Buffs.Add(Effect.CRITUP);
+                    break;
+
+                case DrugEffect.Vitamins1:
+                    Save.Kevin.MaxHP++;
+                    Save.Kevin.HP++;
+                    break;
+
+                //Prescription
+                case DrugEffect.Vitamins2:
+                    Save.Kevin.MaxHP += 2;
+                    Save.Kevin.HP = Save.Kevin.MaxHP;
+                    break;
+
+                //Prescription
+                case DrugEffect.Vitamins3:
+                    Save.Kevin.MaxHP += 2;
+                    Save.Kevin.HP++;
+                    Save.Kevin.MaxAP++;
+                    break;
+
+                case DrugEffect.Expired1:
+                    Save.Kevin.HP--;
+                    break;
+
+                //Prescription
+                case DrugEffect.Expired2:
+                    Save.Kevin.Buffs.Add(Effect.DMGDOWN);
+                    break;
+
+                //Prescription
+                case DrugEffect.Expired3:
+                    Save.Kevin.MaxHP--;
+                    Save.Kevin.HP = Save.Kevin.MaxHP;
+                    break;
+
+                //Prescription
+                case DrugEffect.Knowledge:
+                    foreach (Room room in Save.GetFloor().Rooms)
+                    {
+
+                    }
+                    break;
+
+                case DrugEffect.Bad1:
+                    Save.Kevin.Wealth -= 5;
+                    if (Save.Kevin.Wealth < 0)
+                        Save.Kevin.Wealth = 0;
+                    break;
+
+                //case DrugEffect.Bad1:
+                //    Save.Kevin.Wealth -= 5;
+                //    if (Save.Kevin.Wealth < 0)
+                //        Save.Kevin.Wealth = 0;
+                //    break;
+            }
         }
     }
 }
