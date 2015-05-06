@@ -35,8 +35,6 @@ namespace Rougelike
             OptionButtons.Add(fourteenhundred);
             Button fourteenfortyteneighty = new Button(Content.Load<Texture2D>("textures/options/1440x1080"), new Vector2(170, 210), "1440x1080");
             OptionButtons.Add(fourteenfortyteneighty);
-            //Button sixteenhundredtwelvehundred = new Button(Content.Load<Texture2D>("textures/options/1600x1200"), new Vector2(170, 240), "1600x1200");
-            //OptionButtons.Add(sixteenhundredtwelvehundred);
             Button twentyfourtyeight = new Button(Content.Load<Texture2D>("textures/options/2048x1536"), new Vector2(170, 270), "2048x1536");
             OptionButtons.Add(twentyfourtyeight);
 

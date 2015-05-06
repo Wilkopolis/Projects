@@ -63,7 +63,6 @@ namespace Rougelike
                     break;
 
                 case Class.PHARMACIST:
-                    //Pharmacist
                     SkillButton grogsoakedblade = new SkillButton(Content.Load<Texture2D>("textures/game/skills/pharmacist/grogsoakedblade"), new Vector2(880, 110), new Skill("grogsoakedblade", 15));
                     SkillButtons.Add(grogsoakedblade);
 
@@ -86,6 +85,7 @@ namespace Rougelike
             {
                 if (MouseOver(button))
                 {
+                    // TODO Add hovoering tool tip/description
                     if (Click())
                         button.WasClicked = true;
                     if (Released())

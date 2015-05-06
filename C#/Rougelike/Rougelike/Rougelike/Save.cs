@@ -19,7 +19,7 @@ namespace Rougelike
 
         public Room GetRoom()
         {
-            return Floors[Depth].Rooms[(int)Floors[Depth].Position.X, (int)Floors[Depth].Position.Y];
+            return Floors[Depth].Rooms[Floors[Depth].Position.X, Floors[Depth].Position.Y];
         }
 
         public Floor GetFloor()

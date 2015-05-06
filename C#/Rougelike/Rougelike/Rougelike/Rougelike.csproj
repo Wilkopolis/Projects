@@ -159,6 +159,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Rougelike.cs" />
     <Compile Include="Save.cs" />
+    <Compile Include="Util\Vector2I.cs" />
     <Compile Include="Util\VectorComparer.cs" />
   </ItemGroup>
   <ItemGroup>

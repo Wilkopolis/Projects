@@ -118,22 +118,22 @@ namespace Rougelike
                 {
                     if (Save.Kevin.Position.X > 0)
                     {
-                        if (entity.Position == Save.Kevin.Position - new Vector2(1, 0))
+                        if (entity.Position == Save.Kevin.Position - new Vector2I(1, 0))
                             return (NPC)entity;
                     }
                     if (Save.Kevin.Position.X < 14)
                     {
-                        if (entity.Position == Save.Kevin.Position + new Vector2(1, 0))
+                        if (entity.Position == Save.Kevin.Position + new Vector2I(1, 0))
                             return (NPC)entity;
                     }
                     if (Save.Kevin.Position.Y > 0)
                     {
-                        if (entity.Position == Save.Kevin.Position - new Vector2(0, 1))
+                        if (entity.Position == Save.Kevin.Position - new Vector2I(0, 1))
                             return (NPC)entity;
                     }
                     if (Save.Kevin.Position.Y < 9)
                     {
-                        if (entity.Position == Save.Kevin.Position + new Vector2(0, 1))
+                        if (entity.Position == Save.Kevin.Position + new Vector2I(0, 1))
                             return (NPC)entity;
                     }
                 }

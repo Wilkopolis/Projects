@@ -553,7 +553,7 @@ namespace Rougelike
             Save.GetRoom().Remove(Save.Kevin);
             if (Save.Kevin.Position.X == 0)
             {
-                Save.GetFloor().Position += new Vector2(-1, 0);
+                Save.GetFloor().Position.X -= 1;
                 if (!Save.GetRoom().Visited)
                     newroom = true;
                 Save.GetRoom().Visited = true;
@@ -561,13 +561,13 @@ namespace Rougelike
                 {
                     if (Save.GetRoom().Tiles[14, i].Door)
                     {
-                        Save.Kevin.Position = new Vector2(14, i);
+                        Save.Kevin.Position = new Vector2I(14, i);
                     }
                 }
             }
-            else if ((int)Save.Kevin.Position.X == 14)
+            else if (Save.Kevin.Position.X == 14)
             {
-                Save.GetFloor().Position += new Vector2(1, 0);
+                Save.GetFloor().Position.X += 1;
                 if (!Save.GetRoom().Visited)
                     newroom = true;
                 Save.GetRoom().Visited = true;
@@ -575,13 +575,13 @@ namespace Rougelike
                 {
                     if (Save.GetRoom().Tiles[0, i].Door)
                     {
-                        Save.Kevin.Position = new Vector2(0, i);
+                        Save.Kevin.Position = new Vector2I(0, i);
                     }
                 }
             }
-            else if ((int)Save.Kevin.Position.Y == 0)
+            else if (Save.Kevin.Position.Y == 0)
             {
-                Save.GetFloor().Position += new Vector2(0, -1);
+                Save.GetFloor().Position.Y -= 1;
                 if (!Save.GetRoom().Visited)
                     newroom = true;
                 Save.GetRoom().Visited = true;
@@ -589,18 +589,18 @@ namespace Rougelike
                 {
                     if (Save.GetRoom().Tiles[i, 9].Door)
                     {
-                        Save.Kevin.Position = new Vector2(i, 9);
+                        Save.Kevin.Position = new Vector2I(i, 9);
                     }
                 }
             }
-            else if ((int)Save.Kevin.Position.Y == 9)
+            else if (Save.Kevin.Position.Y == 9)
             {
-                Save.GetFloor().Position += new Vector2(0, 1);
+                Save.GetFloor().Position.Y += 1;
                 for (int i = 1; i < 13; i++)
                 {
                     if (Save.GetRoom().Tiles[i, 0].Door)
                     {
-                        Save.Kevin.Position = new Vector2(i, 0);
+                        Save.Kevin.Position = new Vector2I(i, 0);
                     }
                 }
             }
@@ -619,13 +619,14 @@ namespace Rougelike
             Save.GetRoom().Remove(Save.Kevin);
             Save.GoDown();
             Save.GetRoom().Visited = true;
+            Save.GetRoom().Known = true;
             for (int i = 0; i < 15; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
                     if (Save.GetRoom().Tiles[i, j].Steps == Stairs.UP)
                     {
-                        Save.Kevin.Position = new Vector2(i, j);
+                        Save.Kevin.Position = new Vector2I(i, j);
                     }
                 }
             }
@@ -654,12 +655,12 @@ namespace Rougelike
 
         bool OnDoor()
         {
-            return Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y].Door;
+            return Save.GetRoom().Tiles[Save.Kevin.Position.X, Save.Kevin.Position.Y].Door;
         }
 
         bool OnStairs()
         {
-            return Save.GetRoom().Tiles[(int)Save.Kevin.Position.X, (int)Save.Kevin.Position.Y].Steps == Stairs.DOWN;
+            return Save.GetRoom().Tiles[Save.Kevin.Position.X, Save.Kevin.Position.Y].Steps == Stairs.DOWN;
         }
 
         void PickUp()

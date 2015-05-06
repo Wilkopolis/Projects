@@ -45,7 +45,7 @@ namespace Rougelike
             Sprite = sprite;
         }
 
-        public HealthPotion(Vector2 position)
+        public HealthPotion(Vector2I position)
         {
             Type = ItemType.CONSUMABLE;
             Position = position;
@@ -56,7 +56,7 @@ namespace Rougelike
             Type = ItemType.CONSUMABLE;
         }
 
-        public HealthPotion Copy(Vector2 position, int hashid)
+        public HealthPotion Copy(Vector2I position, int hashid)
         {
             HealthPotion Result = new HealthPotion();
             Result.Sprite = Sprite;

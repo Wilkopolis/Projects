@@ -30,11 +30,12 @@ namespace Rougelike
         {
             Name = "You";
             Sprite = sprite;
-            Origin = new Vector2(40, 40);
+            Origin = new Vector2I(40, 40);
             HP = 6;
             MaxHP = 8;
             AP = 5;
             MaxAP = 5;
+            Position = new Vector2I(5, 7);
             Side = Faction.COOLGUY;
             Brains = Nature.DUMB;
             HashID = hashid;

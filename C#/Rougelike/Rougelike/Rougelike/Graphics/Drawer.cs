@@ -22,6 +22,7 @@ namespace Rougelike
         Color brightwhite = new Color(255, 249, 247);
         Color lightblue = new Color(52, 159, 216);
         Color orange = new Color(196, 102, 39);
+        Vector2I fieldOffset = new Vector2I(34, 34);
 
         void Draw(Texture2D texture, Vector2 position, Vector2 origin)
         {
@@ -42,7 +43,7 @@ namespace Rougelike
 
         void Draw(Entity entity)
         {
-            SpriteBatch.Draw(entity.Sprite, OffsetVector + new Vector2(34, 34) + entity.Position * 66, Color.White);
+            SpriteBatch.Draw(entity.Sprite, OffsetVector + fieldOffset + entity.Position * 66, Color.White);
         }
 
         void Draw(EnemyButton button)
@@ -195,6 +196,11 @@ namespace Rougelike
                 //draw heal amount
                 SpriteBatch.DrawString(CenturyGothic, ((HealthPotion)descriptor.Source).GetHP().ToString() + " HP", OffsetVector + descriptor.Position + new Vector2(4, currrentheight + 92), brightwhite);
             }
+            else if (descriptor.Source is Enemy) 
+            {
+                SpriteBatch.DrawString(Calibri, "MaxHP: " + ((Enemy)descriptor.Source).MaxHP.ToString(), OffsetVector + descriptor.Position + new Vector2(4, currrentheight + 92), softgray);                
+            }
+
             //draw mods
             for (int j = 0; j < descriptor.Mods.Length; j++)
             {
@@ -221,7 +227,7 @@ namespace Rougelike
                     Draw(CurrentTemplate.Tiles[i, j], new Vector2(i , j) * 66 + new Vector2(34, 34));
                 }
             }
-            if (CurrentTemplate.Payout != Vector2.Zero && CurrentTemplate.Difficulty != 0)
+            if (CurrentTemplate.Payout != new Vector2I() && CurrentTemplate.Difficulty != 0)
                 Draw(Payout, OffsetVector + CurrentTemplate.Payout * 66 + new Vector2(34, 34));
             foreach (Entity entity in CurrentTemplate.Entities)
             {
@@ -248,7 +254,7 @@ namespace Rougelike
                     Fighter fighter = entity as Fighter;
                     if (fighter.HP != fighter.MaxHP)
                     {
-                        Draw(CreatureHealthBarOutline, new Vector2(34, 34) + fighter.Position * 66);
+                        Draw(CreatureHealthBarOutline, new Vector2I(34, 34) + fighter.Position * 66);
                         SpriteBatch.Draw(CreatureHealthBarFill, OffsetVector + new Vector2(34, 34) + fighter.Position * 66, new Rectangle(0, 0, (int)Math.Ceiling(CreatureHealthBarFill.Width * (fighter.HP / (double)fighter.MaxHP)), CreatureHealthBarFill.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                     }
                 }

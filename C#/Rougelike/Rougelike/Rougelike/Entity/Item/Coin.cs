@@ -28,7 +28,7 @@ namespace Rougelike
             return result;
         }
 
-        public Coin Copy(Vector2 position, int hashid, int value)
+        public Coin Copy(Vector2I position, int hashid, int value)
         {
             Coin result = new Coin();
             result.Sprite = Sprite;

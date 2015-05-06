@@ -9,10 +9,10 @@ namespace Rougelike
     public class Floor
     {
         public Room[,] Rooms;
-        public Vector2 Position;
-        public Vector2 Max;
+        public Vector2I Position;
+        public Vector2I Max;
 
-        public Floor (Vector2 Max)
+        public Floor(Vector2I Max)
         {
             this.Max = Max;
             Rooms = new Room[(int)Max.X, (int)Max.Y];

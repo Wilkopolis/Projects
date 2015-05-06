@@ -53,7 +53,7 @@ namespace Rougelike
 
             EmptyTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/empty"), false);
             SolidTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/solid"), true);
-            StairsTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/stairs"), false);
+            StairsSprite = Content.Load<Texture2D>("textures/game/tiles/stairs");
             DoorTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/door"), false);
             DoorTile.Door = true;
 
@@ -471,7 +471,7 @@ namespace Rougelike
                             {
                                 if (MouseOver(i, j))
                                 {
-                                    HealthPotion newthing = GenericItem.Copy(new Vector2(i, j), GenericItem.HashID);
+                                    HealthPotion newthing = GenericItem.Copy(new Vector2I(i, j), GenericItem.HashID);
                                     if (CurrentTemplate.Entities.Contains(newthing))
                                         CurrentTemplate.Entities.Remove(newthing);
                                     else
@@ -488,7 +488,7 @@ namespace Rougelike
                             {
                                 if (MouseOver(i, j))
                                 {
-                                    CurrentTemplate.Payout = new Vector2(i, j);
+                                    CurrentTemplate.Payout = new Vector2I(i, j);
                                 }
                             }
                         }
@@ -616,7 +616,7 @@ namespace Rougelike
                         if (CurrentEnemy != null)
                         {
                             // In Editor keep same hash or we lose track of which it is
-                            Enemy enemy = CurrentEnemy.Copy(new Vector2(i, j), CurrentEnemy.HashID);
+                            Enemy enemy = CurrentEnemy.Copy(new Vector2I(i, j), CurrentEnemy.HashID);
                             if (CurrentTemplate.Entities.Contains(enemy))
                             {
                                 CurrentTemplate.Entities.Remove(enemy);
@@ -631,7 +631,7 @@ namespace Rougelike
 
         void LoadEditorCreatures()
         {
-            Vector2 Origin = new Vector2(34, 34);
+            Vector2I Origin = new Vector2I(34, 34);
 
             //Foreach .nme files add it to the list
             string[] fileNames = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\enemytemplates\");
@@ -719,7 +719,7 @@ namespace Rougelike
                     }
 
                     string[] payout = contents[2].Split(':')[1].Split('/');
-                    result.Template.Payout = new Vector2(Convert.ToInt32(payout[0]), Convert.ToInt32(payout[1]));
+                    result.Template.Payout = new Vector2I(Convert.ToInt32(payout[0]), Convert.ToInt32(payout[1]));
 
                     string[] creatures = contents[3].Split(':')[1].Split(',');
                     foreach (string c in creatures)
@@ -728,7 +728,7 @@ namespace Rougelike
                         {
                             string[] pair = c.Split('=');
                             int enemy = Convert.ToInt32(pair[0]);
-                            Enemy guy = EnemyButtons.ElementAt(enemy).Enemy.Copy(new Vector2(Convert.ToInt32(pair[1].Split('/')[0]), Convert.ToInt32(pair[1].Split('/')[1])), EnemyButtons.ElementAt(enemy).Enemy.HashID);
+                            Enemy guy = EnemyButtons.ElementAt(enemy).Enemy.Copy(new Vector2I(Convert.ToInt32(pair[1].Split('/')[0]), Convert.ToInt32(pair[1].Split('/')[1])), EnemyButtons.ElementAt(enemy).Enemy.HashID);
                             result.Template.Entities.Add(guy);
                         }
                     }
@@ -739,7 +739,7 @@ namespace Rougelike
                         if (i != "")
                         {
                             string[] pair = i.Split('/');
-                            result.Template.Entities.Add(GenericItem.Copy(new Vector2(Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])), GenericItem.HashID));
+                            result.Template.Entities.Add(GenericItem.Copy(new Vector2I(Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1])), GenericItem.HashID));
                         }
                     }
                     result.Template.Difficulty = Convert.ToInt32(contents[5].Split(':')[1]);
@@ -778,7 +778,7 @@ namespace Rougelike
                 content += ",";
                 content += "\n";
                 content += "Texture = ";
-                content += Array.IndexOf(EnemySprites, E.Sprite).ToString();
+                content += Array.IndexOf(EnemySprites, E.Enemy.Sprite).ToString();
                 content += ",";
                 content += "\n";
                 content += "Damage = ";

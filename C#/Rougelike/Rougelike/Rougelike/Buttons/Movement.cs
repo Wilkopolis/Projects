@@ -37,11 +37,7 @@ namespace Rougelike
 
         public bool Equals(Movement other)
         {
-            if (this.X == other.X && this.Y == other.Y)
-            {
-                return true;
-            }
-            return false;
+            return this.X == other.X && this.Y == other.Y;
         }
 
         public override string ToString()
@@ -49,9 +45,9 @@ namespace Rougelike
             return "(" + X + ", " + Y + ")";
         }
 
-        public Vector2 GetVector()
+        public Vector2I GetVector()
         {
-            return new Vector2(X, Y);
+            return new Vector2I(X, Y);
         }
     }
 }

@@ -9,8 +9,6 @@ namespace Rougelike
 {
     public partial class Enemy : Fighter, IEquatable<Entity>
     {
-        public LinkedList<Movement> Movements;
-        public List<Attack> Attacks;
         public List<Effect> Effects = new List<Effect>();
         public int Damage;
         public int Cost = 1;
@@ -19,16 +17,15 @@ namespace Rougelike
 
         public Enemy()
         {
-            Movements = new LinkedList<Movement>();
+
         }
 
         public Enemy(Texture2D sprite, String name)
         {
             Name = name;
             Side = Faction.NERD;
-            Position = Vector2.Zero;
+            Position = new Vector2I();
             Sprite = sprite;
-            Movements = new LinkedList<Movement>();
             Damage = 1;
             HP = 1;
             MaxHP = 1;
@@ -57,7 +54,7 @@ namespace Rougelike
             return Result;
         }
 
-        public Enemy Copy(Vector2 Position, int hashid)
+        public Enemy Copy(Vector2I Position, int hashid)
         {
             Enemy Result = new Enemy();
             Result.HP = HP;

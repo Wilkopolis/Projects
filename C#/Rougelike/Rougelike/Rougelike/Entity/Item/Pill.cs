@@ -60,7 +60,7 @@ namespace Rougelike
             return result;
         }
 
-        public Pill Copy(Vector2 position, int hashid, Random seed, bool prescription, bool fda)
+        public Pill Copy(Vector2I position, int hashid, Random seed, bool prescription, bool fda)
         {
             Pill result = new Pill();
             result.HashID = hashid;

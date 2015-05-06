@@ -18,9 +18,8 @@ namespace Rougelike
 
             Result.Floors = GenerateFloors(5);
 
-            Kevin.Position = new Vector2(5, 7);
-
             Result.GetRoom().AddToRoom(Kevin);
+
             Kevin.PickUp(StarterSword);
 
             Result.Kevin = Kevin;
@@ -38,91 +37,102 @@ namespace Rougelike
             }
 
             // Place Stairs and Floor positions
-            HashSet<Vector2> openset = new HashSet<Vector2>();
             for (int i = 1; i < amount; i++)
             {
-                // On this floor
-                Floor floor = result[i];
-                openset = new HashSet<Vector2>();
-                // Add all existing rooms
-                for (int x = 0; x < floor.Max.X; x++)
-                {
-                    for (int y = 0; y < floor.Max.Y; y++)
-                    {
-                        if (floor.Rooms[x, y].Exists)
-                            openset.Add(new Vector2(x, y));
-                    }
-                }
-                // Pick a room
-                Vector2 choice = openset.ElementAt(Random.Next(0, openset.Count()));
-                // Pick a tile
-                LinkedList<Tile> stairlist = new LinkedList<Tile>();
-                for (int j = 1; j < 13; j++)
-                {
-                    for (int k = 1; k < 8; k++)
-                    {
-                        // Add all available tiles
-                        if (StairFree(floor.Rooms[(int)choice.X, (int)choice.Y].Tiles[j, k]))
-                        {
-                            stairlist.AddLast(floor.Rooms[(int)choice.X, (int)choice.Y].Tiles[j, k]);
-                        }
-                    }
-                }
-                // Set the tile
-                stairlist.ElementAt(Random.Next(0, stairlist.Count)).Steps = Stairs.UP;
-                floor.Rooms[(int)choice.X, (int)choice.Y].HasStairs = true;
-                floor.Position = choice;
+                SetUpStairs(result[i]);
 
                 // If we arent on the last floor, add a stair down
                 if (i != amount - 1)
                 {
-                    // USE SAME FLOOR
-                    // Add all existing rooms
-                    HashSet<Vector2> openset2 = new HashSet<Vector2>();
-                    for (int x = 0; x < floor.Max.X; x++)
-                    {
-                        for (int y = 0; y < floor.Max.Y; y++)
-                        {
-                            if (floor.Rooms[x, y].Exists)
-                                openset2.Add(new Vector2(x, y));
-                        }
-                    }
-                    // Pick the room
-                    Vector2 choice2 = openset2.ElementAt(Random.Next(0, openset2.Count()));
-                    // Pick the tile
-                    LinkedList<Tile> stairlist2 = new LinkedList<Tile>();
-                    for (int j = 1; j < 13; j++)
-                    {
-                        for (int k = 1; k < 8; k++)
-                        {
-                            // Add all available tiles
-                            if (StairFree(floor.Rooms[(int)choice2.X, (int)choice2.Y].Tiles[j, k]))
-                            {
-                                stairlist2.AddLast(floor.Rooms[(int)choice2.X, (int)choice2.Y].Tiles[j, k]);
-                            }
-                        }
-                    }
-                    // Set the tile
-                    Tile temp = stairlist2.ElementAt(Random.Next(0, stairlist2.Count));
-                    temp = StairsTile.Copy();
-                    floor.Rooms[(int)choice2.X, (int)choice2.Y].HasStairs = true;
+                    SetDownStairs(result[i]);
                 }
             }
-            //result[amount - 1] = GenerateFinish();
 
             return result;
         }
 
+        public void SetUpStairs(Floor floor) 
+        {
+            List<Vector2I> possibleRooms = new List<Vector2I>();
+            // Add all existing rooms
+            for (int x = 0; x < floor.Max.X; x++)
+            {
+                for (int y = 0; y < floor.Max.Y; y++)
+                {
+                    if (floor.Rooms[x, y].Exists)
+                        possibleRooms.Add(new Vector2I(x, y));
+                }
+            }
+            // Pick a room
+            Vector2I stairRoomPosition = possibleRooms.ElementAt(Random.Next(0, possibleRooms.Count()));
+
+            // Compile tile candidates
+            List<Tile> stairsList = new List<Tile>();
+            Room stairRoom = floor.Rooms[(int)stairRoomPosition.X, (int)stairRoomPosition.Y];
+            for (int j = 1; j < 13; j++)
+            {
+                for (int k = 1; k < 8; k++)
+                {
+                    // Add all available tiles
+                    if (StairFree(stairRoom.Tiles[j, k]))
+                    {
+                        stairsList.Add(stairRoom.Tiles[j, k]);
+                    }
+                }
+            }
+            stairsList.ElementAt(Random.Next(0, stairsList.Count)).Steps = Stairs.UP;
+
+            stairRoom.HasStairs = true;
+            floor.Position = stairRoomPosition;
+        }
+
+        void SetDownStairs(Floor floor) 
+        {
+            List<Vector2I> possibleRooms = new List<Vector2I>();
+            // Add all existing rooms
+            for (int x = 0; x < floor.Max.X; x++)
+            {
+                for (int y = 0; y < floor.Max.Y; y++)
+                {
+                    if (floor.Rooms[x, y].Exists)
+                        possibleRooms.Add(new Vector2I(x, y));
+                }
+            }
+            // Pick a room
+            Vector2I stairRoomPosition = possibleRooms.ElementAt(Random.Next(0, possibleRooms.Count()));
+
+            // Compile tile candidates
+            List<Tile> stairsList = new List<Tile>();
+            Room stairRoom = floor.Rooms[(int)stairRoomPosition.X, (int)stairRoomPosition.Y];
+            for (int j = 1; j < 13; j++)
+            {
+                for (int k = 1; k < 8; k++)
+                {
+                    // Add all available tiles
+                    if (StairFree(stairRoom.Tiles[j, k]))
+                    {
+                        stairsList.Add(stairRoom.Tiles[j, k]);
+                    }
+                }
+            }            
+            Tile downStairsTile = stairsList.ElementAt(Random.Next(0, stairsList.Count));
+
+            downStairsTile.Steps = Stairs.DOWN;
+            downStairsTile.Sprite = StairsSprite;
+            stairRoom.HasStairs = true;
+        }
+
         Floor GenerateStart()
         {
-            Floor result = new Floor(new Vector2(1, 1));
+            Floor result = new Floor(new Vector2I(1, 1));
             result.Rooms[0, 0] = new Room(Start);
+            result.Position = new Vector2I(0,0);
             return result;
         }
 
         Floor GenerateFinish()
         {
-            Floor result = new Floor(new Vector2(1, 1));
+            Floor result = new Floor(new Vector2I(1, 1));
             //result.Rooms[0, 0] = new Room(Finish);
             //result.Rooms[0, 0].EntityList = Finish.Entities; 
             return result;
@@ -130,23 +140,23 @@ namespace Rougelike
 
         Floor GenerateFloor(int depth)
         {
-            Vector2 max = Vector2.Zero;
+            Vector2I max = new Vector2I();
             switch (Random.Next(0, 3))
             {
                 case 0:
-                    max = new Vector2(4, 4);
+                    max = new Vector2I(4, 4);
                     break;
 
                 case 1:
-                    max = new Vector2(5, 5);
+                    max = new Vector2I(5, 5);
                     break;
 
                 case 2:
-                    max = new Vector2(6, 6);
+                    max = new Vector2I(6, 6);
                     break;
             }
             Floor result = new Floor(max);
-            BuildFloor(max, result.Rooms);
+            ConstructFloor(max, result.Rooms);
             for (int i = 0; i < max.X; i++)
             {
                 for (int j = 0; j < max.Y; j++)
@@ -168,7 +178,7 @@ namespace Rougelike
             // Pick a good room or bad room
             RoomTemplate template;
 
-            if (GeerateGoodRoom())
+            if (GenerateGoodRoom())
             {
                 template = PickGoodTemplate(depth);
             }
@@ -180,9 +190,9 @@ namespace Rougelike
             return BuildRoom(template);
         }
 
-        int BuildFloor(Vector2 max, Room[,] rooms)
+        int ConstructFloor(Vector2I max, Room[,] rooms)
         {
-            int RoomAmount = (int)Math.Round(max.X * max.Y / 2);
+            int RoomAmount = (int)Math.Round((double)max.X * max.Y / 2);
             HashSet<Vector2> openset = new HashSet<Vector2>();
             // Start somewhere randomly in the floor
             int result = 0;
@@ -236,7 +246,7 @@ namespace Rougelike
             return result;
         }
 
-        Item GenerateItem(Vector2 position)
+        Item GenerateItem(Vector2I position)
         {
             // pick an item from commons rares or legendaries
             Item result;
@@ -290,7 +300,7 @@ namespace Rougelike
             return (!tile.Solid && tile.Steps == Stairs.NONE);
         }
 
-        bool GeerateGoodRoom()
+        bool GenerateGoodRoom()
         {
             return Random.Next(0, 100) < 10;
         }
@@ -307,7 +317,7 @@ namespace Rougelike
             return results.ElementAt(Random.Next(0, results.Count));
         }
 
-        void TrimDoors(Room[,] rooms, Vector2 max)
+        void TrimDoors(Room[,] rooms, Vector2I max)
         {
             for (int i = 0; i < max.X; i++)
             {
@@ -413,7 +423,7 @@ namespace Rougelike
             }
         }
 
-        void PickGoldRoom(Room[,] rooms, Vector2 max)
+        void PickGoldRoom(Room[,] rooms, Vector2I max)
         {
             List<Vector2> candidates = new List<Vector2>();
             for (int i = 0; i < max.X; i++)

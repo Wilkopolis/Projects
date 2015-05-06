@@ -11,8 +11,8 @@ namespace Rougelike
     {
         public string Name;
         public int HashID;
-        public Vector2 Position;
-        public Vector2 Origin;
+        public Vector2I Position;
+        public Vector2I Origin;
         public Texture2D Sprite;
 
         public abstract string[] GetModStrings();

@@ -12,12 +12,12 @@ namespace Rougelike
     {
         Tile EmptyTile;
         Tile SolidTile;
-        Tile StairsTile;
         Tile DoorTile;
         Tile[,] DoorTiles;
         Tile[,] EmptyTiles;
+        Texture2D StairsSprite;
         Random Random = new Random();
-        Vector2 Origin = new Vector2(34, 34);
+        Vector2I Origin = new Vector2I(34, 34);
 
         List<Item> Commons;
         List<Item> Rares;
@@ -55,8 +55,7 @@ namespace Rougelike
 
             EmptyTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/empty"), false);
             SolidTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/solid"), true);
-            StairsTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/stairs"), false);
-            StairsTile.Steps = Stairs.DOWN;
+            StairsSprite = Content.Load<Texture2D>("textures/game/tiles/stairs");
             DoorTile = new Tile(Content.Load<Texture2D>("textures/game/tiles/door"), false);
             DoorTile.Door = true;
             Enemy1 = Content.Load<Texture2D>("textures/game/creatures/enemy");
@@ -95,7 +94,8 @@ namespace Rougelike
 
             //Starting Room
             Start = new RoomTemplate(EmptyTiles);
-            Start.Tiles[7, 1] = StairsTile;
+            Start.Tiles[7, 1].Sprite = StairsSprite;
+            Start.Tiles[7, 1].Steps = Stairs.DOWN;
 
             Golden = new RoomTemplate(DoorTiles);
             Golden.Golden = true;
@@ -141,7 +141,8 @@ namespace Rougelike
             }
 
             //Starter Weapon
-            StarterSword = new Weapon(Content.Load<Texture2D>("textures/game/items/woodsword"), 1, 1, 5, ItemType.WEILD, "Starter Sword", HashID++, new Effect[] { Effect.ONEHANDED, Effect.SWORD });
+            StarterSword = new Weapon(Content.Load<Texture2D>("textures/game/items/woodsword"), 20, 1, 5, ItemType.WEILD, "Starter Sword", HashID++, new Effect[] { Effect.ONEHANDED, Effect.SWORD });
+            //StarterSword = new Weapon(Content.Load<Texture2D>("textures/game/items/woodsword"), 1, 1, 5, ItemType.WEILD, "Starter Sword", HashID++, new Effect[] { Effect.ONEHANDED, Effect.SWORD });
 
             ////////////////////////////////
             //          ENTITIES          //
@@ -235,7 +236,7 @@ namespace Rougelike
                     }
 
                     string[] payout = contents[2].Split(':')[1].Split('/');
-                    result.Payout = new Vector2(Convert.ToInt32(payout[0]), Convert.ToInt32(payout[1]));
+                    result.Payout = new Vector2I(Convert.ToInt32(payout[0]), Convert.ToInt32(payout[1]));
 
                     string[] creatures = contents[3].Split(':')[1].Split(',');
                     foreach (string c in creatures)
@@ -244,7 +245,7 @@ namespace Rougelike
                         {
                             string[] pair = c.Split('=');
                             int enemy = Convert.ToInt32(pair[0]);
-                            Enemy guy = EnemyTemplates.ElementAt(enemy).Copy(new Vector2(Convert.ToInt32(pair[1].Split('/')[0]), Convert.ToInt32(pair[1].Split('/')[1])), HashID++);
+                            Enemy guy = EnemyTemplates.ElementAt(enemy).Copy(new Vector2I(Convert.ToInt32(pair[1].Split('/')[0]), Convert.ToInt32(pair[1].Split('/')[1])), HashID++);
                             result.Entities.Add(guy);
                         }
                     }
@@ -255,7 +256,7 @@ namespace Rougelike
                         if (i != "")
                         {
                             string[] pair = i.Split('/');
-                            result.Entities.Add(new HealthPotion(new Vector2(Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1]))));
+                            result.Entities.Add(new HealthPotion(new Vector2I(Convert.ToInt32(pair[0]), Convert.ToInt32(pair[1]))));
                         }
                     }
                     result.Difficulty = Convert.ToInt32(contents[5].Split(':')[1]);
@@ -294,10 +295,10 @@ namespace Rougelike
                         result.Brains = Nature.SMART;
                     else
                         result.Brains = Nature.DUMB;
-                    result.HP = Convert.ToInt32(stats[1].Split('=')[1]);
                     result.MaxHP = Convert.ToInt32(stats[1].Split('=')[1]);
-                    result.AP = Convert.ToInt32(stats[2].Split('=')[1]);
+                    result.HP = result.MaxHP;
                     result.MaxAP = Convert.ToInt32(stats[2].Split('=')[1]);
+                    result.AP = result.MaxAP;
                     result.Sprite = EnemySprites[Convert.ToInt32(stats[3].Split('=')[1])];
                     result.Damage = Convert.ToInt32(stats[4].Split('=')[1]);
                     result.Origin = Origin;

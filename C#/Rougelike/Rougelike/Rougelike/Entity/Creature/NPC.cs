@@ -20,7 +20,7 @@ namespace Rougelike
             if (Type == NPCType.PHARMACIST || Type == NPCType.GAMBLER || Type == NPCType.MEDIC)
                 Uses = 5;
             Sprite = sprite;
-            Position = new Vector2(7, 5);
+            Position = new Vector2I(7, 5);
         }
 
         public NPC Copy(int hashid)

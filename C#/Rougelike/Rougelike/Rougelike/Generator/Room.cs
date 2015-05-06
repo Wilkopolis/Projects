@@ -11,7 +11,7 @@ namespace Rougelike
     {
         public Tile[,] Tiles;
         public List<Entity> Entities = new List<Entity>();
-        public Vector2 Payout;
+        public Vector2I Payout;
         public bool Visited;
         public bool Known;
         public bool Exists;
@@ -92,26 +92,26 @@ namespace Rougelike
             }
         }
 
-        public Item GetAdjacent(Vector2 position)
+        public Item GetAdjacent(Vector2I position)
         {
             Item Result = null;
             foreach (Entity entity in Entities)
             {
                 if (entity is Item)
                 {
-                    if (position + new Vector2(0, 1) == entity.Position)
+                    if (position + new Vector2I(0, 1) == entity.Position)
                     {
                         return (Item)entity;
-                    } 
-                    if (position + new Vector2(1, 0) == entity.Position)
+                    }
+                    if (position + new Vector2I(1, 0) == entity.Position)
                     {
                         return (Item)entity;
-                    } 
-                    if (position + new Vector2(0, -1) == entity.Position)
+                    }
+                    if (position + new Vector2I(0, -1) == entity.Position)
                     {
                         return (Item)entity;
-                    } 
-                    if (position + new Vector2(-1, 0) == entity.Position)
+                    }
+                    if (position + new Vector2I(-1, 0) == entity.Position)
                     {
                         return (Item)entity;
                     }

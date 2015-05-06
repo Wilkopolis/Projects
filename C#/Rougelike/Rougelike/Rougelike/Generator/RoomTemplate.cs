@@ -13,7 +13,7 @@ namespace Rougelike
         public Tile[,] Tiles = new Tile[15,10];
         public int Difficulty = 0;
         public List<Entity> Entities = new List<Entity>();
-        public Vector2 Payout;
+        public Vector2I Payout;
         public bool Golden;
 
         public RoomTemplate(Tile[,] tiles)

@@ -21,7 +21,7 @@ namespace Rougelike
 
         public int Value;
 
-        public Item(Vector2 position)
+        public Item(Vector2I position)
         {
             Position = position;
         }

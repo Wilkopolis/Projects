@@ -8,7 +8,7 @@ namespace Rougelike
 {
     public class Description : Button, IEquatable<Description>
     {
-        public Vector2 Bounds;
+        public Vector2I Bounds;
         public Vector2 Offset;
         public Entity Source;
         public int Length;
@@ -33,22 +33,22 @@ namespace Rougelike
                 if (line != "")
                     ++Length;
             }
-            Bounds = new Vector2(230, Length * 24);
-            if (entity.Position.X > 2)
+            Bounds = new Vector2I(230, Length * 24);
+            if (entity.Position.X > 3)
             {
-                Position.X = entity.Position.X * 64 + Length * 24;
+                Position.X = entity.Position.X * 66 - 196;
             }
             else
             {
-                Position.X = entity.Position.X * 64 + 64;
+                Position.X = entity.Position.X * 66 + 100;
             }
             if (entity.Position.Y > 3)
             {
-                Position.Y = entity.Position.Y * 64 - Length * 24;
+                Position.Y = entity.Position.Y * 66 - Bounds.Y + 34;
             }
             else
             {
-                Position.Y = entity.Position.Y * 64 + 64;
+                Position.Y = entity.Position.Y * 66 + 100;
             }
         }
 
@@ -68,7 +68,7 @@ namespace Rougelike
                 if (line != "")
                     ++Length;
             }
-            Bounds = new Vector2(230, Length * 24);
+            Bounds = new Vector2I(230, Length * 24);
             Position = button.Position - new Vector2(250, 24);
         }
 
@@ -88,7 +88,7 @@ namespace Rougelike
                 if (line != "")
                     ++Length;
             }
-            Bounds = new Vector2(230, Length * 24);
+            Bounds = new Vector2I(230, Length * 24);
             Position = button.Position - new Vector2(250, 24);
         }
 
