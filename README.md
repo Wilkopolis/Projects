@@ -8,6 +8,7 @@ various personal projects I've worked on. Side note, I am a bit lazy or inconsis
   
 #Javascript 
 (can be played http://udel.edu/~kgoydan/)
+
   RogSim - This is an experiment in Jquery. Its a simple roguelike/dungeon crawler I made in javascript and jquery. Click things and get to the end of the dungeon! Not finished.
   
   Roguelike - This is a straight, barebones javascript ascii roguelike. The help/wiki sections are incomplete and most of the features aren't fully implemented. Some places in the code are well factored and readable. Other places are hard coded numbers like 25. I'm actually quite exited about this project as I hope to release it some day. qweadzxc to move.
