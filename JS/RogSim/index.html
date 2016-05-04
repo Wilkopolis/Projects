@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"> 
+	<!-- CSS  -->
+	<link rel="stylesheet" href="style.css">
+
+	<!-- Foreign Includes -->
+	<!-- TODO move all network includes, (fonts) to local files -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+	<!-- Page Title -->
+	<title>My Game</title>
+
+	<!-- Call on page load -->		
+	<script src="jquery.easing.js"></script>
+	<script src="js.cookies.js"></script>
+	<script src="util.js"></script>
+	<script src="click.js"></script>
+	<script src="upgrades.js"></script>
+	<script src="agent.js"></script>
+	<script src="events.js"></script>
+	<script src="missions.js"></script>
+	<script src="platform.js"></script>
+	<script src="game.js"></script>
+</head>
+<body onScroll="iFuckedUp()">
+	<div id="openingDiv">
+		<div id="expositionDiv"></div>
+		<canvas id="expositionCanvas"></canvas>
+		<div id="captainPortrait"></div>
+		<div id="pilotPortrait"></div>
+		<button id="startButton" onClick="continueExposition()" class="btn btn-1 btn-1f">
+			<span>CONTINUE</span>
+		</button>
+	</div>
+	<div id="topBlinder">
+		<svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style="fill:#03060F;stroke:#03060F;stroke-width:1">			
+			<path d="M0,0 L 10.2,10.2 89.8,10.2 100,0 Z"></path>
+		</svg>
+	</div>
+	<div id="rightBlinder">
+		<svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style="fill:#03060F;stroke:#03060F;stroke-width:1">			
+			<path d="M100,0 L 89.8,10.2 89.8,89.8 100,100 Z"></path>
+		</svg>
+	</div>
+	<div id="leftBlinder">
+		<svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style="fill:#03060F;stroke:#03060F;stroke-width:1">			
+			<path d="M0,0 L 10.2,10.2 10.2,89.8 0,100 Z"></path>
+		</svg>
+	</div>
+	<div id="bottomBlinder">
+		<svg width="100%" height="105%" viewBox="0 0 100 100" preserveAspectRatio="none" style="fill:#03060F;stroke:#03060F;stroke-width:1">			
+			<path d="M0,100 L 10.2,89.8 89.8,89.8 100,100 Z"></path>
+		</svg>
+	</div>
+	<div id="page">
+		<div id="topBar">
+			<span id="gold">Gold: 0</span>
+			<span id="generation">Generation: 0</span>
+			<div id="menuTopBar">
+			</div>
+			<div id="gameTopBar">
+			</div>
+		</div>
+		<div id="sideBar">
+			<div id="menuSideBar">
+				<button id="missions" onClick="clickMissionsTab(this)" class="sideBarButton active">
+					<span>DEPLOY</span>
+				</button>
+				<button id="agents" onClick="clickAgentsTab(this)" class="sideBarButton">
+					<span>AGENTS</span>
+				</button>
+				<button id="shop" onClick="clickUpgradesTab(this)" class="sideBarButton">
+					<span>SHOP</span>
+				</button>
+			</div>
+			<div id="gameSideBar">
+				<button id="choiceOne" index="0" class="choiceButton offline">
+					<span id="choiceOneSpan">offline</span>
+				</button>			
+				<button id="choiceTwo" index="1" class="choiceButton offline">
+					<span id="choiceTwoSpan">offline</span>
+				</button>			
+				<button id="choiceThree" index="2" class="choiceButton offline">
+					<span id="choiceThreeSpan">offline</span>
+				</button>			
+				<button id="choiceFour" index="3" class="choiceButton offline">
+					<span id="choiceFourSpan">offline</span>
+				</button>			
+				<button id="choiceFive" index="4" class="choiceButton offline">
+					<span id="choiceFiveSpan">offline</span>
+				</button>			
+				<button id="choiceSix" index="5" class="choiceButton offline">
+					<span id="choiceSixSpan">offline</span>
+				</button>
+				<button id="choiceSeven" index="6" class="choiceButton offline">
+					<span id="choiceSevenSpan">offline</span>
+				</button>
+			</div>
+		</div>
+		<div id="gameArea">
+			<div id="missionsTab" class="tab">
+				<div id="missionDiv1" onClick="pinMission(this)" class="missionDiv">
+					<div id="missionHide1" class="missionHide">
+						<div id="mission1" class="mission">
+							<span class="noSel">Cargo Intake</span>
+							<button id="deploy1" onClick="clickDeploy(this)" class="deployButton" i='0'>
+								<span id='deployText'>Deploy</span>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="agentsTab">
+				<span id="nextGen" class="noSel">NEXT GENERATION</span>
+				<div id="agent1" class="agentDiv">
+					<div id="portrait1" class="portrait"></div>
+					<span id="agentName1" class="agentName"></span>
+					<span id="hp1" class="agentDivStat hp"></span>
+					<span id="strength1" class="agentDivStat str"></span>
+				</div>
+				<div id="agent2" class="agentDiv">
+					<div id="portrait2" class="portrait"></div>
+					<span id="agentName2" class="agentName"></span>
+					<span id="hp2" class="agentDivStat hp"></span>
+					<span id="strength2" class="agentDivStat str"></span>
+				</div>
+				<div id="agent3" class="agentDiv">
+					<div id="portrait3" class="portrait"></div>
+					<span id="agentName3" class="agentName"></span>
+					<span id="hp3" class="agentDivStat hp"></span>
+					<span id="strength3" class="agentDivStat str"></span>
+				</div>
+				<div id="child" class="agentDiv">
+					<div id="portrait4" class="portrait"></div>
+					<span id="agentName4" class="agentName"></span>
+					<span id="hp4" class="agentDivStat hp"></span>
+					<span id="strength4" class="agentDivStat str"></span>
+				</div>
+			</div>
+			<div id="upgradesTab" class="tab">
+				<div id="searchIcon"></div>
+				<form id="inputForm" onsubmit="return submitHandler()" action="">
+					<input id="input" type="text" name="Search">
+				</form>
+				<button id="searchButton" onClick="search()" class="btn2 btn2-1 btn2-1f">Search</button>
+				<button id="showAllButton" onClick="showAll()" class="btn2 btn2-1 btn2-1f">Show All</button>
+				<span id="ama">ama</span><span id="con">con</span>
+				<div id="resultsDiv"></div>
+			</div>
+			<div id="instanceTab" class="tab">
+				<canvas id="canvas"></canvas>
+				<div id="console"></div>
+				<div id="instanceBar">
+					<canvas id="sideCanvas"></canvas>
+					<div id="loot">
+						<div id="lootDiv"></div>
+					</div>
+				</div>
+				<div id="promptDiv">
+					<div id="dialogDiv">
+						<div id="promptPortrait"></div>
+						<span id="promptText">"Yo dog, do the mission."</span>
+						<button id="beginButton" onClick="clickBegin()" class="btn btn-1 btn-1f">BEGIN</button>
+					</div>
+					<div id="hackingDiv">
+						<canvas id=""></canvas>
+					</div>
+				</div>
+			</div>
+		</div>		
+	</div>
+	<div id="closingDiv">
+	</div>
+	<canvas id="closingCanvas"></canvas>
+</body>
+</html>
