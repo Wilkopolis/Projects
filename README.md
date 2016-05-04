@@ -6,7 +6,8 @@ various personal projects I've worked on. Side note, I am a bit lazy or inconsis
   
   Chooser - This is a tool I used to choose something to watch when I couldn't make up my mind. The batch file is necessary due to the python interpreter not supporting some of the characters in the filenames of my media.
   
-#Javascript (can be played http://udel.edu/~kgoydan/)
+#Javascript 
+(can be played http://udel.edu/~kgoydan/)
   RogSim - This is an experiment in Jquery. Its a simple roguelike/dungeon crawler I made in javascript and jquery. Click things and get to the end of the dungeon! Not finished.
   
   Roguelike - This is a straight, barebones javascript ascii roguelike. The help/wiki sections are incomplete and most of the features aren't fully implemented. Some places in the code are well factored and readable. Other places are hard coded numbers like 25. I'm actually quite exited about this project as I hope to release it some day. qweadzxc to move.
