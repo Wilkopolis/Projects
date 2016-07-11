@@ -105,7 +105,7 @@ namespace Rougelike
                         }
                     }
                 }
-                if (button.Template.Difficulty != 0)
+                if (button.Template.Difficulty != 0 && button.Template.Payout != null)
                     Draw(MiniPrize, button.Position + new Vector2(4 + MiniEmpty.Width * button.Template.Payout.X, 4 + MiniEmpty.Height * button.Template.Payout.Y), button.Origin);
                 foreach (Entity entity in button.Template.Entities)
                 {
@@ -198,7 +198,8 @@ namespace Rougelike
             }
             else if (descriptor.Source is Enemy) 
             {
-                SpriteBatch.DrawString(Calibri, "MaxHP: " + ((Enemy)descriptor.Source).MaxHP.ToString(), OffsetVector + descriptor.Position + new Vector2(4, currrentheight + 92), softgray);                
+                SpriteBatch.DrawString(Calibri, "MaxHP: " + ((Enemy)descriptor.Source).MaxHP.ToString(), OffsetVector + descriptor.Position + new Vector2(4, currrentheight + 92), softgray);
+                SpriteBatch.DrawString(Calibri, "Damage: " + ((Enemy)descriptor.Source).Damage.ToString(), OffsetVector + descriptor.Position + new Vector2(4, currrentheight + 112), softgray);                  
             }
 
             //draw mods
@@ -227,7 +228,7 @@ namespace Rougelike
                     Draw(CurrentTemplate.Tiles[i, j], new Vector2(i , j) * 66 + new Vector2(34, 34));
                 }
             }
-            if (CurrentTemplate.Payout != new Vector2I() && CurrentTemplate.Difficulty != 0)
+            if (CurrentTemplate.Payout != null && CurrentTemplate.Difficulty != 0)
                 Draw(Payout, OffsetVector + CurrentTemplate.Payout * 66 + new Vector2(34, 34));
             foreach (Entity entity in CurrentTemplate.Entities)
             {
@@ -269,7 +270,6 @@ namespace Rougelike
                 Draw(CurrentEnemy.Sprite, new Vector2(1070, 545));
                 SpriteBatch.DrawString(SegeoUiMono, "Name: " + CurrentEnemy.Name, OffsetVector + new Vector2(1060, 510), Color.White);
                 SpriteBatch.DrawString(SegeoUiMono, "Max HP: " + CurrentEnemy.HP.ToString(), OffsetVector + new Vector2(1150, 543), Color.White);
-                SpriteBatch.DrawString(SegeoUiMono, "Max AP: " + CurrentEnemy.AP.ToString(), OffsetVector + new Vector2(1150, 563), Color.White);
                 SpriteBatch.DrawString(SegeoUiMono, "Damage: " + CurrentEnemy.Damage.ToString(), OffsetVector + new Vector2(1150, 583), Color.White);
             }
         }
@@ -281,11 +281,11 @@ namespace Rougelike
             SpriteBatch.Draw(HealthBarUI, OffsetVector + new Vector2(102, 7), new Rectangle(0, 0, (int)Math.Ceiling(HealthBarUI.Width * (Save.Kevin.HP / (double)Save.Kevin.MaxHP)),
                         HealthBarUI.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
             SpriteBatch.Draw(UIOutline, OffsetVector + new Vector2(102, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            SpriteBatch.DrawString(SegeoUiMono, "AP: ", OffsetVector + new Vector2(250, 1), Color.White);
-            SpriteBatch.DrawString(SegeoUiMono, Save.Kevin.AP.ToString() + "/" + Save.Kevin.MaxAP.ToString(), new Vector2(284, 1), brightwhite);
-            SpriteBatch.Draw(APBarUI, OffsetVector + new Vector2(346, 7), new Rectangle(0, 0, (int)Math.Ceiling(APBarUI.Width * (Save.Kevin.AP / (double)Save.Kevin.MaxAP)),
-                        APBarUI.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            SpriteBatch.Draw(UIOutline, OffsetVector + new Vector2(346, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            // SpriteBatch.DrawString(SegeoUiMono, "AP: ", OffsetVector + new Vector2(250, 1), Color.White);
+            // SpriteBatch.DrawString(SegeoUiMono, Save.Kevin.AP.ToString() + "/" + Save.Kevin.MaxAP.ToString(), new Vector2(284, 1), brightwhite);
+            // SpriteBatch.Draw(APBarUI, OffsetVector + new Vector2(346, 7), new Rectangle(0, 0, (int)Math.Ceiling(APBarUI.Width * (Save.Kevin.AP / (double)Save.Kevin.MaxAP)),
+            //             APBarUI.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            // SpriteBatch.Draw(UIOutline, OffsetVector + new Vector2(346, 7), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
             SpriteBatch.DrawString(SegeoUiMono, "Wealth:" + Save.Kevin.Wealth.ToString() + "(+" + Save.Kevin.WealthPerTurn.ToString() + ")", OffsetVector + new Vector2(495, 1), brightwhite);
             SpriteBatch.DrawString(SegeoUiMono, "Power:" + Save.Kevin.Power.ToString() + "(+" + Save.Kevin.PowerPerTurn.ToString() + ")", OffsetVector + new Vector2(670, 1), brightwhite);
             if (Save.Kevin.Class == Class.MASTERMIND)

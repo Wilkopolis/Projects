@@ -10,14 +10,13 @@ namespace Rougelike
     public partial class Enemy : Fighter, IEquatable<Entity>
     {
         public List<Effect> Effects = new List<Effect>();
-        public int Damage;
+        public int Damage = 1;
         public int Cost = 1;
-        public int XP;
+        public int XP = 0;
         public Enemy WaitingOn;
 
         public Enemy()
         {
-
         }
 
         public Enemy(Texture2D sprite, String name)
@@ -26,12 +25,6 @@ namespace Rougelike
             Side = Faction.NERD;
             Position = new Vector2I();
             Sprite = sprite;
-            Damage = 1;
-            HP = 1;
-            MaxHP = 1;
-            AP = 1;
-            MaxAP = 1;
-            XP = 1;
         }
 
         public Enemy Copy(int hashid)
@@ -39,8 +32,6 @@ namespace Rougelike
             Enemy Result = new Enemy();
             Result.HP = HP;
             Result.MaxHP = MaxHP;
-            Result.AP = AP;
-            Result.MaxAP = MaxAP;
             Result.Name = Name;
             Result.Brains = Brains;
             Result.Origin = Origin;
@@ -50,7 +41,7 @@ namespace Rougelike
             Result.Damage = Damage;
             Result.Cost = Cost;
             Result.XP = XP;
-            Result.HashID = hashid;
+            Result.Hash = hashid;
             return Result;
         }
 
@@ -59,8 +50,6 @@ namespace Rougelike
             Enemy Result = new Enemy();
             Result.HP = HP;
             Result.MaxHP = MaxHP;
-            Result.AP = AP;
-            Result.MaxAP = MaxAP;
             Result.Name = Name;
             Result.Brains = Brains;
             Result.Origin = Origin;
@@ -70,7 +59,7 @@ namespace Rougelike
             Result.Cost = Cost;
             Result.Side = Side;
             Result.XP = XP;
-            Result.HashID = hashid;
+            Result.Hash = hashid;
             return Result;
         }
 

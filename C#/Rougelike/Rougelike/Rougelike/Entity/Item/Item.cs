@@ -38,7 +38,7 @@ namespace Rougelike
 
         public bool Equals(Item other)
         {
-            return HashID == other.HashID;
+            return Hash == other.Hash;
         }
 
         public override string[] GetModStrings()

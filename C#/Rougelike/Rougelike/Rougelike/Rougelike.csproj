@@ -113,9 +113,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Behavior\Combat.cs" />
+    <Compile Include="Behavior\Movement.cs" />
     <Compile Include="Buttons\ItemButton.cs" />
     <Compile Include="Buttons\MegaMapButton.cs" />
-    <Compile Include="Entity\Creature\Simulate.cs" />
+    <Compile Include="Behavior\Simulate.cs" />
+    <Compile Include="Content\Sound.cs" />
+    <Compile Include="Content\Video.cs" />
     <Compile Include="Entity\Item\Coin.cs" />
     <Compile Include="Entity\Item\Pill.cs" />
     <Compile Include="Graphics\Drawer.cs" />
@@ -124,11 +128,11 @@
     <Compile Include="Screens\Skills.cs" />
     <Compile Include="Screens\Editor.cs" />
     <Compile Include="Screens\GameScreen.cs" />
-    <Compile Include="Generator\Content.cs" />
+    <Compile Include="Content\Content.cs" />
     <Compile Include="Graphics\Graphics.cs" />
     <Compile Include="Screens\NPCScreen.cs" />
     <Compile Include="Screens\TitleScreen.cs" />
-    <Compile Include="Generator\Shared.cs" />
+    <Compile Include="Shared.cs" />
     <Compile Include="Entity\Creature\ApplyEffects.cs" />
     <Compile Include="Buttons\EnemyButton.cs" />
     <Compile Include="Generator\RoomTemplate.cs" />
@@ -159,6 +163,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Rougelike.cs" />
     <Compile Include="Save.cs" />
+    <Compile Include="Util\Utils.cs" />
     <Compile Include="Util\Vector2I.cs" />
     <Compile Include="Util\VectorComparer.cs" />
   </ItemGroup>

@@ -26,7 +26,7 @@ namespace Rougelike
         public NPC Copy(int hashid)
         {
             NPC result = new NPC(Type, Sprite);
-            result.HashID = hashid;
+            result.Hash = hashid;
             return result;
         }
 

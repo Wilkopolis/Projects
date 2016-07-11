@@ -178,6 +178,9 @@ namespace Rougelike
             // Pick a good room or bad room
             RoomTemplate template;
 
+            if (debugRoom != null)
+                return BuildRoom(debugRoom);
+
             if (GenerateGoodRoom())
             {
                 template = PickGoodTemplate(depth);

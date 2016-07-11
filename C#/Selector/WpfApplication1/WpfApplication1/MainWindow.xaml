@@ -28,7 +28,7 @@
         </Style>
     </Window.Resources>
     <Grid>
-        <Button x:Name="Random" Content="Button" HorizontalAlignment="Left" Height="120" Margin="0,0,0,0" VerticalAlignment="Top" Width="640" Click="OpenFile" Background="#261537" FontSize="48" Foreground="#f9f9f0" FontFamily="CordiaUPC" BorderThickness="0" Style="{StaticResource MyButton}"/>
+        <Button x:Name="Random" Content="Button" HorizontalAlignment="Left" Height="120" Margin="0,0,0,0" VerticalAlignment="Top" Width="640" Background="#261537" FontSize="48" Foreground="#f9f9f0" FontFamily="CordiaUPC" BorderThickness="0" Style="{StaticResource MyButton}"/>
         <Button x:Name="Reset" Content="Reset" HorizontalAlignment="Left" Margin="0,120,0,0" VerticalAlignment="Top" Height="80" Width="320"  Click="ResetDir" Background="#261537" FontSize="24" Foreground="#f9f9f0" BorderThickness="0" Style="{StaticResource MyButton}"/>
         <Button x:Name="Randomize" Content="Randomize" HorizontalAlignment="Left" Height="80" Margin="320,120,0,0" VerticalAlignment="Top" Width="320" Background="#261537" FontSize="24" Foreground="#f9f9f0" BorderThickness="0" Style="{StaticResource MyButton}"/>
         <ListView x:Name="Results" HorizontalAlignment="Left" Height="880" Margin="0,200,0,0" VerticalAlignment="Top" Width="640" Background="#261537" BorderThickness="0"/>

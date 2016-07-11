@@ -15,9 +15,6 @@ def get_all_options(path):
             templist.extend(dirnames)
             break
         for entry in templist:
-        	if '.bat' in entry:
-        		templist.remove(entry)
-        for entry in templist:
         	if '.py' in entry:
         		templist.remove(entry)
         return templist

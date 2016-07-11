@@ -1,7 +1,7 @@
 // generic units
 var NAME_NIGHT_GAURD = "defend-o";
 
-var factions = {};
+var factions = {'unclaimed' : new faction_none()};
 var FACTION_CLONES = "clones";
 var FACTION_NONE = "unclaimed";
 var FACTION_ANIMAL = "animal";
@@ -10,7 +10,12 @@ var FACTION_ROBOT = "robot";
 var FACTION_SURVIVOR = "survivor";
 var FACTION_HIVEMIND = "hivemind";
 var FACTIONS = [FACTION_ANIMAL, FACTION_SURVIVOR];
-
+// factionless units
+var NAME_RAT = "rat";
+var NAME_TRASH_BOT = "trashbot";
+var NAME_WEED = "killer weed";
+var NAME_TYPO = "typo";
+var STARTING_UNITS = [NAME_RAT, NAME_TRASH_BOT, NAME_WEED, NAME_TYPO];
 // animal units
 var NAME_ANT = "ant";
 var NAME_DOG = "dog";
@@ -91,7 +96,7 @@ function faction_clones(pos) {
 				// the center of our room in the megamap coords
 				var adjustedPos = {x: j - mapXMin, y: i - mapYMin};
 				var roomCenter = {x: (ROOM_CELL_LENGTH - 1)/ 2 + (adjustedPos.x * ROOM_CELL_LENGTH), y: (ROOM_CELL_LENGTH - 1)/ 2 + (adjustedPos.y * ROOM_CELL_LENGTH)};
-				
+
 				rooms.push({room:room, value:value, roomCenter:roomCenter});
 			}
 		}
@@ -109,7 +114,7 @@ function faction_clones(pos) {
 			unit.destination = rooms[0].roomCenter;
 			rooms[0].value -= PRICES[unit.name];
 			rooms[0].room.unitsEnroute.push(unit);
-			// resort 
+			// resort
 			rooms.sort(function(a,b) {return b.value - a.value});
 		}
 	}
@@ -152,7 +157,7 @@ function faction_animal(pos) {
 		var UnitTotal = antCnt + dogCnt + monCnt + gorCnt;
 
 		var valueArray = [];
-		valueArray.push({name:NAME_ANT, value:35 - UnitTotal + 20 * -RoomRatio + Math.exp(-(WPT - 10)/4)});		
+		valueArray.push({name:NAME_ANT, value:35 - UnitTotal + 20 * -RoomRatio + Math.exp(-(WPT - 10)/4)});
 		valueArray.push({name:NAME_DOG, value:38 + 5 * -RoomRatio - .18*WPT - 0.8*UnitTotal});
 		valueArray.push({name:NAME_MONKEY, value:- 5 + 20 * RoomRatio + WPT * 0.9 + 10 * (1 - MeleeRatio) + UnitTotal});
 		valueArray.push({name:NAME_GORILLA, value: - 5 + 20 * RoomRatio +  WPT * 1.04 + UnitTotal * 1.1});
@@ -161,7 +166,6 @@ function faction_animal(pos) {
 
 		var choice = valueArray[0].name;
 		if (PRICES[choice] <= this.wealth) {
-			// console.log("spawning a " + choice);
 			this.wealth -= PRICES[choice];
 			this.units.push(spawn(this.pos, choice));
 		}
@@ -234,7 +238,7 @@ function faction_animal(pos) {
 			unit.destination = rooms[0].roomCenter;
 			rooms[0].value -= PRICES[unit.name];
 			rooms[0].room.unitsEnroute.push(unit);
-			// resort 
+			// resort
 			rooms.sort(function(a,b) {return b.value - a.value});
 		}
 	}
@@ -260,7 +264,7 @@ function faction_software(pos) {
 
 	this.spendWealth = function() {
 		var valueArray = [];
-		valueArray.push({name:NAME_BUG, value: 1});		
+		valueArray.push({name:NAME_BUG, value: 1});
 		valueArray.push({name:NAME_GLITCH, value: 0});
 		valueArray.push({name:NAME_ZERO_DAY, value: 0});
 		valueArray.push({name:NAME_TROJAN, value: 0});
@@ -275,7 +279,7 @@ function faction_software(pos) {
 	}
 
 	this.directUnits = function() {
-		
+
 	}
 
 	this.do4XTurn = function() {
@@ -299,7 +303,7 @@ function faction_robot(pos) {
 
 	this.spendWealth = function() {
 		var valueArray = [];
-		valueArray.push({name:NAME_BUTLER, value: 1});		
+		valueArray.push({name:NAME_BUTLER, value: 1});
 		valueArray.push({name:NAME_CHEF, value: 0});
 		valueArray.push({name:NAME_MECHANIC, value: 0});
 		valueArray.push({name:NAME_SECUROTRON, value: 0});
@@ -314,7 +318,7 @@ function faction_robot(pos) {
 	}
 
 	this.directUnits = function() {
-		
+
 	}
 
 	this.do4XTurn = function() {
@@ -371,7 +375,7 @@ function faction_survivor(pos) {
 			this.units.push(spawn(this.pos, choice));
 		}
 	}
-	
+
 	this.directUnits = function() {
 		// don't run if we have no free units
 		var run = false;
@@ -439,7 +443,7 @@ function faction_survivor(pos) {
 			unit.destination = rooms[0].roomCenter;
 			rooms[0].value -= PRICES[unit.name];
 			rooms[0].room.unitsEnroute.push(unit);
-			// resort 
+			// resort
 			rooms.sort(function(a,b) {return b.value - a.value});
 		}
 	}
@@ -477,12 +481,20 @@ function faction_hivemind(pos) {
 	}
 
 	this.directUnits = function() {
-		
+
 	}
 
 	this.do4XTurn = function() {
 		this.wealth += this.wpt;
 	}
+}
+
+function faction_none() {
+	this.units = [];
+	this.doTurn = function() {}
+	this.directUnits = function() {}
+	this.spendWealth = function() {}
+	this.do4XTurn = function() {}
 }
 
 function doFactionTurns() {
@@ -500,7 +512,7 @@ function spawn(roomPos, enemyType) {
 	var innerTopLeft = {x: roomTopLeft.x + 1, y: roomTopLeft.y + 1};
 	// var find an open spot in room
 	var candidates = [];
-	for (var l = wallLength - 3; l >= 0; l--) {				
+	for (var l = wallLength - 3; l >= 0; l--) {
 		for (var m = wallLength - 3; m >= 0; m--) {
 			if (!dungeon.tiles[innerTopLeft.y + l][innerTopLeft.x + m].getSolid()) {
 				candidates.push({x:innerTopLeft.x + m, y:innerTopLeft.y + l});
@@ -518,40 +530,106 @@ function spawn(roomPos, enemyType) {
 
 var DESTINATION_NONE = 'wander';
 function MakeEnemy(type, pos, statuses) {
+	var hp;
+	var dmg;
+	var xp;
+	var faction;
+	var char;
 	switch(type) {
 		case NAME_ANT:
 		factions[FACTION_ANIMAL].antCount++;
-		return new Enemy(pos, type, 5, 1, 3, 'a', FACTION_ANIMAL, statuses);
+		hp = 5 + Math.round(gameTicks/100);
+		dmg = 1 + Math.round(gameTicks/400);
+		xp = 3 + Math.round(gameTicks/400);
+		faction = FACTION_ANIMAL;
+		char = 'a';
 		break;
 		case NAME_DOG:
 		factions[FACTION_ANIMAL].dogCount++;
-		return new Enemy(pos, type, 10, 2, 8, 'd', FACTION_ANIMAL, statuses);
+		hp = 10 + Math.round(gameTicks/100);
+		dmg = 2 + Math.round(gameTicks/400);
+		xp = 8 + Math.round(gameTicks/400);
+		faction = FACTION_ANIMAL;
+		char = 'd';
 		break;
 		case NAME_MONKEY:
 		factions[FACTION_ANIMAL].monkeyCount++;
-		return new Enemy(pos, type, 10, 2, 12, 'm', FACTION_ANIMAL, statuses);
+		hp = 10 + Math.round(gameTicks/100);
+		dmg = 2 + Math.round(gameTicks/400);
+		xp = 12 + Math.round(gameTicks/400);
+		faction = FACTION_ANIMAL;
+		char = 'm';
 		break;
 		case NAME_GORILLA:
 		factions[FACTION_ANIMAL].gorillaCount++;
-		return new Enemy(pos, type, 25, 5, 25, 'G', FACTION_ANIMAL, statuses);
+		hp = 25 + Math.round(gameTicks/100);
+		dmg = 5 + Math.round(gameTicks/400);
+		xp = 25 + Math.round(gameTicks/400);
+		faction = FACTION_ANIMAL;
+		char = 'G';
 		break;
 		case NAME_WANDERER:
 		factions[FACTION_SURVIVOR].wandererCount++;
-		return new Enemy(pos, type, 6, 1, 4, 'w', FACTION_SURVIVOR, statuses);
+		hp = 6 + Math.round(gameTicks/100);
+		dmg = 1 + Math.round(gameTicks/400);
+		xp = 4 + Math.round(gameTicks/400);
+		faction = FACTION_SURVIVOR;
+		char = 'w';
 		break;
 		case NAME_MARAUDER:
 		factions[FACTION_SURVIVOR].marauderCount++;
-		return new Enemy(pos, type, 14, 3, 12, 'M', FACTION_SURVIVOR, statuses);
+		hp = 14 + Math.round(gameTicks/100);
+		dmg = 3 + Math.round(gameTicks/400);
+		xp = 12 + Math.round(gameTicks/400);
+		faction = FACTION_SURVIVOR;
+		char = 'M';
 		break;
 		case NAME_TECHIE:
 		factions[FACTION_SURVIVOR].techieCount++;
-		return new Enemy(pos, type, 13, 2, 13, 'C', FACTION_SURVIVOR, statuses);
+		hp = 13 + Math.round(gameTicks/100);
+		dmg = 2 + Math.round(gameTicks/400);
+		xp = 13 + Math.round(gameTicks/400);
+		faction = FACTION_SURVIVOR;
+		char = 'C';
 		break;
 		case NAME_WAR_BOSS:
 		factions[FACTION_SURVIVOR].warBossCount++;
-		return new Enemy(pos, type, 18, 5, 28, 'W', FACTION_SURVIVOR, statuses);
+		hp = 18 + Math.round(gameTicks/100);
+		dmg = 5 + Math.round(gameTicks/400);
+		xp = 28 + Math.round(gameTicks/400);
+		faction = FACTION_SURVIVOR;
+		char = 'W';
+		break;
+		case NAME_RAT:
+		hp = 7;
+		dmg = 2;
+		xp = 8;
+		faction = FACTION_NONE;
+		char = 'r';
+		break;
+		case NAME_TRASH_BOT:
+		hp = 10;
+		dmg = 1;
+		xp = 6;
+		faction = FACTION_NONE;
+		char = 't';
+		break;
+		case NAME_WEED:
+		hp = 15;
+		dmg = 1;
+		xp = 14;
+		faction = FACTION_NONE;
+		char = 'w';
+		break;
+		case NAME_TYPO:
+		hp = 5;
+		dmg = 3;
+		xp = 6;
+		faction = FACTION_NONE;
+		char = 'y';
 		break;
 	}
+	return new Enemy(pos, type, hp, dmg, xp, char, faction, statuses);
 }
 
 var hash = 0;
@@ -579,7 +657,7 @@ function Enemy (pos, name, hp, baseDmg, baseXp, char, faction, statuses) {
 				this.statuses.splice(i,1);
 			else
 				this.statuses[i].ticksRemaining--;
-		}	
+		}
 	}
 
 	this.getThreat = function() {
@@ -599,35 +677,39 @@ function Enemy (pos, name, hp, baseDmg, baseXp, char, faction, statuses) {
 	}
 
 	this.getRoom = function() {
-		var roomPos = {x: mapXMin + Math.round((this.x - (ROOM_CELL_LENGTH - 1)/ 2) / ROOM_CELL_LENGTH), 
+		var roomPos = {x: mapXMin + Math.round((this.x - (ROOM_CELL_LENGTH - 1)/ 2) / ROOM_CELL_LENGTH),
 						    y: mapYMin + Math.round((this.y - (ROOM_CELL_LENGTH - 1)/ 2) / ROOM_CELL_LENGTH)};
 		var room = minimap[roomPos.y][roomPos.x];
 		return room;
 	}
-	
+
 	this.getDmg = function() {
 		var result = this.baseDamage;
 		return result;
 	}
-	
+
+	this.takeDamage = function(amount, attacker) {
+		this.hp -= amount;
+		if (this.hp <= 0)
+			this.kill(dungeon.tiles[this.y][this.x], attacker);
+	}
+
 	this.kill = function(tile, killer) {
 		killer.addXp(this.baseXp);
 		var threatLevel = this.getThreat();
 		var dropItem = generateLoot(threatLevel);
 		// remove ourselves from any lists
 		dungeon.npcs.setRemove(this);
-		if (this.faction != FACTION_NONE) {
-			factions[this.faction].units.setRemove(this);
-			switch(this.name) {
-				case NAME_ANT: factions[FACTION_ANIMAL].antCount--; break;
-				case NAME_DOG: factions[FACTION_ANIMAL].dogCount--; break;
-				case NAME_MONKEY: factions[FACTION_ANIMAL].monkeyCount--; break;
-				case NAME_GORILLA: factions[FACTION_ANIMAL].gorillaCount--; break;
-				case NAME_WANDERER: factions[FACTION_SURVIVOR].wandererCount--; break;
-				case NAME_MARAUDER: factions[FACTION_SURVIVOR].marauderCount--; break;
-				case NAME_TECHIE: factions[FACTION_SURVIVOR].techieCount--; break;
-				case NAME_WAR_BOSS: factions[FACTION_SURVIVOR].warBossCount--; break;
-			}
+		factions[this.faction].units.setRemove(this);
+		switch(this.name) {
+			case NAME_ANT: factions[FACTION_ANIMAL].antCount--; break;
+			case NAME_DOG: factions[FACTION_ANIMAL].dogCount--; break;
+			case NAME_MONKEY: factions[FACTION_ANIMAL].monkeyCount--; break;
+			case NAME_GORILLA: factions[FACTION_ANIMAL].gorillaCount--; break;
+			case NAME_WANDERER: factions[FACTION_SURVIVOR].wandererCount--; break;
+			case NAME_MARAUDER: factions[FACTION_SURVIVOR].marauderCount--; break;
+			case NAME_TECHIE: factions[FACTION_SURVIVOR].techieCount--; break;
+			case NAME_WAR_BOSS: factions[FACTION_SURVIVOR].warBossCount--; break;
 		}
 		// is this truely the end? Are we all just a baseline function call between
 		// existence and history?
@@ -637,11 +719,11 @@ function Enemy (pos, name, hp, baseDmg, baseXp, char, faction, statuses) {
 			tile.entities.push(dropItem);
 	}
 
-	this.addXp = function(amount) {	
+	this.addXp = function(amount) {
 		// default for enemies
 	}
 
-	this.addCombatExperience = function() {	
+	this.addCombatExperience = function() {
 		// default for enemies
 	}
 }

@@ -87,7 +87,7 @@ function lightLine (p, q, tiles) {
 	var x0 = p.x, y0 = p.y;
 	var x1 = q.x, y1 = q.y;
 	var dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-	var dy = Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1; 
+	var dy = Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
 	var err = (dx > dy ? dx : -dy) / 2;
  	// iterate from point 1 to point 2
  	while (true) {
@@ -103,18 +103,18 @@ function lightLine (p, q, tiles) {
  		// if we are obstructed, quit traversing
  		if (tiles[y0][x0].getOpaque() && (y0 != player.y || x0 != player.x))
  			break;
- 		
+
  		// rest of the algorithm
- 		if (x0 === x1 && y0 === y1) 
+ 		if (x0 === x1 && y0 === y1)
  			break;
  		var e2 = err;
- 		if (e2 > -dx) { 
- 			err -= dy; 
- 			x0 += sx; 
+ 		if (e2 > -dx) {
+ 			err -= dy;
+ 			x0 += sx;
  		}
- 		if (e2 < dy) { 
- 			err += dx; 
- 			y0 += sy; 
+ 		if (e2 < dy) {
+ 			err += dx;
+ 			y0 += sy;
  		}
  	}
 }
@@ -277,7 +277,7 @@ Array.prototype.setContains = function(element) {
 	return false;
 }
 
-// acts like push but 
+// acts like push but
 Array.prototype.setAdd = function(element) {
 	for (var i = this.length - 1; i >= 0; i--) {
 		if (this[i].x == element.x && this[i].y == element.y)
@@ -286,7 +286,7 @@ Array.prototype.setAdd = function(element) {
 	this.push(element);
 }
 
-// acts like push but 
+// acts like push but
 Array.prototype.refSetAdd = function(element) {
 	for (var i = this.length - 1; i >= 0; i--) {
 		if (this[i] == element)

@@ -35,7 +35,7 @@ namespace Rougelike
             }
             Sprite = sprite;
             Value = worth;
-            HashID = hashid;
+            Hash = hashid;
             Type = ItemType.CONSUMABLE;
         }
 
@@ -66,7 +66,7 @@ namespace Rougelike
             Result.Name = Name;
             Result.StackSize = StackSize;
             Result.Value = Value;
-            Result.HashID = hashid;
+            Result.Hash = hashid;
             return Result;
         }
 
@@ -79,7 +79,7 @@ namespace Rougelike
             Result.Name = Name;
             Result.StackSize = StackSize;
             Result.Value = Value;
-            Result.HashID = hashid;
+            Result.Hash = hashid;
             return Result;
         }
 

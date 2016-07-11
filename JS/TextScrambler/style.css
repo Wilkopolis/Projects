@@ -1,0 +1,122 @@
+body {
+	background: #ff9933;
+	color:#070713; 
+    overflow: hidden;
+}
+
+button {
+	cursor: pointer;
+	letter-spacing: 2px;
+	text-align: center;
+	color: #f4f4fb;
+	display:inline-block;
+
+	font-size: 3vh;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;  
+
+	position: absolute; 
+
+	width: 350px;
+	height: 100px;
+
+	background: #0c0b20;
+	border: 0px;
+
+	transition: all 0.5s;
+	transition: top .5s ease;
+}
+
+button:focus {
+	outline:0;
+}
+
+button span {
+	position: absolute;
+	padding-left: 0;
+	top: 37.5%; left: 15%;
+
+	transition: padding-left 0.4s;
+}
+
+#button1 {
+	top:30%; left:26%;
+}
+
+#button2 {
+	top:50%; left:26%;
+}
+
+#page {
+	position: absolute;
+	width: 620%; height: 100%;
+}
+
+#span0 {padding-left:30px;position:absolute;left:0%;}
+#span1 {padding-left:30px;position:absolute;left:17.7%;}
+#span2 {padding-left:30px;position:absolute;left:34.3%;}
+#span3 {padding-left:30px;position:absolute;left:51%;}
+#span4 {padding-left:30px;position:absolute;left:67.6%;}
+#span5 {padding-left:30px;position:absolute;left:83.9%;}
+
+#title {
+	position: absolute;
+	top: 28%; left: 3.5%;
+}
+
+#p3Title {
+	position: absolute;
+	top: 28%; left: 37.82%;
+}
+
+#p4Title {
+	position: absolute;
+	top: 28%; left: 54.45%;
+}
+
+#p5Title {
+	position: absolute;
+	top: 28%; left: 72.2%;
+}
+
+#p6Title {
+	position: absolute;
+	top: 28%; left: 88.2%;
+}
+
+#name {	
+	position: absolute;
+	top: 70%; left:9%;
+	
+	font-family: 'Roboto', sans-serif;
+	font-weight: 100;
+	font-size: 8vh;
+}
+
+#vid1 {
+	position: absolute;
+	top: 21.2%; left: 41.7%;	
+}
+
+#vid2 {
+	position: absolute;
+	top: 40%; left: 36.8%;	
+}
+
+#vid3 {
+	position: absolute;
+	top: 38%; left: 41.7%;	
+}
+
+.header {
+	font-family: 'Open Sans', sans-serif;
+	font-weight: 400;
+	font-size: 9vh;
+}
+
+.footing {
+	top: 90%;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 100;
+	font-size: 4vh;
+}

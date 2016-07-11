@@ -79,6 +79,28 @@ namespace Rougelike
                 Button quit = new Button("quit", Keys.F10);
                 GameButtons.Add(quit);
 
+                Button debug = new Button("debug", Keys.M);
+                GameButtons.Add(debug);
+
+                Button up = new Button("up", Keys.NumPad8);
+                GameButtons.Add(up);
+                Button upleft = new Button("upleft", Keys.NumPad7);
+                GameButtons.Add(upleft);
+                Button upright = new Button("upright", Keys.NumPad9);
+                GameButtons.Add(upright);
+                Button mid = new Button("wait", Keys.NumPad2);
+                GameButtons.Add(mid);
+                Button left = new Button("left", Keys.NumPad1);
+                GameButtons.Add(left);
+                Button right = new Button("right", Keys.NumPad3);
+                GameButtons.Add(right);
+                Button down = new Button("down", Keys.NumPad2);
+                GameButtons.Add(down);
+                Button downleft = new Button("downleft", Keys.NumPad1);
+                GameButtons.Add(downleft);
+                Button downright = new Button("downright", Keys.NumPad3);
+                GameButtons.Add(downright);
+
                 InitializeGenerator(playerclass);
                 Initialize4XButtons(playerclass);
                 InitializeSkillButtons(playerclass);
@@ -409,11 +431,15 @@ namespace Rougelike
             if (button is Attack && DescriptionList.Count == 0 && !MegaMapMode && !InteractingWithNPC())
                 UpdateOptions = DoAttack((Attack)button);
             else if (button is Movement && DescriptionList.Count == 0 && !MegaMapMode && !InteractingWithNPC())
-                UpdateOptions = DoMovement((Movement)button);
+                //UpdateOptions = DoMovement((Movement)button);
+                Console.Write("a");
             else
             {
                 switch (button.Action)
                 {
+                    case "debug":
+                        break;
+
                     case "interact":
                         if (!MegaMapMode)
                         {
@@ -452,6 +478,43 @@ namespace Rougelike
                         if (!InteractingWithNPC())
                             MegaMapMode = !MegaMapMode;
                         break;
+
+                    case "up":
+                        SendMove(X(), Y() + 1);
+                        break;
+
+                    case "upleft":
+                        SendMove(X() - 1, Y() + 1);
+                        break;
+
+                    case "upright":
+                        SendMove(X() + 1, Y() + 1);
+                        break;
+
+                    case "wait":
+                        SendMove(X(), Y());
+                        break;
+
+                    case "left":
+                        SendMove(X() - 1, Y());
+                        break;
+
+                    case "right":
+                        SendMove(X() + 1, Y());
+                        break;
+
+                    case "down":
+                        SendMove(X(), Y() - 1);
+                        break;
+
+                    case "downleft":
+                        SendMove(X() - 1, Y() - 1);
+                        break;
+
+                    case "downright":
+                        SendMove(X() + 1, Y() - 1);
+                        break;
+
                 }
             }
         }
@@ -503,6 +566,43 @@ namespace Rougelike
                 DrawNPCScreen();
 
             DrawDescriptions();
+
+            //DrawDebug(aaa, bbb);
+        }
+
+        void SendMove(int x, int y)  
+        {
+            if (Move(x,y))
+            {
+                EndTurn();
+            }
+            else
+            {
+                Enemy target = EnemyAt(x,y);
+                if (target != null) 
+                {
+                    DoAttack(target);
+                    EndTurn();
+                }
+            }
+        }
+
+        bool Move(int x, int y) 
+        {
+            if (Save.GetRoom().Tiles[x,y].Solid)
+            {
+                return false;
+            }
+            else
+            { 
+                Save.Kevin.Position = new Vector2I(x, y);
+                return true;
+            }
+        }
+
+        Enemy EnemyAt(int x, int y) 
+        {
+            return (Enemy)Save.GetRoom().Entities.Find(e => e is Enemy && e.Position.X == x && e.Position.Y == y);
         }
 
         void HandleRightClick()
@@ -649,8 +749,8 @@ namespace Rougelike
             else
             {
                 Save.Kevin.ApplyEndTurnEffects();
-                UpdateOptions = true;
             }
+            RemoveDead();
         }
 
         bool OnDoor()
@@ -672,7 +772,6 @@ namespace Rougelike
                     Save.Kevin.PickUp(item);
                     Save.GetRoom().Remove(item);
                     Save.GetRoom().UpdateTiles();
-                    UpdatePlayerOptions();
                 }
             }
         }
@@ -761,14 +860,10 @@ namespace Rougelike
             switch (pill.Drug)
             {
                 case DrugEffect.Uppers:
-                    Save.Kevin.MaxAP++;
-                    Save.Kevin.AP++;
                     break;
 
                 //Prescription
                 case DrugEffect.Uppers2:
-                    Save.Kevin.MaxAP += 2;
-                    Save.Kevin.AP = Save.Kevin.MaxAP;
                     break;
 
                 case DrugEffect.Painkiller1:
@@ -806,7 +901,6 @@ namespace Rougelike
                 case DrugEffect.Vitamins3:
                     Save.Kevin.MaxHP += 2;
                     Save.Kevin.HP++;
-                    Save.Kevin.MaxAP++;
                     break;
 
                 case DrugEffect.Expired1:

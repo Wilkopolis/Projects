@@ -10,7 +10,7 @@ namespace Rougelike
     public abstract class Entity : IEquatable<Entity>
     {
         public string Name;
-        public int HashID;
+        public int Hash;
         public Vector2I Position;
         public Vector2I Origin;
         public Texture2D Sprite;
@@ -35,7 +35,7 @@ namespace Rougelike
         
         public bool Equals(Entity other)
         {
-            return HashID == other.HashID;
+            return Hash == other.Hash;
         }
     }
 }

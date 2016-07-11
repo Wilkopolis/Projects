@@ -75,14 +75,12 @@ function drawLoadout() {
 		var color = COLOR_CLASS_NAME;
 		var loadoutString = LOADOUT_OPTIONS[i].value + ':' + LOADOUT_OPTIONS[i].name;
 		var tempOffset = 10;
-		if (i == loadoutCursorPos) {
-			color = COLOR_SELECT_CLASS_NAME;
-			loadoutString = '[' + loadoutString + ']';
-			tempOffset = 11;
-		} else if (LOADOUT_OPTIONS[i].selected) {			
+		if (LOADOUT_OPTIONS[i].selected) {			
 			loadoutString = '[' + loadoutString + ']';
 			tempOffset = 11;
 		}
+		if (i == loadoutCursorPos)
+			color = loadoutSelecting ? COLOR_SELECT_CLASS_NAME : color;
 		for (var j = loadoutString.length - 1; j >= 0; j--) {
 			screen.pixels[WELCOME_Y_OFFSET + i * 2][WELCOME_X_OFFSET + j - tempOffset].char = loadoutString[j];
 			screen.pixels[WELCOME_Y_OFFSET + i * 2][WELCOME_X_OFFSET + j - tempOffset].color = (loadoutString[j] == '[' || loadoutString[j] == ']') ? COLOR_DEFAULT : color;
@@ -98,14 +96,12 @@ function drawLoadout() {
 		var color = COLOR_CLASS_NAME;
 		var attackStyleString = ATTACK_STYLES[i].name;
 		var tempOffset = 30;
-		if (i == attackStyleCursorPos) {
-			color = COLOR_SELECT_CLASS_NAME;
+		if (ATTACK_STYLES[i].selected) {
 			attackStyleString = '[' + attackStyleString + ']';
 			tempOffset = 29;
-		} else if (ATTACK_STYLES[i].selected) {			
-			attackStyleString = '[' + attackStyleString + ']';
-			tempOffset = 29;
-		}
+		} 
+		if (i == attackStyleCursorPos)
+			color = !loadoutSelecting ? COLOR_SELECT_CLASS_NAME : color;
 		for (var j = attackStyleString.length - 1; j >= 0; j--) {
 			screen.pixels[WELCOME_Y_OFFSET + i * 2][WELCOME_X_OFFSET + j + tempOffset].char = attackStyleString[j];
 			screen.pixels[WELCOME_Y_OFFSET + i * 2][WELCOME_X_OFFSET + j + tempOffset].color = (attackStyleString[j] == '[' || attackStyleString[j] == ']') ? COLOR_DEFAULT : color;
@@ -120,9 +116,10 @@ function drawLoadout() {
 }
 
 function drawStats () {
-	for (var i = player.name.length - 1; i >= 0; i--) {
-		screen.pixels[NAME_Y_OFFSET][NAME_X_OFFSET + i].char = player.name[i];
-		screen.pixels[NAME_Y_OFFSET][NAME_X_OFFSET + i].color = '#cdc0b6';
+	var nameAndLvlString = player.name + "   lvl " + player.level;
+	for (var i = nameAndLvlString.length - 1; i >= 0; i--) {
+		screen.pixels[NAME_Y_OFFSET][NAME_X_OFFSET + i].char = nameAndLvlString[i];
+		screen.pixels[NAME_Y_OFFSET][NAME_X_OFFSET + i].color = i > player.name.length ? COLOR_OUT_OF_SIGHT : '#cdc0b6';
 	}
 
 	var wealthString = "Wealth:" + factions[FACTION_CLONES].wealth;
@@ -160,6 +157,20 @@ function drawHP () {
 		else
 			screen.pixels[HP_Y_OFFSET][i + HP_X_OFFSET].color = '#131324';
 		hpCount += hpIncrement;
+	}
+}
+
+function drawXP() {
+	var xpDif = player.nextLevelXp - player.lastLevelXp;
+	var xpIncrement = xpDif / HP_BAR_LENGTH;
+	var xpCount = player.lastLevelXp;
+	for (var i = 0; i < HP_BAR_LENGTH; i++) {
+		screen.pixels[HP_Y_OFFSET + 1][i + HP_X_OFFSET].char = '=';
+		if (xpCount <= player.xp + .001) 
+			screen.pixels[HP_Y_OFFSET + 1][i + HP_X_OFFSET].color = '#9933ff';
+		else
+			screen.pixels[HP_Y_OFFSET + 1][i + HP_X_OFFSET].color = '#131324';
+		xpCount += xpIncrement;
 	}
 }
 
@@ -484,7 +495,7 @@ function drawInventory () {
 			var itemName = item.name;
 			var itemString = itemName;
 			var color = item.color;
-			if (item.equipped)			
+			if (item.equipped)	
 				screen.pixels[INVENTORY_STRING_Y + yOffset][xStart - 6].char = CHAR_EQUIPPED_ITEM;
 			for (var j = itemString.length - 1; j >= 0; j--) {
 				screen.pixels[INVENTORY_STRING_Y + yOffset][xStart - 4 + j].char = itemString[j];
@@ -499,7 +510,7 @@ function drawInventory () {
 		yOffset++;
 		itemSum += weapons.length;
 	}
-	if (weapons.length > 0) {
+	if (hats.length > 0) {
 		var sectionTitle = "Hats";
 		var xStart = 12;
 		for (var i = sectionTitle.length - 1; i >= 0; i--) {		
@@ -672,7 +683,7 @@ function drawSkills () {
 	}
 	// draw Skill:Level
 	for (var i = player.skills.defaultSkills.length - 1; i >= 0; i--) {
-		var skillString = player.skills.defaultSkills[i].name + ':' + player.skills.defaultSkills[i].lvl;
+		var skillString = player.skills.defaultSkills[i].name + ':' + player.skills.defaultSkills[i].level;
 		var color = COLOR_CLASS_NAME;		
 		var tempOffset = 0;
 		if (i == skillsCursorPos) {
@@ -707,12 +718,6 @@ function drawSkills () {
 			screen.pixels[WELCOME_Y_OFFSET + i * 2][WELCOME_X_OFFSET + j + tempOffset].char = attackStyleString[j];
 			screen.pixels[WELCOME_Y_OFFSET + i * 2][WELCOME_X_OFFSET + j + tempOffset].color = (attackStyleString[j] == '[' || attackStyleString[j] == ']') ? COLOR_DEFAULT : color;
 		}
-	}
-	var wealthString = "Dosh: " + factions[FACTION_CLONES].wealth;
-	var xStart = screen_center_x - Math.round(wealthString.length / 2) + 1;
-	for (var i = wealthString.length - 1; i >= 0; i--) {
-			screen.pixels[50][xStart + i - 20].char = wealthString[i];
-			screen.pixels[50][xStart + i - 20].color = COLOR_DEFAULT;
 	}
 }
 
@@ -803,7 +808,7 @@ function drawEnemyLog() {
 
 // will do all the screen updating so I dont have to think about it
 // every time I do any input shit
-function draw () {
+function draw() {
 	clearScreen();
 	switch(gameState) { 
 
@@ -827,6 +832,7 @@ function draw () {
 			drawCapture();
 			drawStats();
 			drawHP();
+			drawXP();
 			drawMiniMap();
 			drawMap();
 			if (drawObjectives())

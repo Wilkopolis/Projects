@@ -12,12 +12,16 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using NReco.VideoConverter;
+using System.Threading;
 
 namespace Selector
 {
 
     public partial class MainWindow : Window
     {
+        bool CWD_LAST = false;
+
         string FILEDB_PATH = @"FileDb.filedb";
 
         List<FileInfo> Media = new List<FileInfo>();
@@ -29,10 +33,10 @@ namespace Selector
 
         DirectoryInfo cwd;
 
-        NReco.VideoConverter.FFMpegConverter ffMpeg;
-
         static Random rand = new Random();
-        
+
+        BitmapImage Loading;
+
         public MainWindow()
         {
             // set up window styles and bind event handlers
@@ -71,16 +75,20 @@ namespace Selector
         public void LoadSettingsAndFiles()
         {
             // this will be our cwd
-            cwd = new DirectoryInfo(@"G:\Media");
+            cwd = new DirectoryInfo(@"F:\Porn");
 
-            // this will be used to get us thumbnails
-            ffMpeg = new NReco.VideoConverter.FFMpegConverter();
+            // loading image
+            Loading = new BitmapImage();
+            Loading.BeginInit();
+            Loading.UriSource = new Uri(@"E:\Dropbox\C#\Selector\WpfApplication1\loading.png");
+            Loading.EndInit();
+            Loading.Freeze();
 
             // set up the random suggestion
             Random.Click += OpenFile;
-            Random.MouseRightButtonUp += UpdateRandomFile;
+            Random.MouseUp += HandleRandom;
             // set the randomize suggestions button
-            Randomize.Click += UpdateRandomFolder;
+            Randomize.Click += OpenRandomFolderFile;
             Randomize.MouseUp += HandleRandomize;
 
             // set the back button
@@ -136,7 +144,7 @@ namespace Selector
                 }
             }
             // load the goods
-            DirectoryInfo DirectoryInfo = new DirectoryInfo(@"G:\Media");
+            DirectoryInfo DirectoryInfo = new DirectoryInfo(@"F:\Porn");
 
             Stack<DirectoryInfo> tempFolders = new Stack<DirectoryInfo>(new DirectoryInfo[] { DirectoryInfo }); // List that hold direcotries that cannot be accessed
 
@@ -224,6 +232,7 @@ namespace Selector
         {
             cwd = cwd.Parent;
             UpdateCwdList();
+            UpdateRandomFolder(cwd);
         }
 
         void HandleDir(Object sender, MouseButtonEventArgs e)
@@ -238,6 +247,21 @@ namespace Selector
                 string dirName = (string)((ListViewItem)sender).Content;
                 cwd = new DirectoryInfo(cwd.FullName + "\\" + dirName);
                 UpdateCwdList();
+                UpdateRandomFolder(cwd);
+                CWD_LAST = true;
+            }
+        }
+        
+        void HandleRandom(Object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle)
+            {
+                DirectoryInfo dirName = (DirectoryInfo)((Button)sender).Resources["path"];
+                System.Diagnostics.Process.Start(dirName.FullName);
+            }
+            else if (e.ChangedButton == MouseButton.Right)
+            {
+                UpdateRandomFile();
             }
         }
 
@@ -250,15 +274,32 @@ namespace Selector
             }
             else if (e.ChangedButton == MouseButton.Right)
             {
-                DirectoryInfo folderName = (DirectoryInfo)((Button)sender).Resources["path"];
-                UpdateRandomFolder(folderName);
+                if (CWD_LAST)
+                    UpdateRandomFolder(cwd);
+                else
+                    UpdateRandomFolder();
             }
+        }
+        
+        void OpenRandomFolderFile(Object sender, RoutedEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                FileInfo[] files = ((DirectoryInfo)((Button)e.Source).Resources["path"]).GetFiles();
+                FileInfo file = files.ElementAt(rand.Next(files.Length));
+
+                System.Diagnostics.Process.Start(file.FullName);
+            }
+            
+            DirectoryInfo folderName = (DirectoryInfo)((Button)sender).Resources["path"];
+            UpdateRandomFolder(folderName);
         }
 
         void ResetDir(Object sender, RoutedEventArgs e)
         {
             cwd = new DirectoryInfo(@"G:\Porn");
             UpdateCwdList();
+            CWD_LAST = false;
         }
 
         void OpenThumbnailFile(Object sender, MouseEventArgs e)
@@ -292,6 +333,7 @@ namespace Selector
         {
             FileInfo randomChoice = Media.ElementAt(rand.Next(Media.Count));
             Random.Content = randomChoice;
+            Random.Resources["path"] = randomChoice.Directory;
             int fontSize = Math.Min(Math.Max(2 * (int)Random.Width / randomChoice.Name.Count(), 24), 60);
             Random.FontSize = fontSize;
             // get images
@@ -331,6 +373,7 @@ namespace Selector
             // video
             else
             {
+                NReco.VideoConverter.FFMpegConverter ffMpeg = new NReco.VideoConverter.FFMpegConverter();
                 ffMpeg.GetVideoThumbnail(fileInfo.FullName, imageStream, timeCode);
                 imageStream.Seek(0, SeekOrigin.Begin);
                 using (var stream = imageStream)
@@ -345,7 +388,7 @@ namespace Selector
                 }
             }
         }
-        
+
         void UpdateRandomFolder(DirectoryInfo path = null)
         {
             // either shuffle the current path or pick a new one
@@ -361,7 +404,7 @@ namespace Selector
             for (int j = 0; j < 16; j++)
             {
                 Image element = FindChild<Image>(this, "thumb" + (j + 5).ToString());
-                element.Source = null;
+                element.Source = Loading;
             }
             while (i < 16)
             {
@@ -382,7 +425,7 @@ namespace Selector
                 if (WhiteList.Contains(fileExtension))
                 {
                     int duration = GetDuration(file);
-                    SetImageSource(file, element, (int)duration/12);
+                    SetImageSource(file, element, (int)(rand.Next(duration * 10) / 12) + duration / 12);
                     i++;
                 }
                 // image

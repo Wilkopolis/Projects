@@ -11,16 +11,14 @@ namespace Rougelike
 
     public abstract class Creature : Entity
     {
-        public Faction Side;
+        public Faction Side = Faction.NERD;
     }
 
     public abstract class Fighter : Creature
     {
-        public int HP;
-        public int AP;
-        public int MaxAP;
-        public int MaxHP;
-        public Nature Brains;
+        public int HP = 1;
+        public int MaxHP = 1;
+        public Nature Brains = Nature.SMART;
         public bool HasMoved;
 
         public abstract int GetDamage(Random seed);
@@ -30,7 +28,7 @@ namespace Rougelike
 
         public void ApplyEndTurnEffects()
         {
-            AP = MaxAP;
+
         }
     }
 }

@@ -41,8 +41,6 @@ namespace Rougelike
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
-            dot = Content.Load<Texture2D>("textures/dot");
-
             SegeoUiMono = Content.Load<SpriteFont>("fonts/SegeoUiMono");
             Calibri = Content.Load<SpriteFont>("fonts/Calibri");
             Cousine12 = Content.Load<SpriteFont>("fonts/Cousine12");
@@ -50,6 +48,12 @@ namespace Rougelike
             Cousine22 = Content.Load<SpriteFont>("fonts/Cousine22");
             Cousine72 = Content.Load<SpriteFont>("fonts/Cousine72");
             CenturyGothic = Content.Load<SpriteFont>("fonts/CenturyGothic");
+
+            // debug
+            dot = Content.Load<Texture2D>("textures/dot");
+
+            //aa = Content.Load<Texture2D>("textures/a");
+            //bb = Content.Load<Texture2D>("textures/b");
 
             InitializeTitleScreen();
         }
@@ -77,6 +81,11 @@ namespace Rougelike
                     break;
 
                 case State.GAME:
+                    if (IsStartSoundPlaying())
+                        break;
+                    //else if (StartSoundEnded())
+                    //    PlayGameMusic();
+
                     CheckGameInput();
 
                     if (MegaMapMode)
@@ -95,15 +104,6 @@ namespace Rougelike
 
                     CheckMouseHover();
                     CheckDescriptions();
-
-                    if (UpdateOptions)
-                    {
-                        Save.GetRoom().Entities.RemoveAll(entity => entity is Fighter && ((Fighter)entity).HP <= 0);
-                        if (Save.Kevin.AP == 0)
-                            EndTurn();
-                        UpdatePlayerOptions();
-                        UpdateOptions = false;
-                    }
 
                     if (ChangedFloors)
                     {
@@ -181,7 +181,7 @@ namespace Rougelike
         public void NewGame(Class playerclass)
         {
             Save = GenerateGame(playerclass);
-            UpdatePlayerOptions();
+            //PlayNewGameSound();
         }
 
         public void GameOver()

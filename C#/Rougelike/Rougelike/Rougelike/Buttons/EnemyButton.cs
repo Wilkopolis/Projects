@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace Rougelike
 {
-    public class EnemyButton : Button
+    public class EnemyButton : Button, IComparable<EnemyButton>
     {
         public Enemy Enemy;
 
@@ -18,6 +18,14 @@ namespace Rougelike
             Enemy = new Enemy(enemysprite, name);
             Action = "enemy";
             Visable = false;
+        }
+
+        public int CompareTo(EnemyButton o)
+        {
+            if (o == null)
+                return 1;
+            else
+                return Convert.ToInt32(Enemy.Name.Split('.')[0]).CompareTo(Convert.ToInt32(o.Enemy.Name.Split('.')[0]));
         }
     }
 }

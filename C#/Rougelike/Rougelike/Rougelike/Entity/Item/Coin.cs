@@ -23,7 +23,7 @@ namespace Rougelike
         {
             Coin result = new Coin();
             result.Sprite = Sprite;
-            result.HashID = hashid;
+            result.Hash = hashid;
             result.Value = Value;
             return result;
         }
@@ -32,7 +32,7 @@ namespace Rougelike
         {
             Coin result = new Coin();
             result.Sprite = Sprite;
-            result.HashID = hashid;
+            result.Hash = hashid;
             result.Position = position;
             result.Value = value;
             return result;

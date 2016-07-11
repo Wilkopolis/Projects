@@ -88,22 +88,22 @@ window.onload = function () {
     // }
     // Get Gold From Cookies    
 	// document.getElementById("gold").innerHTML = "Gold: " + gold;
-	endTimes = true;
-	window.setTimeout(function() {
-		$('#closingDiv').show();
-		$('#closingCanvas').show();
-		$('#closingDiv').animate({
-			'top':'0',
-			'left':'0',
-			'width':'100%',
-			'height':'100%'
-			}, 500, 'easeInOutCubic');
-	}, 0);
+	// endTimes = true;
+	// window.setTimeout(function() {
+	// 	$('#closingDiv').show();
+	// 	$('#closingCanvas').show();
+	// 	$('#closingDiv').animate({
+	// 		'top':'0',
+	// 		'left':'0',
+	// 		'width':'100%',
+	// 		'height':'100%'
+	// 		}, 500, 'easeInOutCubic');
+	// }, 0);
 
-	window.setTimeout(function() {
-		window.setInterval(update, 1000/60);
-		window.setInterval(draw, 1000/60);
-	}, 0);
+	// window.setTimeout(function() {
+	// 	window.setInterval(update, 1000/60);
+	// 	window.setInterval(draw, 1000/60);
+	// }, 0);
 };
 
 $(window).resize(function() {

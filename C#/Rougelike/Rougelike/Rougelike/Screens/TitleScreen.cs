@@ -15,26 +15,30 @@ namespace Rougelike
 
         void InitializeTitleScreen()
         {
+            InitializeSound();
+            InitializeVideo();
+
             TitleScreenBackground = Content.Load<Texture2D>("textures/title/background");
 
             //Load TitleScreen Buttons
-            Button play = new Button(Content.Load<Texture2D>("textures/title/play"), new Vector2(640, 450), "play");
+            Button play = new Button(Content.Load<Texture2D>("textures/title/play"), new Vector2(640, 420), "play");
             TitleScreenButtons.Add(play);
 
-            Button options = new Button(Content.Load<Texture2D>("textures/title/options"), new Vector2(640, 550), "options");
+            Button options = new Button(Content.Load<Texture2D>("textures/title/options"), new Vector2(640, 520), "options");
             TitleScreenButtons.Add(options);
 
-            Button editor = new Button(Content.Load<Texture2D>("textures/title/editor"), new Vector2(840, 550), "editor");
+            Button editor = new Button(Content.Load<Texture2D>("textures/title/editor"), new Vector2(840, 520), "editor");
             TitleScreenButtons.Add(editor);
 
             Button breaky = new Button("break", Keys.P);
             TitleScreenButtons.Add(breaky);
 
-            Button quit = new Button(Content.Load<Texture2D>("textures/title/exit"), new Vector2(640, 650), "exit", Keys.F10);
+            Button quit = new Button(Content.Load<Texture2D>("textures/title/exit"), new Vector2(640, 620), "exit", Keys.F10);
             TitleScreenButtons.Add(quit);
 
             LoadSettings();
             ApplyChanges();
+
 
             //Change state
             GameState = State.TITLE;
@@ -109,7 +113,8 @@ namespace Rougelike
         void DrawTitleScreen()
         {
             // Draw the background
-            Draw(TitleScreenBackground);
+            //Draw(TitleScreenBackground);
+            DrawVideo();
 
             // Draw all the buttons            
             foreach (Button button in TitleScreenButtons)

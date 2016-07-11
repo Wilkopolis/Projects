@@ -475,7 +475,7 @@ function Dungeon () {
 	var yMax = seedRoomPos.y;
 	var yMin = seedRoomPos.y;
 	// objective 
-	var objectiveCandidates = [];
+	this.objectiveCandidates = [];
 	// var furthestRoomDist = 0;
 	// the collection of open positions we will draw from
 	var openSet = [seedRoomPos];
@@ -483,7 +483,7 @@ function Dungeon () {
 		// pick a random element from the openset
 		var currentPos = openSet.popWeighted();
 		if (currentPos.distance >= 2)
-			objectiveCandidates.push({hash:hash, x:currentPos.x, y:currentPos.y});
+			this.objectiveCandidates.push({hash:hash, x:currentPos.x, y:currentPos.y});
 		// get a weighted list of the shapes 
 		var validShapes = getValidShapes(currentPos);
 		// pick the room shape
@@ -539,12 +539,9 @@ function Dungeon () {
 	room.visited = true;
 
 	var faction = FACTIONS.popRandom();
-	for (var i = MOVE_OPTIONS.length - 1; i >= 0; i--)
-		objectiveCandidates.setRemove({x:MOVE_OPTIONS[i].x + seedRoomPos.x, y:MOVE_OPTIONS[i].y + seedRoomPos.y});
-
-	for (var i = 1; i > 0; i--) {
+	for (var i = 2; i > 0; i--) {
 		var faction = FACTIONS.popRandom();
-		var factionHQ = objectiveCandidates.popRandom();	
+		var factionHQ = this.objectiveCandidates.popRandom();	
 		room = roomLookup[minimap[factionHQ.y][factionHQ.x].hash];
 		switch(faction) {
 			case FACTION_ROBOT:
@@ -570,12 +567,10 @@ function Dungeon () {
 		}
 		room.faction = faction;
 		room.captureAmount = 1;
-		for (var j = MOVE_OPTIONS.length - 1; j >= 0; j--)
-			objectiveCandidates.setRemove({x:MOVE_OPTIONS[j].x + factionHQ.x, y:MOVE_OPTIONS[j].y + factionHQ.y});
 	}
 	// add objective rooms
 	for (var i = this.objectiveTypes.length - 1; i >= 0; i--) {
-		var objectivePos = objectiveCandidates.popRandom();
+		var objectivePos = this.objectiveCandidates.popRandom();
 		room = roomLookup[minimap[objectivePos.y][objectivePos.x].hash];
 		switch(this.objectiveTypes[i]) {
 			case OBJ_GENERATORS:
@@ -585,9 +580,7 @@ function Dungeon () {
 				room.event = EVENT_GENERATOR;
 				room.generator = new generator(i + 1);
 				objectives[OBJ_GENERATORS].generators.push(room.generator);	
-				for (var j = MOVE_OPTIONS.length - 1; j >= 0; j--)
-					objectiveCandidates.setRemove({x:MOVE_OPTIONS[j].x + objectivePos.x, y:MOVE_OPTIONS[j].y + objectivePos.y});
-				objectivePos = objectiveCandidates.popRandom();
+				objectivePos = this.objectiveCandidates.popRandom();
 				room = roomLookup[minimap[objectivePos.y][objectivePos.x].hash];			
 			}
 			break;
@@ -611,7 +604,7 @@ function Dungeon () {
 			objectives[OBJ_CITY_OS] = new objective_city_os();
 			room.event = EVENT_CITY_HALL;
 
-			objectivePos = objectiveCandidates.popRandom();
+			objectivePos = this.objectiveCandidates.popRandom();
 			room = roomLookup[minimap[objectivePos.y][objectivePos.x].hash];
 			room.event = EVENT_CITY_OS;
 			break;
@@ -619,7 +612,7 @@ function Dungeon () {
 	}
 	// add flavor rooms
 	for (var i = 0; i < 2; i++) {
-		var pos = objectiveCandidates.popRandom();
+		var pos = this.objectiveCandidates.popRandom();
 		var room = roomLookup[minimap[pos.y][pos.x].hash];
 		room.event = FLAVOR_ROOMS.popRandom();
 	}
@@ -690,6 +683,18 @@ function Dungeon () {
 	// we visit the seedroom
 	minimap[this.roomPos.y][this.roomPos.x].visited = true;
 
+	this.populateInitial = function () {		
+		// populate the dungeon with some starting enemies
+		var startingUnitAmount = Math.round(Math.random() * 5 + 15);
+		for (var i = 0; i < startingUnitAmount; i++) {
+			var room = this.objectiveCandidates.peekRandom();
+			// pick unit type
+			var unitType = STARTING_UNITS.peekRandom();
+			// make unit
+			factions[FACTION_NONE].units.push(spawn(room, unitType));
+		}
+	}
+
 	this.getRoom = function() {
 		return roomLookup[minimap[this.roomPos.y][this.roomPos.x].hash];
 	}
@@ -713,9 +718,6 @@ function Dungeon () {
 		}
 		fourXPos = {x: this.roomPos.x, y: this.roomPos.y};		
 	}
-
-	// free up some memory?
-	ROOM_TEMPLATES = null;
 }
 
 var CHAR_OUTSIDE_TILE = 'o';
@@ -1289,8 +1291,8 @@ var ROOM_TEMPLATES = {
 			[w,x,o,o,B,Z,Z,Z,B,o,o,x,e],
 			[w,l,o,o,B,Z,Z,Z,B,o,o,j,e],
 			[w,x,o,o,B,B,B,B,B,o,o,x,e],
-			[w,x,o,o,o,o,g,o,o,o,o,x,e],
-			[w,x,o,o,o,o,g,o,o,o,o,x,e],
+			[w,x,o,o,o,o,u,o,o,o,o,x,e],
+			[w,x,o,o,o,o,u,o,o,o,o,x,e],
 			[w,x,o,o,B,B,B,B,B,o,o,x,e],
 			[p,x,o,o,B,Z,Z,Z,B,o,o,x,e],
 			[f,x,o,o,B,Z,Z,Z,B,o,o,x,t],
@@ -1298,11 +1300,11 @@ var ROOM_TEMPLATES = {
 			[m,x,o,o,o,o,o,o,o,o,x,x,x,x,x,x,x,x,x,i,x,x,x,x,x,c],
 			[w,x,o,o,o,o,o,o,o,o,x,x,o,o,o,o,o,o,o,o,o,o,o,o,x,e],
 			[w,x,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,x,e],
-			[w,x,o,o,g,g,g,g,g,o,o,o,B,B,B,B,o,o,B,B,B,B,o,o,x,e],
-			[w,x,o,o,o,o,o,o,g,o,o,o,B,Z,Z,B,o,o,B,Z,Z,B,o,o,x,e],
-			[w,l,o,x,g,g,x,o,g,o,o,o,B,Z,Z,B,g,g,B,Z,Z,B,o,o,j,e],
-			[w,x,o,o,o,o,g,o,g,o,o,o,B,Z,Z,B,o,o,B,Z,Z,B,o,o,x,e],
-			[w,x,o,o,G,o,g,o,g,o,o,o,B,B,B,B,o,o,B,B,B,B,o,o,x,e],
+			[w,x,o,o,u,u,u,u,u,o,o,o,B,B,B,B,o,o,B,B,B,B,o,o,x,e],
+			[w,x,o,o,o,o,o,o,u,o,o,o,B,Z,Z,B,o,o,B,Z,Z,B,o,o,x,e],
+			[w,l,o,x,u,u,x,o,u,o,o,o,B,Z,Z,B,u,u,B,Z,Z,B,o,o,j,e],
+			[w,x,o,o,o,o,u,o,u,o,o,o,B,Z,Z,B,o,o,B,Z,Z,B,o,o,x,e],
+			[w,x,o,o,G,o,u,o,u,o,o,o,B,B,B,B,o,o,B,B,B,B,o,o,x,e],
 			[w,x,o,o,o,o,x,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,x,e],
 			[w,x,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,x,e],
 			[p,x,x,x,x,x,k,x,x,x,x,x,x,x,x,x,x,x,x,k,x,x,x,x,x,t],

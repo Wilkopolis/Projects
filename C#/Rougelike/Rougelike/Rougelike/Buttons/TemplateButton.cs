@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace Rougelike
 {
-    public class TemplateButton : Button
+    public class TemplateButton : Button, IComparable<TemplateButton>
     {
         public RoomTemplate Template;
 
@@ -18,6 +18,13 @@ namespace Rougelike
             Origin = new Vector2(Sprite.Width / 2, Sprite.Height / 2);
             Action = "room";
             Visable = false;
+        }
+
+        public int CompareTo(TemplateButton o)
+        {
+            if (o == null)
+                return 0;
+            return Template.Difficulty.CompareTo(o.Template.Difficulty);
         }
     }
 }

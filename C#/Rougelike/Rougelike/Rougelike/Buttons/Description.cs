@@ -94,7 +94,7 @@ namespace Rougelike
 
         public bool Equals(Description other)
         {
-            return Source.HashID == other.Source.HashID;
+            return Source.Hash == other.Source.Hash;
         }
     }
 }

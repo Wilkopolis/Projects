@@ -275,17 +275,13 @@ function loadoutOnKeyDown(event) {
 		    	factions[FACTION_CLONES].wealth += loadoutItemNode.value;
 		    	loadoutItemNode.selected = false;
 		    }
-			draw();
 	    } else {
-	    	var attackStyleCount = 0;
 	    	for (var i = ATTACK_STYLES.length - 1; i >= 0; i--) {
-	    		attackStyleCount += ATTACK_STYLES[i].selected ? 1 : 0;
+	    		ATTACK_STYLES[i].selected = false;
 	    	}
-	    	if (attackStyleCount == 1 && ATTACK_STYLES[attackStyleCursorPos].selected)
-	    		return;
-	    	else
-	    		ATTACK_STYLES[attackStyleCursorPos].selected = !ATTACK_STYLES[attackStyleCursorPos].selected;
+	    	ATTACK_STYLES[attackStyleCursorPos].selected = true;
 	    }
+		draw();
 	    break;
 	    // keypad 8 104
 	    // w 		87
@@ -603,10 +599,11 @@ function skillsOnKeyDown(event) {
 	    // enter
 	    case 13:
 	    if (skillsSelecting) {
-		   	if (player.skillPoints > 0 && player.skills.defaultSkills[skillsCursorPos].lvl < player.skills.defaultSkills[skillsCursorPos].maxLvl) {	   		
-		   		player.lastCombatTick = gameTicks;
-		   		player.skills.defaultSkills[skillsCursorPos].lvl++
-		   		player.skillPoints--;	
+	    	var skill = player.skills.defaultSkills[skillsCursorPos];
+	    	if (skill.requirementsMet()) {	    		
+	    		player.lastCombatTick = gameTicks;
+		   		player.skillPoints -= skill.getCost();	
+		   		skill.level++;
 		   		draw();
 		   	}	    	
 	    } else {	    	
@@ -623,10 +620,11 @@ function skillsOnKeyDown(event) {
 	    // space
 	    case 32:
 	    if (skillsSelecting) {
-		   	if (player.skillPoints > 0 && player.skills.defaultSkills[skillsCursorPos].lvl < player.skills.defaultSkills[skillsCursorPos].maxLvl) {	   		
-		   		player.lastCombatTick = gameTicks;
-		   		player.skills.defaultSkills[skillsCursorPos].lvl++
-		   		player.skillPoints--;	
+	    	var skill = player.skills.defaultSkills[skillsCursorPos];
+	    	if (skill.requirementsMet()) {	    		
+	    		player.lastCombatTick = gameTicks;
+		   		player.skillPoints -= skill.getCost();	
+		   		skill.level++;
 		   		draw();
 		   	}	    	
 	    } else {	    	
@@ -1005,44 +1003,6 @@ function chestOnKeyDown(event) {
 
 /*				Game functions				*/
 
-function select(shift) {
-	switch(gameState) {
-		case STATE_LANDING:
-			gameState = STATE_GAME;
-			newGame(availableClasses[classCursorPos]);
-		break;
-
-		case STATE_SWITCHBOARD:
-	   		gameState = STATE_LANDING;
-	   		player = null;
-	   		dungeon = null;
-	   		newerInput = true;
-	   		draw();
-		break;
-
-		case STATE_SKILLS:
-	   		if (player.skillPoints > 0 && player.skills.defaultSkills[skillsCursorPos].lvl < player.skills.defaultSkills[skillsCursorPos].maxLvl) {	   		
-	   			player.lastCombatTick = gameTicks;
-	   			player.skills.defaultSkills[skillsCursorPos].lvl++
-	   			player.skillPoints--;	
-	   			draw();
-	   		}
-		break;
-
-		case STATE_INVENTORY:
-			if (player.inventory.length == 0)
-				return;
-	   		if (selectInventoryItem(shift))
-	   			draw();
-		break;
-
-		case STATE_CHEST:
-	   		if (selectChestItem())
-	   			draw();
-		break;
-	}
-}
-
 function move(offset) {
 	switch(gameState)
 	{
@@ -1266,10 +1226,10 @@ function selectInventoryItem(shift) {
 					// if that is us, unequip us
 					if (player.offHand == item) {
 						player.offHand = ITEM_NONE;
-						item.equipped = false;
+						item.unequip(player);
 					// otherwise unequip them and put us there
-					} else if (item.canBeEquipped()) {
-						player.offHand.equipped = false;
+					} else if (item.canBeEquipped(player)) {
+						player.offHand.unequip(player);
 						player.offHand = item;
 						player.onHand = ITEM_NONE;
 					}
@@ -1283,10 +1243,10 @@ function selectInventoryItem(shift) {
 					// if that is us, unequip us
 					if (player.onHand == item) {
 						player.onHand = ITEM_NONE;
-						item.equipped = false;
+						item.unequip(player);
 					// otherwise unequip them and put us there
-					} else if (item.canBeEquipped()) {
-						player.onHand.equipped = false;
+					} else if (item.canBeEquipped(player)) {
+						player.onHand.unequip(player);
 						player.onHand = item;
 						player.offHand = ITEM_NONE;
 					}
@@ -1295,17 +1255,17 @@ function selectInventoryItem(shift) {
 					player.onHand = item;
 				}
 			}
-		} else if (item.canBeEquipped()) {
+		} else if (item.canBeEquipped(player)) {
 			if (!shift) {
 				if (player.onHand != ITEM_NONE)
-					player.onHand.equipped = false;
+					player.onHand.unequip(player);
 				player.onHand = item;
-				item.equipped = true;
+				item.equip(player);
 			} else {
 				if (player.offHand != ITEM_NONE)
-					player.offHand.equipped = false;
+					player.offHand.unequip(player);
 				player.offHand = item;
-				item.equipped = true;
+				item.equip(player);
 			}
 		}
 		break;
@@ -1328,7 +1288,7 @@ function selectChestItem() {
 
 // called each time a room is entered for the first time
 var lastTick = 0;
-var FOURX_PERIOD = 30;
+var FOURX_PERIOD = 60;
 function do4XTurn () {
 	if (gameTicks - lastTick >= FOURX_PERIOD) {
 		log.add("Turn " + gameTicks / FOURX_PERIOD + " has ended");
@@ -1339,16 +1299,22 @@ function do4XTurn () {
 	}
 }
 
-function newGame () {
+function newGame() {
 	var occupation = CLASSES[classCursorPos];
 	var background = BACKGROUNDS[backgroundCursorPos];
 	var loadout = buildLoadOut();
 	player = new Character(occupation, background, loadout);
 	dungeon = new Dungeon();
+	dungeon.populateInitial();
 	skills = new Skills(occupation);
 	addExposition();
 	relight();
 	draw();
+}
+
+function gameOver() {
+	// gameState = STATE_LANDING;
+	// document.onkeydown = welcomeOnKeyDown;
 }
 
 function buildLoadOut() {
@@ -1372,7 +1338,7 @@ function Character (occupation, background, loadout) {
 	this.name = 'Wilko';
 	this.level = 1;
 	this.skillPoints = 0;
-	this.xp = 0;
+	this.lastLevelXp = 0;
 	this.nextLevelXp = 20;
 	this.baseDamage = 3;
 	this.baseAccuracy = .4;
@@ -1399,28 +1365,28 @@ function Character (occupation, background, loadout) {
 			case SLOT_WIELDABLE:
 			if (this.onHand == ITEM_NONE) {
 				this.onHand = item;
-				item.equipped = true;
+				item.equip(this);
 			} else if (this.offHand == ITEM_NONE) {
 				this.offHand = item;
-				item.equipped = true;
+				item.equip(this);
 			}
 			break;
 			case SLOT_HEAD:
 			if (this.head == ITEM_NONE) {
 				this.head = item;
-				item.equipped = true;
+				item.equip(this);
 			}
 			break;
 			case SLOT_MODULE:
 			if (this.module1 == ITEM_NONE) {
 				this.module1 = item;
-				item.equipped = true;
+				item.equip(this);
 			} else if (this.module2 == ITEM_NONE) {
 				this.module2 = item;
-				item.equipped = true;
+				item.equip(this);
 			} else if (this.module3 == ITEM_NONE) {
 				this.module3 = item;
-				item.equipped = true;
+				item.equip(this);
 			}
 			break;
 			default:break;
@@ -1429,7 +1395,7 @@ function Character (occupation, background, loadout) {
 	}
 
 	this.applyStatuses = function() {
-		switch(this.getEffectLevel(SKILL_FORTITUDE)) {
+		switch(this.getEffectLevel(EFFECT_FORTITUDE)) {
 			case 0:break;
 			case 1:
 			var tickDifference = gameTicks - this.lastCombatTick - 5;
@@ -1463,7 +1429,18 @@ function Character (occupation, background, loadout) {
 
 	this.getEffectLevel = function(effect) {
 		var level = 0;
-		// check each module
+		// check equipped items
+		for (var item of this.inventory.filter(function (element) { return element.equipped; })) {
+			if (item.effects.indexOf(effect) >= 0)
+				level++;
+		}
+
+		// check statuses
+		for (var status of this.statuses) {
+			if (status.statusType == effect)
+				level++;
+		}
+
 		// check skills
 		level += player.skills.getSkillLevel(effect);
 		return level;
@@ -1481,10 +1458,16 @@ function Character (occupation, background, loadout) {
 			weapons.push(this.offHand);
 
 		var accuracy = this.baseAccuracy;
-		switch (this.getEffectLevel(SKILL_ACCURACY)) {
+		switch (this.getEffectLevel(EFFECT_ACCURACY)) {
 			default:break;
 			case 1: accuracy = .8; break;
 			case 2: accuracy = 1; break;
+		}
+
+		switch (this.getEffectLevel(EFFECT_DAMAGE)) {
+			default:break;
+			case 1: result += 5; break;
+			case 2: result += 5; break;
 		}
 
 		switch (weapons.length) {
@@ -1496,7 +1479,7 @@ function Character (occupation, background, loadout) {
 
 		var critChance = this.baseCritChance;
 		var megaCritChance = 0;
-		switch (this.getEffectLevel(SKILL_PRECISION)) {
+		switch (this.getEffectLevel(EFFECT_PRECISION)) {
 			default:break;
 			case 1: critChance = .2; break;
 			case 2: critChance = .4; break;
@@ -1509,6 +1492,18 @@ function Character (occupation, background, loadout) {
 
 		// apply skill/item/crit effects etc.
 		return Math.round(result);
+	}
+
+	this.takeDamage = function(amount) {
+		switch (this.getEffectLevel(EFFECT_SHIELD)) {
+			default:break;
+			case 1: accuracy = .8; break;
+			case 2: accuracy = 1; break;
+			case 3: accuracy = 1; break;
+		}
+		this.hp -= amount;
+		if (this.hp <= 0)
+			this.kill();
 	}
 
 	this.getThreat = function() {
@@ -1524,6 +1519,7 @@ function Character (occupation, background, loadout) {
 				this.xp += xpTillLevel;
 				this.level++;
 				this.skillPoints += 1;
+				this.lastLevelXp = this.nextLevelXp;
 				this.nextLevelXp = Math.round(this.nextLevelXp * 2.25);
 				var hpDif = Math.round(this.hpMax * .25);
 				this.hpMax += hpDif;
@@ -1540,7 +1536,7 @@ function Character (occupation, background, loadout) {
 	}
 
 	this.kill = function() {
-		// console.log("you died");
+		gameOver();
 	}
 }
 
@@ -1563,23 +1559,25 @@ function Inventory () {
 		return false;
 	}
 }
-
-var SKILL_NONE = 'pyro';
-var SKILL_FORTITUDE = 'Fortitude';
-var SKILL_SHIELD = 'Shield';
-var SKILL_ACCURACY = 'Accuracy';
-var SKILL_PRECISION = 'Precision';
+var EFFECT_NONE = 'none';
+// effects
+var EFFECT_DAMAGE = 'Damage';
+var EFFECT_REGEN = 'Regen';
+// skills
+var EFFECT_FORTITUDE = 'Fortitude';
+var EFFECT_SHIELD = 'Shield';
+var EFFECT_ACCURACY = 'Accuracy';
+var EFFECT_PRECISION = 'Precision';
 function Skills (occupation) {
-	var none = new Requirement(SKILL_NONE, 1);
 	// default skills
 	this.defaultSkills = [];
-	this.defaultSkills.push({name:SKILL_FORTITUDE, lvl:0, maxLvl:5});
-	this.defaultSkills.push({name:SKILL_SHIELD, lvl:0, maxLvl:3});
-	this.defaultSkills.push({name:SKILL_ACCURACY, lvl:0, maxLvl:2});
-	this.defaultSkills.push({name:SKILL_PRECISION, lvl:0, maxLvl:3});
+	this.defaultSkills.push(new Skill(EFFECT_FORTITUDE, [1,2,3,2,2], [[],[],[],[],[]]));
+	this.defaultSkills.push(new Skill(EFFECT_SHIELD, [1,2,3], [[],[],[]]));
+	this.defaultSkills.push(new Skill(EFFECT_ACCURACY, [1,2], [[],[]]));
+	this.defaultSkills.push(new Skill(EFFECT_PRECISION, [1,2,3], [[],[],[]]));
 	// class specific skills
 	this.classSkills = [];
-	// this.classSkills.push({name:SKILL_TEST, lvl:0});
+	// this.classSkills.push({name:EFFECT_TEST, lvl:0});
 
 	this.getSkillLevel = function(skillName) {
 		for (var i = this.defaultSkills.length - 1; i >= 0; i--) {
@@ -1593,9 +1591,34 @@ function Skills (occupation) {
 	}
 }
 
-function Requirement(skill, level) {
-	this.skill = skill;
+// skill would extend effect in a civilized language
+function Skill(name, costs, requirements) {
+	this.name = name;
+	this.level = 0;
+	this.maxLvl = costs.length;
+	this.costs = costs;
+	this.requirements = requirements;
+
+	this.getCost = function() {
+		return this.costs[this.level];
+	};
+
+	this.requirementsMet = function() {
+		for(var requirement of requirements[this.level]) {
+			if (!requirement.isSatisfied())
+				return false;
+		}
+		return this.costs[this.level] <= player.skillPoints;
+	};
+}
+
+function Requirement(effect, level) {
+	this.effect = effect;
 	this.level = level;
+
+	this.isSatisfied = function() {
+		return player.getEffectLevel(this.effect) >= this.level;
+	};
 }
 
 function SwitchBoard (width, height) {
@@ -1611,7 +1634,7 @@ function SwitchBoard (width, height) {
 }
 
 function fight (attacker, defender) {
-	defender.hp -= attacker.getDmg();
+	defender.takeDamage(attacker.getDmg(), attacker);
 	attacker.addCombatExperience();
 	attacker.lastCombatTick = gameTicks;
 	defender.lastCombatTick = gameTicks;
@@ -1650,8 +1673,7 @@ function doEnemyTurns() {
 		var dy = Math.abs(enemyPos.y - destination.y);
 		if (npcDestination) {
 			if (dx <= 1 && dy <= 1 && enemy.canAttack()) {
-				if (fight(enemy, destination))
-					destination.kill(dungeon.tiles[destination.y][destination.x], enemy);
+				fight(enemy, destination)
 				dispute(enemy);
 				continue;
 			}
@@ -1710,6 +1732,8 @@ function captureRooms() {
 		var room = disputedRooms[i];
 		var units = room.units;
 		var faction = units[0].faction;
+		if (faction == null)
+			oops();
 		var cont = false;
 		for (var j = units.length - 1; j > 0; j--) {
 			if (units[j].faction != faction) {

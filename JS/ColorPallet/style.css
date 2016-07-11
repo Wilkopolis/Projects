@@ -1,0 +1,163 @@
+body {
+	background: #131324;
+}
+.classOne {
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 24px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 500;
+	color:#f0efdb;
+}
+#one {	
+	position: absolute; 
+	top:37.3%; left:26.5%;
+}
+#two {	
+	position: absolute; 
+	top:59.8%; left:28%;
+}
+#thr {	
+	position: absolute; 
+	top:20%; left:42%;
+}
+#fou {	
+	position: absolute; 
+	top:20%; left:54%;
+}
+/*#fiv {	
+	position: absolute; 
+	top:31.5%; left:32.5%;
+}
+#six {	
+	position: absolute; 
+	top:43%; left:33%;
+}
+#sev {	
+	position: absolute; 
+	top:54%; left:34.35%;
+}
+#eig {	
+	position: absolute; 
+	top:65%; left:33%;
+}*/
+
+#container {
+	position: absolute; 
+	width:440px;height:440px;
+	top:50%; left:50%;
+	margin-top:-220px; margin-left:-220px;
+	background: #2B2B2B;
+}
+
+#Default {
+	background: #5b4b3e;	
+	position: absolute;
+	top:5px; left:5px;
+	width:100px;height:100px;
+}
+
+#Hive {
+	background: #5b3993;	
+	position: absolute;
+	top:5px; left:115px;
+	width:100px;height:100px;
+}
+
+#Generator {
+	background: #e8e7c8;	
+	position: absolute;
+	top:5px; left:225px;
+	width:100px;height:100px;
+}
+
+#GeneratorUnstarted {
+	background: #9d9977;	
+	position: absolute;
+	top:5px; left:335px;
+	width:100px;height:100px;
+}
+
+#VistedUnpowered {
+	background: #8e674f;	
+	position: absolute;
+	top:115px; left:5px;
+	width:100px;height:100px;
+}
+
+#Cursor {
+	background: #b991e6;	
+	position: absolute;
+	top:115px; left:115px;
+	width:100px;height:100px;
+}
+
+#CloningLab {
+	background: #993333;	
+	position: absolute;
+	top:115px; left:225px;
+	width:100px;height:100px;
+}
+
+#DefaultWhite {
+	background: #cdc0b6;	
+	position: absolute;
+	top:115px; left:335px;
+	width:100px;height:100px;
+}
+
+#DefaultPowered {
+	background: #111111;	
+	position: absolute;
+	top:225px; left:5px;
+	width:100px;height:100px;
+}
+
+#OurRoomUnPowered {
+	background: #9f582d;	
+	position: absolute;
+	top:225px; left:115px;
+	width:100px;height:100px;
+}
+
+#CityHallUnPow {
+	background: #38466b;	
+	position: absolute;
+	top:225px; left:225px;
+	width:100px;height:100px;
+}
+
+#GenesUnPow {
+	background: #40552b;	
+	position: absolute;
+	top:225px; left:335px;
+	width:100px;height:100px;
+}
+
+#VisistedPowered {
+	background: #f0e237;	
+	position: absolute;
+	top:335px; left:5px;
+	width:100px;height:100px;
+}
+
+#OurRoomPowered {
+	background: #eb7729;	
+	position: absolute;
+	top:335px; left:115px;
+	width:100px;height:100px;
+}
+
+#CityHallPow {
+	background: #3153ae;	
+	position: absolute;
+	top:335px; left:225px;
+	width:100px;height:100px;
+}
+
+#GenesPow {
+	background: #6fa023;	
+	position: absolute;
+	top:335px; left:335px;
+	width:100px;height:100px;
+}

@@ -23,7 +23,7 @@ namespace Rougelike
             Value = worth;
             Type = type;
             Name = name;
-            HashID = hashid;
+            Hash = hashid;
             foreach (Effect effect in effects)
             {
                 EnterMod(effect);
@@ -40,7 +40,7 @@ namespace Rougelike
             Result.Type = Type;
             Result.Damage = Damage;
             Result.Cost = Cost;
-            Result.HashID = NewHash;
+            Result.Hash = NewHash;
             Result.Value = Value;
             Result.Mods = Mods;
             return Result;

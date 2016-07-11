@@ -33,7 +33,7 @@ namespace Rougelike
         public Pill Copy(int hashid, Random seed, bool prescription, bool fda)
         {
             Pill result = new Pill();
-            result.HashID = hashid;
+            result.Hash = hashid;
             result.Sprite = Sprites.ElementAt(seed.Next(0, Sprites.Count));
             if (prescription)
             {
@@ -63,7 +63,7 @@ namespace Rougelike
         public Pill Copy(Vector2I position, int hashid, Random seed, bool prescription, bool fda)
         {
             Pill result = new Pill();
-            result.HashID = hashid;
+            result.Hash = hashid;
             result.Position = position;
             result.Sprite = Sprites.ElementAt(seed.Next(0, Sprites.Count));
             if (prescription)
