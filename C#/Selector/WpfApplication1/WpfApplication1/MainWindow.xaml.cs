@@ -75,7 +75,7 @@ namespace Selector
         public void LoadSettingsAndFiles()
         {
             // this will be our cwd
-            cwd = new DirectoryInfo(@"F:\Porn");
+            cwd = new DirectoryInfo(@"F:\Media");
 
             // loading image
             Loading = new BitmapImage();
@@ -144,7 +144,7 @@ namespace Selector
                 }
             }
             // load the goods
-            DirectoryInfo DirectoryInfo = new DirectoryInfo(@"F:\Porn");
+            DirectoryInfo DirectoryInfo = new DirectoryInfo(@"F:\Media");
 
             Stack<DirectoryInfo> tempFolders = new Stack<DirectoryInfo>(new DirectoryInfo[] { DirectoryInfo }); // List that hold direcotries that cannot be accessed
 
@@ -297,7 +297,7 @@ namespace Selector
 
         void ResetDir(Object sender, RoutedEventArgs e)
         {
-            cwd = new DirectoryInfo(@"G:\Porn");
+            cwd = new DirectoryInfo(@"F:\Media");
             UpdateCwdList();
             CWD_LAST = false;
         }

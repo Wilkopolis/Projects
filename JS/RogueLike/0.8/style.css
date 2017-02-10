@@ -1,0 +1,28 @@
+body {
+	background: #131324;
+	color:#cdc0b6; 
+	margin: 5% 30% 6% 10%;
+}
+
+p {
+    text-indent: 50px;
+}
+
+#canvas {
+	position: absolute; 
+	top: 50%; left: 50%;
+
+	background: #2B2B2B;
+}
+
+#help {
+	display:none;
+	background: #131324;
+	position: absolute; 
+	top: 50%; left: 50%;
+    text-align: center;
+}
+
+#helpText {	
+    display: inline-block;  vertical-align: middle;
+}

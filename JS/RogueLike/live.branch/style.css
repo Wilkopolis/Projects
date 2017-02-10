@@ -2,27 +2,97 @@ body {
 	background: #131324;
 	color:#cdc0b6; 
 	margin: 5% 30% 6% 10%;
+	overflow: hidden;
 }
 
-p {
-    text-indent: 50px;
-}
-
-#canvas {
+.statusDiv {
+	background: #131313;
 	position: absolute; 
-	top: 50%; left: 50%;
+	height: 25px; /*width: 80px;*/
 
-	background: #2B2B2B;
-}
+	width: 90%;
+	margin-left: 5%;
 
-#help {
-	display:none;
-	background: #131324;
-	position: absolute; 
-	top: 50%; left: 50%;
     text-align: center;
+	color: #cdc0b6; 
 }
 
-#helpText {	
-    display: inline-block;  vertical-align: middle;
+.skillDiv {
+	background: #131313;
+	height: 25px;
+
+	float: left;
+
+    text-align: center;
+	color: #cdc0b6;
+
+	margin-right: 5px;
+	margin-top: 5px;
+}
+
+.percentDiv {
+	background: #431313;
+	height: 25px;
+}
+
+.titleSpan {
+	position: absolute; 
+	line-height: 25px;
+    color:#cdc0b6;
+	height: 25px;
+
+	font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;
+	font-size: 14px;
+
+	top:0%; left:0%;
+}
+
+.skillTitleSpan {
+    color:#cdc0b6;
+
+    position: relative;
+    top: -23px;
+
+	font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;
+	font-size: 14px;
+}
+
+.description {
+	font-family: "Lucida Console", Monaco, monospace;
+	font-size: 14px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 500;
+	line-height: 23px;
+
+	margin-left: 5px;
+	margin-bottom: 5px;
+	margin-top: 5px;
+}
+
+.characterDescription {
+	font-family: "Lucida Console", Monaco, monospace;
+	font-size: 14px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 500;
+	line-height: 23px;
+
+	margin: 0;
+
+    color:#cdc0b6;
+}
+
+.itemEntry {
+	font-family: "Lucida Console", Monaco, monospace;
+	font-size: 14px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 500;
+	line-height: 23px;
+
+	margin: 0;
+	margin-left: 10px;
+
+    color:#968C85;
 }

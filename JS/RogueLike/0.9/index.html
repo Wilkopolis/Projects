@@ -4,37 +4,29 @@
 <meta charset="UTF-8"> 
 	<!-- CSS  -->
 	<link rel="stylesheet" href="style.css">
-	<link rel="stylesheet" href="util/jquery-ui-1.12.1/jquery-ui.min.css">
 
 	<!-- Foreign Includes -->
 
 	<!-- Page Title -->
-	<title>v0.9.5</title>
-
-	<!-- External Dependencies -->
-	<script src="util/jquery-3.1.1.min.js"></script>
-	<script src="util/jquery-ui-1.12.1/jquery-ui.min.js"></script>
-	<script src="util/jquery.fittext.js"></script>
-	<script src="util/cookies.js"></script>
+	<title>v0.8</title>
 
 	<!-- Call on page load -->
-	<script src="graphics/screen.js"></script>
+	<script src="util/jquery-3.1.1.slim.min.js"></script>
 	<script src="util/constants.js"></script>
 	<script src="util/util.js"></script>
+	<script src="util/screen.js"></script>
 	<script src="dungeon/dungeon.js"></script>
-	<script src="dungeon/tutorial.js"></script>
 	<script src="dungeon/objectives.js"></script>
 	<script src="dungeon/factions.js"></script>
-	<script src="skills/skills.js"></script>
-	<script src="entities/entities.js"></script>
+	<script src="entities/characters/entities.js"></script>
 	<script src="entities/characters/companion.js"></script>
 	<script src="entities/characters/npc.js"></script>
 	<script src="entities/characters/player.js"></script>
 	<script src="entities/movement.js"></script>
 	<script src="entities/items/items.js"></script>
 	<script src="entities/projectile.js"></script>
+	<script src="skills/skills.js"></script>
 	<script src="screens/background.js"></script>
-	<script src="screens/changeMajor.js"></script>
 	<script src="screens/chest.js"></script>
 	<script src="screens/firmware.js"></script>
 	<script src="screens/fourX.js"></script>
@@ -48,5 +40,15 @@
 	<script src="main.js"></script>
 </head>
 <body>
+	<canvas id="canvas">		
+	</canvas>
+	<div id="containerContainer">
+		<div id="powerButtonContainer" class="buttonContainer"></div>
+		<div id="effectsContainer" class="buttonContainer"></div>
+	</div>
+	<div id="help">
+		<a id="patchText" href="patchNotes.html" target="_blank">Click here for patch notes</a>
+		<a id="helpText" href="help.html" target="_blank">Click here for game manual</a>
+	</div>
 </body>
 </html>

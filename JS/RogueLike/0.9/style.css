@@ -1,0 +1,67 @@
+body {
+	background: #131324;
+	color:#cdc0b6; 
+	margin: 5% 30% 6% 10%;
+}
+
+p {
+    text-indent: 50px;
+}
+
+a {	
+	color:#cdc0b6; 
+}
+
+#canvas {
+	position: absolute; 
+	top: 50%; left: 50%;
+
+	background: #2B2B2B;
+}
+
+#help {
+	display:none;
+	background: #131324;
+	position: absolute; 
+	top: 50%; left: 50%;
+    text-align: center;
+}
+
+#helpText {	
+    display: inline-block;  
+    vertical-align: middle;
+}
+
+.buttonContainer {
+	display: none;
+	position: absolute;
+	height: 600px; width: 170px;
+	top: 50%; left: 50%;	
+}
+
+.statusDiv {
+	background: #131313;
+	position: absolute; 
+	height: 25px; width: 80px;
+	top: 50%;
+    text-align: center;
+    right:0px;
+	color: #cdc0b6; 
+}
+
+.percentDiv {
+	background: #431313;
+	height: 25px;
+}
+
+.titleSpan {
+	position: absolute; 
+	line-height: 25px;
+    color:#cdc0b6;
+	height: 25px;
+
+	font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;
+	font-size: 14px;
+
+	top:0%; left:0%;
+}
